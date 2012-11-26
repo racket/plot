@@ -34,7 +34,10 @@
     (eval '(begin
              (require racket/math racket/match racket/list racket/draw racket/class
                       (rename-in (except-in plot plot plot3d)
-                                 [plot-bitmap  plot]
-                                 [plot3d-bitmap  plot3d])
+                                 [plot-pict  plot]
+                                 [plot3d-pict  plot3d])
                       plot/utils)))
     eval))
+
+(define (close-plot-eval)
+  (close-eval plot-eval))
