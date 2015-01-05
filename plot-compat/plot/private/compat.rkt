@@ -32,7 +32,6 @@
                                 line
                                 contour shade
                                 surface)
-         (only-doc-out (all-defined-out))
          ;; Miscellaneous
          make-vec derivative gradient)
 
