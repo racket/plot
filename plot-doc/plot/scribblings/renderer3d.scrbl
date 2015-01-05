@@ -20,7 +20,19 @@ See @secref["renderer2d-function-arguments"] for a detailed example.
 
 @section{3D Point Renderers}
 
-@doc-apply[points3d]{
+@defproc[(points3d
+          [vs  (sequence/c (sequence/c #:min-count 3 real?))]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:sym sym point-sym/c (point-sym)]
+          [#:color color plot-color/c (point-color)]
+          [#:fill-color fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:size size (>=/c 0) (point-size)]
+          [#:line-width line-width (>=/c 0) (point-line-width)]
+          [#:alpha alpha (real-in 0 1) (point-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that draws points in 3D space.
 
 For example, a scatter plot of points sampled uniformly from the surface of a sphere:
@@ -41,7 +53,20 @@ For example, a scatter plot of points sampled uniformly from the surface of a sp
                             #:altitude 25)]
 }
 
-@doc-apply[vector-field3d]{
+@defproc[(vector-field3d
+          [f (or/c (real? real? real? . -> . (sequence/c real?))
+                   ((vector/c real? real? real?) . -> . (sequence/c real?)))]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [z-min (or/c rational? #f) #f] [z-max (or/c rational? #f) #f]
+          [#:samples samples exact-positive-integer? ( vector-field3d-samples)]
+          [#:scale scale (or/c real? (one-of/c 'auto 'normalized)) (vector-field-scale)]
+          [#:color color plot-color/c (vector-field-color)]
+          [#:line-width line-width (>=/c 0) (vector-field-line-width)]
+          [#:line-style line-style plot-pen-style/c (vector-field-line-style)]
+          [#:alpha alpha (real-in 0 1) (vector-field-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that draws a vector field in 3D space.
 The arguments are interpreted identically to the corresponding arguments to @racket[vector-field].
 @examples[#:eval plot-eval
@@ -51,12 +76,34 @@ The arguments are interpreted identically to the corresponding arguments to @rac
 
 @section{3D Line Renderers}
 
-@doc-apply[lines3d]{
+@defproc[(lines3d
+          [vs  (sequence/c (sequence/c #:min-count 3 real?))]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:color color plot-color/c (line-color)]
+          [#:width width (>=/c 0) (line-width)]
+          [#:style style plot-pen-style/c (line-style)]
+          [#:alpha alpha (real-in 0 1) (line-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that draws connected lines.
 The @racket[parametric3d] function is defined in terms of this one.
 }
 
-@doc-apply[parametric3d]{
+@defproc[(parametric3d
+          [f (real? . -> . (sequence/c real?))]
+          [t-min rational?] [t-max rational?]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (line-samples)]
+          [#:color color plot-color/c (line-color)]
+          [#:width width (>=/c 0) (line-width)]
+          [#:style style plot-pen-style/c (line-style)]
+          [#:alpha alpha (real-in 0 1) (line-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots a vector-valued function of time. For example,
 @interaction[#:eval plot-eval
                     (require (only-in plot/utils 3d-polar->3d-cartesian))
@@ -67,7 +114,20 @@ Returns a renderer that plots a vector-valued function of time. For example,
 
 @section{3D Surface Renderers}
 
-@doc-apply[surface3d]{
+@defproc[(surface3d
+          [f (real? real? . -> . real?)]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:color color plot-color/c (surface-color)]
+          [#:style style plot-brush-style/c (surface-style)]
+          [#:line-color line-color plot-color/c (surface-line-color)]
+          [#:line-width line-width (>=/c 0) (surface-line-width)]
+          [#:line-style line-style plot-pen-style/c (surface-line-style)]
+          [#:alpha alpha (real-in 0 1) (surface-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots a two-input, one-output function. For example,
 @interaction[#:eval plot-eval (plot3d (list (surface3d (λ (x y) (+ (sqr x) (sqr y))) -1 1 -1 1
                                                        #:label "z = x^2 + y^2")
@@ -76,7 +136,20 @@ Returns a renderer that plots a two-input, one-output function. For example,
                                                        #:label "z = -x^2 - y^2")))]
 }
 
-@doc-apply[polar3d]{
+@defproc[(polar3d
+          [f (real? real? . -> . real?)]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:color color plot-color/c (surface-color)]
+          [#:style style plot-brush-style/c (surface-style)]
+          [#:line-color line-color plot-color/c (surface-line-color)]
+          [#:line-width line-width (>=/c 0) (surface-line-width)]
+          [#:line-style line-style plot-pen-style/c (surface-line-style)]
+          [#:alpha alpha (real-in 0 1) (surface-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots a function from latitude and longitude to radius.
 
 Currently, latitudes range from @(racket 0) to @(racket (* 2 pi)), and longitudes from @(racket (* -1/2 pi)) to @(racket (* 1/2 pi)).
@@ -100,7 +173,18 @@ Combining polar function renderers allows faking latitudes or longitudes in larg
 
 @section{3D Contour (Isoline) Renderers}
 
-@doc-apply[isoline3d]{
+@defproc[(isoline3d
+          [f (real? real? . -> . real?)] [z real?]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:color color plot-color/c (line-color)]
+          [#:width width (>=/c 0) (line-width)]
+          [#:style style plot-pen-style/c (line-style)]
+          [#:alpha alpha (real-in 0 1) (line-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots a single contour line on the surface of a function.
 
 The appearance keyword arguments are interpreted identically to the appearance keyword arguments to @(racket isoline).
@@ -112,7 +196,19 @@ This function is not terribly useful by itself, but can be when combined with ot
                                   (isoline3d saddle 1/4 #:width 2 #:style 'long-dash)))]
 }
 
-@doc-apply[contours3d]{
+@defproc[(contours3d
+          [f (real? real? . -> . real?)]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:levels levels (or/c 'auto exact-positive-integer? (listof real?)) (contour-levels)]
+          [#:colors colors (plot-colors/c (listof real?)) (contour-colors)]
+          [#:widths widths (pen-widths/c (listof real?)) (contour-widths)]
+          [#:styles styles (plot-pen-styles/c (listof real?)) (contour-styles)]
+          [#:alphas alphas (alphas/c (listof real?)) (contour-alphas)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots contour lines on the surface of a function.
 
 The appearance keyword arguments are interpreted identically to the appearance keyword arguments to @(racket contours).
@@ -123,7 +219,24 @@ For example,
                                                   #:label "z = x^2 + y^2"))]
 }
 
-@doc-apply[contour-intervals3d]{
+@defproc[(contour-intervals3d
+          [f (real? real? . -> . real?)]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:levels levels (or/c 'auto exact-positive-integer? (listof real?)) (contour-levels)]
+          [#:colors colors (plot-colors/c (listof ivl?)) (contour-interval-colors)]
+          [#:styles styles (plot-brush-styles/c (listof ivl?)) (contour-interval-styles)]
+          [#:line-colors line-colors (plot-colors/c (listof ivl?)) (contour-interval-line-colors)]
+          [#:line-widths line-widths (pen-widths/c (listof ivl?)) (contour-interval-line-widths)]
+          [#:line-styles line-styles (plot-pen-styles/c (listof ivl?)) (contour-interval-line-styles)]
+          [#:contour-colors contour-colors (plot-colors/c (listof real?)) (contour-colors)]
+          [#:contour-widths contour-widths (pen-widths/c (listof real?)) (contour-widths)]
+          [#:contour-styles contour-styles (plot-pen-styles/c (listof real?)) (contour-styles)]
+          [#:alphas alphas (alphas/c (listof ivl?)) (contour-interval-alphas)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots contour intervals and contour lines on the surface of a function.
 The appearance keyword arguments are interpreted identically to the appearance keyword arguments to @(racket contour-intervals).
 
@@ -135,7 +248,20 @@ For example,
 
 @section{3D Isosurface Renderers}
 
-@doc-apply[isosurface3d]{
+@defproc[(isosurface3d
+          [f (real? real? real? . -> . real?)] [d rational?]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [z-min (or/c rational? #f) #f] [z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:color color plot-color/c (surface-color)]
+          [#:style style plot-brush-style/c (surface-style)]
+          [#:line-color line-color plot-color/c (surface-line-color)]
+          [#:line-width line-width (>=/c 0) (surface-line-width)]
+          [#:line-style line-style plot-pen-style/c (surface-line-style)]
+          [#:alpha alpha (real-in 0 1) (surface-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots the surface of constant output value of the function @(racket f). The argument @(racket d) is the constant value.
 
 For example, a sphere is all the points in which the Euclidean distance function returns the sphere's radius:                                                           
@@ -145,7 +271,22 @@ For example, a sphere is all the points in which the Euclidean distance function
                                       #:altitude 25)]
 }
 
-@doc-apply[isosurfaces3d]{
+@defproc[(isosurfaces3d
+          [f (real? real? real? . -> . real?)]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [z-min (or/c rational? #f) #f] [z-max (or/c rational? #f) #f]
+          [#:d-min d-min (or/c rational? #f) #f] [#:d-max d-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:levels levels (or/c 'auto exact-positive-integer? (listof real?)) (isosurface-levels)]
+          [#:colors colors (plot-colors/c (listof real?)) (isosurface-colors)]
+          [#:styles styles (plot-brush-styles/c (listof real?)) (isosurface-styles)]
+          [#:line-colors line-colors (plot-colors/c (listof real?)) (isosurface-line-colors)]
+          [#:line-widths line-widths (pen-widths/c (listof real?)) (isosurface-line-widths)]
+          [#:line-styles line-styles (plot-pen-styles/c (listof real?)) (isosurface-line-styles)]
+          [#:alphas alphas (alphas/c (listof real?)) (isosurface-alphas)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that plots multiple isosurfaces. The appearance keyword arguments are interpreted similarly to those of @(racket contours).
 
 Use this to visualize functions from three inputs to one output; for example:
@@ -161,7 +302,19 @@ If it helps, think of the output of @(racket f) as a density or charge.
 
 @section{3D Rectangle Renderers}
 
-@doc-apply[rectangles3d]{
+@defproc[(rectangles3d
+          [rects  (sequence/c (sequence/c #:min-count 3 ivl?))]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:color color plot-color/c (rectangle-color)]
+          [#:style style plot-brush-style/c (rectangle-style)]
+          [#:line-color line-color plot-color/c (rectangle-line-color)]
+          [#:line-width line-width (>=/c 0) (rectangle3d-line-width)]
+          [#:line-style line-style plot-pen-style/c (rectangle-line-style)]
+          [#:alpha alpha (real-in 0 1) (rectangle-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
 Returns a renderer that draws rectangles.
 
 This can be used to draw histograms; for example,
@@ -185,7 +338,25 @@ This can be used to draw histograms; for example,
                                           #:label "Appx. 2D Normal"))]
 }
 
-@doc-apply[discrete-histogram3d]{
+@defproc[(discrete-histogram3d
+          [cat-vals (sequence/c (or/c (vector/c any/c any/c (or/c real? ivl? #f))
+                                      (list/c any/c any/c (or/c real? ivl? #f))))]
+          [#:x-min x-min (or/c rational? #f) 0] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) 0] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) 0] [#:z-max z-max (or/c rational? #f) #f]
+          [#:gap gap (real-in 0 1) (discrete-histogram-gap)]
+          [#:color color plot-color/c (rectangle-color)]
+          [#:style style plot-brush-style/c (rectangle-style)]
+          [#:line-color line-color plot-color/c (rectangle-line-color)]
+          [#:line-width line-width (>=/c 0) (rectangle3d-line-width)]
+          [#:line-style line-style plot-pen-style/c (rectangle-line-style)]
+          [#:alpha alpha (real-in 0 1) (rectangle-alpha)]
+          [#:label label (or/c string? #f) #f]
+          [#:add-x-ticks? add-x-ticks? boolean? #t]
+          [#:add-y-ticks? add-y-ticks? boolean? #t]
+          [#:x-far-ticks? x-far-ticks? boolean? #f]
+          [#:y-far-ticks? y-far-ticks? boolean? #f]
+          ) renderer3d?]{
 Returns a renderer that draws discrete histograms on a two-valued domain.
 
 Missing pairs are not drawn; for example,
@@ -195,7 +366,25 @@ Missing pairs are not drawn; for example,
                                                   #:color 4 #:line-color 4))]
 }
 
-@doc-apply[stacked-histogram3d]{
+@defproc[(stacked-histogram3d
+          [cat-vals (sequence/c (or/c (vector/c any/c any/c (sequence/c real?))
+                                      (list/c any/c any/c (sequence/c real?))))]
+          [#:x-min x-min (or/c rational? #f) 0] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) 0] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) 0] [#:z-max z-max (or/c rational? #f) #f]
+          [#:gap gap (real-in 0 1) (discrete-histogram-gap)]
+          [#:colors colors (plot-colors/c nat/c) (stacked-histogram-colors)]
+          [#:styles styles (plot-brush-styles/c nat/c) (stacked-histogram-styles)]
+          [#:line-colors line-colors (plot-colors/c nat/c) (stacked-histogram-line-colors)]
+          [#:line-widths line-widths (pen-widths/c nat/c) (stacked-histogram-line-widths)]
+          [#:line-styles line-styles (plot-pen-styles/c nat/c) (stacked-histogram-line-styles)]
+          [#:alphas alphas (alphas/c nat/c) (stacked-histogram-alphas)]
+          [#:labels labels (labels/c nat/c) '(#f)]
+          [#:add-x-ticks? add-x-ticks? boolean? #t]
+          [#:add-y-ticks? add-y-ticks? boolean? #t]
+          [#:x-far-ticks? x-far-ticks? boolean? #f]
+          [#:y-far-ticks? y-far-ticks? boolean? #f]
+          ) (listof renderer3d?)]{
 Returns a renderer that draws a stacked histogram.
 Think of it as a version of @racket[discrete-histogram] that allows multiple values to be specified for each pair of categories.
 @examples[#:eval plot-eval
@@ -204,7 +393,21 @@ Think of it as a version of @racket[discrete-histogram] that allows multiple val
                                               #:alphas '(2/3 1 2/3)))]
 }
 
-@doc-apply[point-label3d]{
+@defproc[(point-label3d
+          [v (sequence/c real?)] [label (or/c string? #f) #f]
+          [#:color color plot-color/c (plot-foreground)]
+          [#:size size (>=/c 0) (plot-font-size)]
+          [#:face face (or/c string? #f) (plot-font-face)]
+          [#:family family font-family/c (plot-font-family)]
+          [#:anchor anchor anchor/c (label-anchor)]
+          [#:angle angle real? (label-angle)]
+          [#:point-color point-color plot-color/c (point-color)]
+          [#:point-fill-color point-fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:point-size point-size (>=/c 0) (label-point-size)]
+          [#:point-line-width point-line-width (>=/c 0) (point-line-width)]
+          [#:point-sym point-sym point-sym/c 'fullcircle]
+          [#:alpha alpha (real-in 0 1) (label-alpha)]
+          ) renderer3d?]{
 Returns a renderer that draws a labeled point.
 If @(racket label) is @(racket #f), the point is labeled with its position.
 Analogous to @racket[point-label].

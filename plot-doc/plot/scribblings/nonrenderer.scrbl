@@ -9,9 +9,9 @@
 
 The following functions create @deftech{nonrenderers}, or plot elements that draw nothing in the plot.
 
-@doc-apply[x-ticks]
-@doc-apply[y-ticks]
-@doc-apply[z-ticks]{
+@deftogether[(@defproc[(x-ticks [ts (listof tick?)] [#:far? far? boolean? #f]) nonrenderer?]
+              @defproc[(y-ticks [ts (listof tick?)] [#:far? far? boolean? #f]) nonrenderer?]
+              @defproc[(z-ticks [ts (listof tick?)] [#:far? far? boolean? #f]) nonrenderer?])]{
 The @racket[x-ticks], @racket[y-ticks] and @racket[z-ticks] return a nonrenderer that adds custom ticks to a 2D or 3D plot.
 
 Although @racket[ticks-add] allows placing arbitrary major and minor ticks on an axis, it does not allow them to be formatted differently from the other ticks on the same axis.
@@ -34,14 +34,19 @@ When considering using one of these functions, remember that minor tick labels a
 and that including a @racket[z-ticks] nonrenderer will not add extra contour lines to contour plots.
 }
 
-@doc-apply[invisible-rect]{
+@defproc[(invisible-rect [x-min (or/c rational? #f)] [x-max (or/c rational? #f)]
+                         [y-min (or/c rational? #f)] [y-max (or/c rational? #f)]
+                         ) nonrenderer?]{
 Returns a nonrenderer that simply takes up space in the plot. Use this to cause the plot area to include a minimal rectangle.
 @examples[#:eval plot-eval
                  (plot (list (function sin (- pi) pi)
                              (invisible-rect #f #f -2 2)))]
 }
 
-@doc-apply[invisible-rect3d]{
+@defproc[(invisible-rect3d [x-min (or/c rational? #f)] [x-max (or/c rational? #f)]
+                           [y-min (or/c rational? #f)] [y-max (or/c rational? #f)]
+                           [z-min (or/c rational? #f)] [z-max (or/c rational? #f)]
+                           ) nonrenderer?]{
 Returns a nonrenderer that simply takes up space in the plot. Use this to cause the plot area to include a minimal rectangle.
 See @racket[invisible-rect] for a 2D example.
 }
