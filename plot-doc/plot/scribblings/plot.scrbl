@@ -20,13 +20,13 @@ For plotting in REPL-like environments outside of DrRacket, including Scribble m
 
 @table-of-contents[]
 
-@;{@include-section["intro.scrbl"]}
+@;{@include-section["intro.scrbl"]
 
-@include-section["plotting.scrbl"]
+@include-section["plotting.scrbl"]}
 
-@;{@include-section["renderer2d.scrbl"]
+@include-section["renderer2d.scrbl"]
 
-@include-section["renderer3d.scrbl"]
+@;{@include-section["renderer3d.scrbl"]
 
 @include-section["nonrenderer.scrbl"]
 
