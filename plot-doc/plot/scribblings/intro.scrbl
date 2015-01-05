@@ -10,8 +10,10 @@
 
 To plot a one-input, real-valued function, do something like
 
-@racketinput[(require plot)]
-@interaction[#:eval plot-eval (plot (function sin (- pi) pi #:label "y = sin(x)"))]
+@;@racketinput[]
+@interaction[#:eval plot-eval
+                    (eval:alts (require plot) (void))
+                    (plot (function sin (- pi) pi #:label "y = sin(x)"))]
 
 The first argument to @(racket function) is the function to be plotted, and the @(racket #:label) argument becomes the name of the function in the legend.
 
@@ -42,7 +44,7 @@ To plot a two-input, real-valued function as a surface, try something like
                             #:x-label "x" #:y-label "y" #:z-label "cos(x) sin(y)")]
 
 This example also demonstrates using keyword arguments that change the plot, such as @(racket #:title).
-In @(plot-name), every keyword argument is optional and almost all have parameterized default values.
+In Plot, every keyword argument is optional and almost all have parameterized default values.
 In the case of @(racket plot3d)'s @(racket #:title), the corresponding parameter is @(racket plot-title).
 That is, keyword arguments are usually shortcuts for parameterizing plots or renderers:
 
@@ -74,7 +76,7 @@ Renderers may be plotted together by passing them in a list:
 Here, @(racket inverse) plots the inverse of a function. (Both @(racket function) and @(racket inverse) plot the reflection line @(racket (λ (x) x)) identically.)
 
 Notice the numbered colors.
-@(plot-name) additionally recognizes, as colors, lists of RGB values such as @(racket '(128 128 0)), @(racket color%) instances, and strings like @(racket "red") and @(racket "navajowhite").
+Plot additionally recognizes, as colors, lists of RGB values such as @(racket '(128 128 0)), @(racket color%) instances, and strings like @(racket "red") and @(racket "navajowhite").
 (The last are turned into RGB triples using a @(racket color-database<%>).)
 Use numbered colors when you just need different colors with good contrast, but don't particularly care what they are.
 
@@ -117,12 +119,9 @@ It is not always possible for renderers and @(racket plot) or @(racket plot3d) t
                      (plot (function sqr #f #f))
                      (eval:result "" "" "plot: could not determine sensible plot bounds; got x ∈ [#f,#f], y ∈ [#f,#f]"))
                     (eval:alts
-                     (plot (function sqr (- pi)))
-                     (eval:result "" "" "plot: could not determine sensible plot bounds; got x ∈ [-3.141592653589793,#f], y ∈ [#f,#f]"))
-                    (eval:alts
-                     (plot (list (function sqr #f 0)
-                                 (function sqr 0 #f)))
-                     (eval:result "" "" "plot: could not determine sensible plot bounds; got x ∈ [0,0], y ∈ [0,0]"))]
+                     (plot (function sqr -2))
+                     (eval:result "" "" "plot: could not determine sensible plot bounds; got x ∈ [-2,#f], y ∈ [#f,#f]"))
+                    ]
 
 There is a difference between passing bounds to renderers and passing bounds to @(racket plot) or @(racket plot3d): bounds passed to @(racket plot) or @(racket plot3d) cannot be changed by a renderer that requests different bounds.
 We might say that bounds passed to renderers are @italic{suggestions}, and bounds passed to @(racket plot) and @(racket plot3d) are @italic{commandments}.
@@ -167,7 +166,7 @@ Any plot can be rendered to PNG, PDF, PS and SVG files using @(racket plot-file)
 In papers, stick to dark, fully saturated colors for lines, and light, desaturated colors for areas and surfaces.
 Papers are often printed in black and white, and sticking to this guideline will help black-and-white versions of color plots turn out nicely.
 
-To make this easy, @(plot-name) provides numbered colors that follow these guidelines, that are designed for high contrast in color as well.
+To make this easy, Plot provides numbered colors that follow these guidelines, that are designed for high contrast in color as well.
 When used as line colors, numbers are interpreted as dark, fully saturated colors.
 When used as area or surface colors, numbers are interpreted as light, desaturated colors.
 

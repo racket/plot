@@ -8,9 +8,6 @@
                     plot
                     plot/utils
                     unstable/contract)
-         ;plot
-         ;plot/utils
-         ;plot/private/doc
          (rename-in unstable/latent-contract/defthing
                     [doc-apply  old-doc-apply]))
 
@@ -23,9 +20,6 @@
                                   plot
                                   plot/utils
                                   unstable/contract))
-         ;(all-from-out plot)
-         ;(all-from-out plot/utils)
-         ;(all-from-out plot/private/doc)
          doc-apply)
 
 (require (for-syntax racket/base
