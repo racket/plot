@@ -26,13 +26,13 @@ For plotting in REPL-like environments outside of DrRacket, including Scribble m
 
 @include-section["renderer2d.scrbl"]
 
-@include-section["renderer3d.scrbl"]}
+@include-section["renderer3d.scrbl"]
 
-@include-section["nonrenderer.scrbl"]
+@include-section["nonrenderer.scrbl"]}
 
-@;{@include-section["ticks.scrbl"]
+@include-section["ticks.scrbl"]
 
-@include-section["utils.scrbl"]
+@;{@include-section["utils.scrbl"]
 
 @include-section["params.scrbl"]
 

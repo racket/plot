@@ -36,17 +36,17 @@ Transforms are applied to the primitive shapes that comprise a plot:
                       (plot3d (surface3d + 0.01 1 0.01 1 #:samples 3)))]
 Here, the renderer returned by @racket[surface3d] does not have to bend the polygons it draws; @racket[plot3d] does this automatically (by recursive subdivision).
 
-@doc-apply[plot-x-transform]
-@doc-apply[plot-y-transform]
-@doc-apply[plot-z-transform]{
+@deftogether[(@defparam[plot-x-transform transform axis-transform/c #:value id-transform]
+              @defparam[plot-y-transform transform axis-transform/c #:value id-transform]
+              @defparam[plot-z-transform transform axis-transform/c #:value id-transform])]{
 Independent, per-axis, monotone, nonlinear transforms. @(plot-name) comes with some typical (and some atypical) axis transforms, documented immediately below.
 }
 
-@doc-apply[id-transform]{
+@defthing[id-transform axis-transform/c]{
 The identity axis transform, the default transform for all axes.
 }
 
-@doc-apply[log-transform]{
+@defthing[log-transform axis-transform/c]{
 A log transform. Use this to generate plots with log-scale axes. Any such axis must have positive bounds.
 
 The beginning of the @secref["ticks and transforms"] section has a working example. An example of exceeding the bounds is
@@ -58,7 +58,7 @@ The beginning of the @secref["ticks and transforms"] section has a working examp
 See @racket[axis-transform-bound] and @racket[axis-transform-append] for ways to get around an axis transform's bounds limitations.
 }
 
-@doc-apply[stretch-transform]{
+@defproc[(stretch-transform [a real?] [b real?] [scale (>/c 0)]) axis-transform/c]{
 Returns an axis transform that stretches a finite interval.
 
 The following example uses a @racket[stretch-transform] to draw attention to the interval [-1,1] in an illustration of the limit of @italic{sin(x)/x} as @italic{x} approaches zero (a critical part of proving the derivative of @italic{sin(x)}):
@@ -73,7 +73,7 @@ The following example uses a @racket[stretch-transform] to draw attention to the
                             #:y-max 1.2))]
 }
 
-@doc-apply[collapse-transform]{
+@defproc[(collapse-transform [a real?] [b real?]) axis-transform/c]{
 Returns an axis transform that collapses a finite interval to its midpoint.
 For example, to remove part of the long, boring asymptotic approach of @italic{atan(x)} toward π/2:
 @interaction[#:eval plot-eval
@@ -85,12 +85,12 @@ If there had not been, it would have been necessary to use @racket[ticks-add] to
 (See @racket[stretch-transform] for an example.)
 }
 
-@doc-apply[cbrt-transform]{
+@defthing[cbrt-transform axis-transform/c]{
 A ``cube-root'' transform, mostly used for testing.
 Unlike the log transform, it is defined on the entire real line, making it better for testing the appearance of plots with nonlinearly transformed axes.
 }
 
-@doc-apply[hand-drawn-transform]{
+@defproc[(hand-drawn-transform [freq (>/c 0)]) axis-transform/c]{
 An @italic{extremely important} test case, which makes sure that @(plot-name) can use any monotone, invertible function as an axis transform.
 The @(racket freq) parameter controls the ``shakiness'' of the transform. At high values, it makes plots look like Peanuts cartoons.
 @examples[#:eval plot-eval
@@ -104,13 +104,13 @@ The @(racket freq) parameter controls the ``shakiness'' of the transform. At hig
                                                 -1 1 -1 1 #:samples 9)))]
 }
 
-@doc-apply[axis-transform/c]{
+@defthing[axis-transform/c contract? #:value (-> real? real? invertible-function? invertible-function?)]{
 The contract for axis transforms.
 
 The easiest ways to construct novel axis transforms are to use the axis transform combinators @racket[axis-transform-append], @racket[axis-transform-bound] and @racket[axis-transform-compose], or to apply @racket[make-axis-transform] to an @racket[invertible-function].
 }
 
-@doc-apply[axis-transform-append]{
+@defproc[(axis-transform-append [t1 axis-transform/c] [t2 axis-transform/c] [mid real?]) axis-transform/c]{
 Returns an axis transform that transforms values less than @racket[mid] like @racket[t1], and transforms values greater than @racket[mid] like @racket[t2].
 (Whether it transforms @racket[mid] like @racket[t1] or @racket[t2] is immaterial, as a transformed @racket[mid] is equal to @racket[mid] either way.)
 @examples[#:eval plot-eval
@@ -121,7 +121,7 @@ Returns an axis transform that transforms values less than @racket[mid] like @ra
                    (plot (function (λ (x) x) -3 3)))]
 }
 
-@doc-apply[axis-transform-bound]{
+@defproc[(axis-transform-bound [t axis-transform/c] [a real?] [b real?]) axis-transform/c]{
 Returns an axis transform that transforms values like @racket[t] does in the interval [@racket[a],@racket[b]], but like the identity transform outside of it.
 For example, to bound @racket[log-transform] to an interval in which it is well-defined,
 @interaction[#:eval plot-eval
@@ -130,7 +130,7 @@ For example, to bound @racket[log-transform] to an interval in which it is well-
                       (plot (function (λ (x) x) -4 8 #:label "y = x")))]
 }
 
-@doc-apply[axis-transform-compose]{
+@defproc[(axis-transform-compose [t1 axis-transform/c] [t2 axis-transform/c]) axis-transform/c]{
 Composes two axis transforms.
 For example, to collapse part of a @racket[log-transform]ed axis, try something like
 @interaction[#:eval plot-eval
@@ -142,7 +142,7 @@ Argument order matters, but predicting the effects of exchanging arguments can b
 Fortunately, the effects are usually slight.
 }
 
-@doc-apply[make-axis-transform]{
+@defproc[(make-axis-transform [fun invertible-function?]) axis-transform/c]{
 Given a monotone @racket[invertible-function], returns an axis transform.
 Monotonicity is necessary, but cannot be enforced.
 The inverse is used to take samples uniformly along transformed axes (see @racket[nonlinear-seq]).
@@ -168,7 +168,7 @@ that is, always @racket[(f (g x)) = x] but not necessarily @racket[(g (f x)) = x
 If @racket[f] and @racket[g] had to be strict inverses of each other, there could be no @racket[collapse-transform].
 }
 
-@doc-apply[apply-axis-transform]{
+@defproc[(apply-axis-transform [t axis-transform/c] [x-min real?] [x-max real?]) invertible-function?]{
 Returns an invertible function that transforms axis points within the given axis bounds.
 This convenience function is used internally to transform points before rendering, but is provided for completeness.
 }
@@ -177,12 +177,12 @@ This convenience function is used internally to transform points before renderin
 
 Each plot axis has two indepedent sets of ticks: the @italic{near} ticks and the @italic{far} ticks.
 
-@doc-apply[plot-x-ticks]
-@doc-apply[plot-x-far-ticks]
-@doc-apply[plot-y-ticks]
-@doc-apply[plot-y-far-ticks]
-@doc-apply[plot-z-ticks]
-@doc-apply[plot-z-far-ticks]{
+@deftogether[(@defparam[plot-x-ticks ticks ticks? #:value (linear-ticks)]
+              @defparam[plot-x-far-ticks ticks ticks? #:value (ticks-mimic plot-x-ticks)]
+              @defparam[plot-y-ticks ticks ticks? #:value (linear-ticks)]
+              @defparam[plot-y-far-ticks ticks ticks? #:value (ticks-mimic plot-y-ticks)]
+              @defparam[plot-z-ticks ticks ticks? #:value (linear-ticks)]
+              @defparam[plot-z-far-ticks ticks ticks? #:value (ticks-mimic plot-z-ticks)])]{
 @examples[#:eval plot-eval
                  (parameterize ([plot-x-label      "Near x axis"]
                                 [plot-y-label      "Near y axis"]
@@ -218,7 +218,10 @@ For example, compare plots of the same function renderered using both @racket[co
                                #:legend-anchor 'center)))]
 }
 
-@doc-apply[contour-ticks]{
+@defproc[(contour-ticks [z-ticks ticks?] [z-min real?] [z-max real?]
+                        [levels (or/c 'auto exact-positive-integer? (listof real?))]
+                        [intervals? boolean?])
+         (listof tick?)]{
 Returns the ticks used for contour values.
 This is used internally by renderers returned from @racket[contours], @racket[contour-intervals], @racket[contours3d], @racket[contour-intervals3d], and @racket[isosurfaces3d], but is provided for completeness.
 
@@ -230,11 +233,14 @@ When @racket[levels] is @racket['auto], the returned values do not correspond @i
                       (contour-ticks (plot-z-ticks) 0 1 'auto #f))]
 }
 
-@doc-apply[plot-d-ticks]{
+
+(defparam plot-r-ticks ticks? (linear-ticks))
+
+@defparam[plot-d-ticks ticks ticks? #:value (linear-ticks)]{
 The ticks used for default isosurface values in @racket[isosurfaces3d].
 }
 
-@doc-apply[plot-r-ticks]{
+@defparam[plot-r-ticks ticks ticks? #:value (linear-ticks)]{
 The ticks used for radius lines in @racket[polar-axes].
 }
 
@@ -242,7 +248,7 @@ The ticks used for radius lines in @racket[polar-axes].
 A @racket[ticks] for a near or far axis consists of a @racket[layout] function, which determines the number of ticks and where they will be placed, and a @racket[format] function, which determines the ticks' labels.
 }
 
-@doc-apply[ticks-default-number]{
+@defparam[ticks-default-number number exact-positive-integer? #:value 4]{
 Most tick layout functions (and thus their corresponding @racket[ticks]-constructing functions) have a @racket[#:number] keyword argument with default @racket[(ticks-default-number)].
 What the number means depends on the tick layout function.
 Most use it for an average number of major ticks.
@@ -260,9 +266,15 @@ For example, the following plot shows the actual number of major ticks for the i
 
 @subsection{Linear Ticks}
 
-@doc-apply[linear-ticks-layout]
-@doc-apply[linear-ticks-format]
-@doc-apply[linear-ticks]{
+@deftogether[(@defproc[(linear-ticks-layout [#:number number exact-positive-integer? (ticks-default-number)]
+                                            [#:base base (and/c exact-integer? (>=/c 2)) 10]
+                                            [#:divisors divisors (listof exact-positive-integer?) '(1 2 4 5)])
+                       ticks-layout/c]
+              @defproc[(linear-ticks-format) ticks-format/c]
+              @defproc[(linear-ticks [#:number number exact-positive-integer? (ticks-default-number)]
+                       [#:base base (and/c exact-integer? (>=/c 2)) 10]
+                       [#:divisors divisors (listof exact-positive-integer?) '(1 2 4 5)])
+                       ticks?])]{
 The layout function, format function, and combined @racket[ticks] for uniformly spaced ticks.
 
 To lay out ticks, @racket[linear-ticks-layout] finds the power of @racket[base] closest to the axis interval size, chooses a simple first tick, and then chooses a skip length using @racket[divisors] that maximizes the number of ticks without exceeding @racket[number].
@@ -274,9 +286,14 @@ To format ticks, @racket[linear-ticks-format] uses @racket[real->plot-label], an
 
 @subsection{Log Ticks}
 
-@doc-apply[log-ticks-layout]
-@doc-apply[log-ticks-format]
-@doc-apply[log-ticks]{
+@deftogether[(@defproc[(log-ticks-layout [#:number number exact-positive-integer? (ticks-default-number)]
+                                         [#:base base (and/c exact-integer? (>=/c 2)) 10])
+                       ticks-layout/c]
+              @defproc[(log-ticks-format [#:base base (and/c exact-integer? (>=/c 2)) 10])
+                       ticks-format/c]
+              @defproc[(log-ticks [#:number number exact-positive-integer? (ticks-default-number)]
+                                  [#:base base (and/c exact-integer? (>=/c 2)) 10])
+                       ticks?])]{
 The layout function, format function, and combined @racket[ticks] for exponentially spaced major ticks.
 (The minor ticks between are uniformly spaced.)
 Use these ticks for @racket[log-transform]ed axes, because when exponentially spaced tick positions are @racket[log-transform]ed, they become uniformly spaced.
@@ -287,9 +304,13 @@ See @racket[plot-z-far-ticks] for an example of use.
 
 @subsection{Date Ticks}
 
-@doc-apply[date-ticks-layout]
-@doc-apply[date-ticks-format]
-@doc-apply[date-ticks]{
+@deftogether[(@defproc[(date-ticks-layout [#:number number exact-positive-integer? (ticks-default-number)])
+                       ticks-layout/c]
+              @defproc[(date-ticks-format [#:formats formats (listof string?) (date-ticks-formats)])
+                       ticks-format/c]
+              @defproc[(date-ticks [#:number number exact-positive-integer? (ticks-default-number)]
+                                   [#:formats formats (listof string?) (date-ticks-formats)])
+                       ticks?])]{
 The layout function, format function, and combined @racket[ticks] for uniformly spaced ticks with date labels.
 
 These axis ticks regard values as being in seconds since @italic{a system-dependent Universal Coordinated Time (UTC) epoch}.
@@ -305,18 +326,57 @@ To try to avoid displaying overlapping labels, @racket[date-ticks-format] choose
 All the format specifiers given in @racketmodname[srfi/19] (which are derived from Unix's @tt{date} command), except those that represent time zones, are allowed in date format strings.
 }
 
-@doc-apply[date-ticks-formats]{
+@defparam[date-ticks-formats formats (listof string?) #:value 24h-descending-date-ticks-formats]{
 The default date formats.
 }
 
-@doc-apply[24h-descending-date-ticks-formats]
-@doc-apply[12h-descending-date-ticks-formats]
+@deftogether[(
+@defthing[24h-descending-date-ticks-formats (listof string?)
+  #:value
+  '("~Y-~m-~d ~H:~M:~f"
+    "~Y-~m-~d ~H:~M"
+    "~Y-~m-~d ~Hh"
+    "~Y-~m-~d"
+    "~Y-~m"
+    "~Y"
+    "~m-~d ~H:~M:~f"
+    "~m-~d ~H:~M"
+    "~m-~d ~Hh"
+    "~m-~d"
+    "~H:~M:~f"
+    "~H:~M"
+    "~Hh"
+    "~M:~fs"
+    "~Mm"
+    "~fs")]
+@defthing[12h-descending-date-ticks-formats (listof string?)
+  #:value
+  '("~Y-~m-~d ~I:~M:~f ~p"
+    "~Y-~m-~d ~I:~M ~p"
+    "~Y-~m-~d ~I ~p"
+    "~Y-~m-~d"
+    "~Y-~m"
+    "~Y"
+    "~m-~d ~I:~M:~f ~p"
+    "~m-~d ~I:~M ~p"
+    "~m-~d ~I ~p"
+    "~m-~d"
+    "~I:~M:~f ~p"
+    "~I:~M ~p"
+    "~I ~p"
+    "~M:~fs"
+    "~Mm"
+    "~fs")])]
 
 @subsection{Time Ticks}
 
-@doc-apply[time-ticks-layout]
-@doc-apply[time-ticks-format]
-@doc-apply[time-ticks]{
+@deftogether[(@defproc[(time-ticks-layout [#:number number exact-positive-integer? (ticks-default-number)])
+                       ticks-layout/c]
+              @defproc[(time-ticks-format [#:formats formats (listof string?) (time-ticks-formats)])
+                       ticks-format/c]
+              @defproc[(time-ticks [#:number number exact-positive-integer? (ticks-default-number)]
+                                   [#:formats formats (listof string?) (time-ticks-formats)])
+                       ticks?])]{
 The layout function, format function, and combined @racket[ticks] for uniformly spaced ticks with time labels.
 
 These axis ticks regard values as being in seconds.
@@ -329,18 +389,49 @@ To try to avoid displaying overlapping labels, @racket[time-ticks-format] choose
 All the time-related format specifiers given in @racketmodname[srfi/19] (which are derived from Unix's @tt{date} command) are allowed in time format strings.
 }
 
-@doc-apply[time-ticks-formats]{
+@defparam[time-ticks-formats formats (listof string?) #:value 24h-descending-time-ticks-formats]{
 The default time formats.
 }
 
-@doc-apply[24h-descending-time-ticks-formats]
-@doc-apply[12h-descending-time-ticks-formats]
+@deftogether[(
+@defthing[24h-descending-time-ticks-formats (listof string?)
+  #:value
+  '("~dd ~H:~M:~f"
+    "~dd ~H:~M"
+    "~dd ~Hh"
+    "~dd"
+    "~H:~M:~f"
+    "~H:~M"
+    "~Hh"
+    "~M:~fs"
+    "~Mm"
+    "~fs")]
+@defthing[12h-descending-time-ticks-formats (listof string?)
+  #:value
+  '("~dd ~I:~M:~f ~p"
+    "~dd ~I:~M ~p"
+    "~dd ~I ~p"
+    "~dd"
+    "~I:~M:~f ~p"
+    "~I:~M ~p"
+    "~I ~p"
+    "~M:~fs"
+    "~Mm"
+    "~fs")])]
 
 @subsection{Currency Ticks}
 
-@doc-apply[currency-ticks-format]
-@doc-apply[currency-ticks]{
-The format function and combined @racket[ticks] for uniformly spaced ticks with currency labels.
+@deftogether[(@defproc[(currency-ticks-format [#:kind kind (or/c string? symbol?) 'USD]
+                                              [#:scales scales (listof string?) (currency-ticks-scales)]
+                                              [#:formats formats (list/c string? string? string?) (currency-ticks-formats)])
+                       ticks-format/c]
+              @defproc[(currency-ticks [#:number number exact-positive-integer? (ticks-default-number)]
+                                       [#:kind kind (or/c string? symbol?) 'USD]
+                                       [#:scales scales (listof string?) (currency-ticks-scales)]
+                                       [#:formats formats (list/c string? string? string?) (currency-ticks-formats)])
+                       ticks?])]{
+The format function and combined @racket[ticks] for uniformly spaced ticks with currency labels;
+@racket[currency-ticks] uses @racket[linear-ticks-layout] for layout.
 
 The @racket[#:kind] keyword argument is either a string containing the currency symbol, or a currency code such as @racket['USD], @racket['GBP] or @racket['EUR].
 The @racket[currency-ticks-format] function can map most ISO 4217 currency codes to their corresponding currency symbol.
@@ -355,8 +446,8 @@ The @racket[#:formats] keyword argument is a list of three format strings, repre
           @item{@racket["~~"]: replaced by ``~''}]
 }
 
-@doc-apply[currency-ticks-scales]
-@doc-apply[currency-ticks-formats]{
+@deftogether[(@defparam[currency-ticks-scales scales (listof string?) #:value us-currency-scales]
+              @defparam[currency-ticks-formats formats (list/c string? string? string?) #:value us-currency-formats])]{
 The default currency scales and formats.
 
 For example, a @(plot-name) user in France would probably begin programs with
@@ -368,40 +459,40 @@ and use @racket[(currency-ticks #:kind 'EUR)] for local currency or @racket[(cur
 Cultural sensitivity notwithstanding, when writing for a local audience, it is generally considered proper to use local currency scales and formats for foreign currencies, but use the foreign currency symbol.
 }
 
-@doc-apply[us-currency-scales]{
+@defthing[us-currency-scales (listof string?) #:value '("" "K" "M" "B" "T")]{
 Short-scale suffix abbreviations as commonly used in the United States, Canada, and some other English-speaking countries. These stand for ``kilo,'' ``million,'' ``billion,'' and ``trillion.''
 }
 
-@doc-apply[uk-currency-scales]{
+@defthing[uk-currency-scales (listof string?) #:value '("" "k" "m" "bn" "tr")]{
 Short-scale suffix abbreviations as commonly used in the United Kingdom since switching to the short scale in 1974, and as currently recommended by the Daily Telegraph and Times style guides.
 }
 
-@doc-apply[eu-currency-scales]{
+@defthing[eu-currency-scales (listof string?) #:value '("" "K" "M" "Md" "B")]{
 European Union long-scale suffix abbreviations, which stand for ``kilo,'' ``million,'' ``milliard,'' and ``billion.''
 
 The abbreviations actually used vary with geography, even within countries, but these seem to be common.
 Further long-scale suffix abbreviations such as for ``billiard'' are ommitted due to lack of even weak consensus.
 }
 
-@doc-apply[us-currency-formats]{
+@defthing[us-currency-formats (list/c string? string? string?) #:value '("~$~w.~f~s" "(~$~w.~f~s)" "~$0")]{
 Common currency formats used in the United States.
 }
 
-@doc-apply[uk-currency-formats]{
+@defthing[uk-currency-formats (list/c string? string? string?) #:value '("~$~w.~f~s" "-~$~w.~f~s" "~$0")]{
 Common currency formats used in the United Kingdom.
 Note that it sensibly uses a negative sign to denote negative amounts.
 }
 
-@doc-apply[eu-currency-formats]{
+@defthing[eu-currency-formats (list/c string? string? string?) #:value '("~w,~f ~s~$" "-~w,~f ~s~$" "0 ~$")]{
 A guess at common currency formats for the European Union.
 Like scale suffixes, actual formats vary with geography, but currency formats can even vary with audience or tone.
 }
 
 @subsection{Other Ticks}
 
-@doc-apply[no-ticks-layout]
-@doc-apply[no-ticks-format]
-@doc-apply[no-ticks]{
+@deftogether[(@defthing[no-ticks-layout ticks-layout/c]
+              @defthing[no-ticks-format ticks-format/c]
+              @defthing[no-ticks ticks? #:value (ticks no-ticks-layout no-ticks-format)])]{
 The layout function, format function, and combined @racket[ticks] for no ticks whatsoever.
 @examples[#:eval plot-eval
                  (parameterize ([plot-x-ticks  no-ticks]
@@ -411,30 +502,46 @@ The layout function, format function, and combined @racket[ticks] for no ticks w
                    (plot (list (polar-axes) (polar (λ (θ) 1/3)))))]
 }
 
-@doc-apply[bit/byte-ticks-format]
-@doc-apply[bit/byte-ticks]{
+@deftogether[(@defproc[(bit/byte-ticks-format [#:size size (or/c 'byte 'bit) 'byte]
+                                              [#:kind kind (or/c 'CS 'SI) 'CS])
+                       ticks-format/c]
+              @defproc[(bit/byte-ticks [#:number number exact-positive-integer? (ticks-default-number)]
+                                       [#:size size (or/c 'byte 'bit) 'byte]
+                                       [#:kind kind (or/c 'CS 'SI) 'CS])
+                       ticks?])]{
 The format function and and combined @racket[ticks] for bit or byte values.
 
 The @racket[#:kind] keyword argument indicates either International System of Units (@racket['SI]) suffixes, as used to communicate hard drive capacities, or Computer Science (@racket['CS]) suffixes, as used to communicate memory capacities.
+
+For layout, @racket[bit/byte-ticks] uses @racket[linear-ticks-layout] with
+@itemize[
+         @item{If @racket[kind] is @racket['SI], base @racket[10] and divisors @racket['(1 2 4 5)].}
+         @item{If @racket[kind] is @racket['CS], base @racket[2] and divisors @racket['(1 2)].}
+         ]
 }
 
-@doc-apply[fraction-ticks-format]
-@doc-apply[fraction-ticks]{
+@deftogether[(@defproc[(fraction-ticks-format [#:base base (and/c exact-integer? (>=/c 2)) 10]
+                                              [#:divisors divisors (listof exact-positive-integer?) '(1 2 3 4 5)])
+                       ticks-format/c]
+              @defproc[(fraction-ticks [#:base base (and/c exact-integer? (>=/c 2)) 10]
+                                       [#:divisors divisors (listof exact-positive-integer?) '(1 2 3 4 5)])
+                       ticks?])]{
 The format function and and combined @racket[ticks] for fraction-formatted values.
+For layout, @racket[fraction-ticks] uses @racket[linear-ticks-layout], passing it the given @racket[divisors].
 }
 
 @subsection{Tick Combinators}
 
-@doc-apply[ticks-mimic]{
+@defproc[(ticks-mimic [thunk (-> ticks?)]) ticks?]{
 Returns a @racket[ticks] that mimics the given @racket[ticks] returned by @racket[thunk].
 Used in default values for @racket[plot-x-far-ticks], @racket[plot-y-far-ticks] and @racket[plot-z-far-ticks] to ensure that, unless one of these parameters is changed, the far tick labels are not drawn.
 }
 
-@doc-apply[ticks-add]{
+@defproc[(ticks-add [t ticks?] [xs (listof real?)] [major? boolean? #t]) ticks?]{
 Returns a new @racket[ticks] that acts like @racket[t], except that it puts additional ticks at positions @racket[xs]. If @racket[major?] is true, the ticks at positions @racket[xs] are all @tech{major ticks}; otherwise, they are minor ticks.
 }
 
-@doc-apply[ticks-scale]{
+@defproc[(ticks-scale [t ticks?] [fun invertible-function?]) ticks?]{
 Returns a new @racket[ticks] that acts like @racket[t], but for an axis transformed by @racket[fun].
 Unlike with typical @secref["transforms"], @racket[fun] is allowed to transform axis endpoints.
 (See @racket[make-axis-transform] for an explanation about transforming endpoints.)
@@ -465,21 +572,22 @@ The following example plots degrees Celsius on the left and degrees Farenheit on
 @defstruct[pre-tick ([value real?] [major? boolean?])]{
 Represents a tick that has not yet been labeled.
 }
+
 @defstruct[(tick pre-tick) ([label string?])]{
 Represents a tick with a label.
 }
 
-@doc-apply[ticks-layout/c]{
+@defthing[ticks-layout/c contract? #:value (-> real? real? (listof pre-tick?))]{
 The contract for tick layout functions. Note that a layout function returns @racket[pre-tick]s, or unlabeled ticks.
 }
 
-@doc-apply[ticks-format/c]{
+@defthing[ticks-format/c contract? #:value (-> real? real? (listof pre-tick?) (listof string?))]{
 The contract for tick format functions. A format function receives axis bounds so it can determine how many decimal digits to display (usually by applying @racket[digits-for-range] to the bounds).
 }
 
 @section[#:tag "invertible"]{Invertible Functions}
 
-@defstruct[invertible-function ([f (real? . -> . real?)] [g (real? . -> . real?)])]{
+@defstruct[invertible-function ([f (-> real? real?)] [g (-> real? real?)])]{
 Represents an invertible function. Used for @secref["transforms"] and by @racket[ticks-scale].
 
 The function itself is @racket[f], and its inverse is @racket[g].
@@ -488,19 +596,20 @@ Because @racket[real?]s can be inexact, this invariant must be approximate and t
 The obligation to maintain it rests on whomever constructs one.
 }
 
-@doc-apply[id-function]{
+@defthing[id-function invertible-function? #:value (invertible-function (λ (x) x) (λ (x) x))]{
 The identity function as an @racket[invertible-function].
 }
 
-@doc-apply[invertible-compose]{
+@defproc[(invertible-compose [f1 invertible-function?] [f2 invertible-function?])
+         invertible-function?]{
 Returns the composition of two invertible functions.
 }
 
-@doc-apply[invertible-inverse]{
+@defproc[(invertible-inverse [h invertible-function?]) invertible-function?]{
 Returns the inverse of an invertible function.
 }
 
-@doc-apply[linear-scale]{
+@defproc[(linear-scale [m rational?] [b rational? 0]) invertible-function?]{
 Returns a one-dimensional linear scaling function, as an @racket[invertible-function].
 This function constructs the most common arguments to @racket[ticks-scale].
 }
