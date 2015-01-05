@@ -1,15 +1,16 @@
-#lang racket/base
+#lang typed/racket/base
 
-(require racket/flonum racket/fixnum racket/list racket/match racket/unsafe/ops racket/contract
-         unstable/latent-contract/defthing
+(require (for-syntax racket/base)
+         racket/flonum racket/fixnum racket/list racket/match racket/unsafe/ops
          (only-in math/flonum fl)
-         (for-syntax racket/base)
+         "type-doc.rkt"
          "math.rkt"
          "utils.rkt"
          "marching-utils.rkt")
 
 (provide heights->lines heights->polys
-         heights->lines:doc heights->polys:doc)
+         ;heights->lines:doc heights->polys:doc
+         )
 
 #|
 Z values are at these normalized coordinates:
@@ -107,6 +108,8 @@ above.
 (define-syntax-rule (lines1010 z z1 z2 z3 z4) (lines-opposite >= z z1 z2 z3 z4))
 (define-syntax-rule (lines0101 z z1 z2 z3 z4) (lines-opposite <  z z1 z2 z3 z4))
 
+(: do-heights->lines (-> Real Real Real Real Real
+                         (Listof (Vector Real Real Real Real))))
 (define (do-heights->lines z z1 z2 z3 z4)
   ;(printf "~v ~v ~v ~v ~v~n" z z1 z2 z3 z4)
   (define p1 (z1 . >= . z))
@@ -146,9 +149,9 @@ above.
                   (lines0001 z z1 z2 z3 z4)
                   (lines0000 z z1 z2 z3 z4))))))
 
-(defproc (heights->lines [xa real?] [xb real?] [ya real?] [yb real?]
-                         [z real?] [z1 real?] [z2 real?] [z3 real?] [z4 real?]
-                         ) (listof (list/c (vector/c real? real? real?) (vector/c real? real? real?)))
+(:: heights->lines (-> Real Real Real Real Real Real Real Real Real
+                       (Listof (List (Vector Real Real Real) (Vector Real Real Real)))))
+(define (heights->lines xa xb ya yb z z1 z2 z3 z4)
   (cond [(= z z1 z2 z3 z4)  empty]
         [else
          (define lines (do-heights->lines z z1 z2 z3 z4))
@@ -159,6 +162,14 @@ above.
 
 ;; =============================================================================
 ;; Isoband marching squares: polygonizes contour between two isoline values
+
+(define-type Facet-Fun
+  (-> Real Real Real Real Real Real
+      (Listof (Listof (Vector Real Real Real)))))
+
+(define-type Maybe-Facet-Fun
+  (-> Real Real Real Real Real Real
+      (Listof (U 'full (Listof (Vector Real Real Real))))))
 
 (define-syntax-rule (unrotate-vec v)
   (match-let ([(vector x y z)  v])
@@ -173,18 +184,21 @@ above.
     (vector y (- 1 x) z)))
 
 (define-syntax-rule (rotate-facet f)
-  (λ (za zb z1 z2 z3 z4)
-    (map (λ (vs) (map (λ (v) (unrotate-vec v)) vs))
+  (λ ([za : Real] [zb : Real] [z1 : Real] [z2 : Real] [z3 : Real] [z4 : Real])
+    (map (λ ([vs : (Listof (Vector Real Real Real))])
+           (map (λ ([v : (Vector Real Real Real)]) (unrotate-vec v)) vs))
          (f za zb z2 z3 z4 z1))))
 
 (define-syntax-rule (rotate-facet2 f)
-  (λ (za zb z1 z2 z3 z4)
-    (map (λ (vs) (map (λ (v) (unrotate-vec2 v)) vs))
+  (λ ([za : Real] [zb : Real] [z1 : Real] [z2 : Real] [z3 : Real] [z4 : Real])
+    (map (λ ([vs : (Listof (Vector Real Real Real))])
+           (map (λ ([v : (Vector Real Real Real)]) (unrotate-vec2 v)) vs))
          (f za zb z3 z4 z1 z2))))
 
 (define-syntax-rule (rotate-facet3 f)
-  (λ (za zb z1 z2 z3 z4)
-    (map (λ (vs) (map (λ (v) (unrotate-vec3 v)) vs))
+  (λ ([za : Real] [zb : Real] [z1 : Real] [z2 : Real] [z3 : Real] [z4 : Real])
+    (map (λ ([vs : (Listof (Vector Real Real Real))])
+           (map (λ ([v : (Vector Real Real Real)]) (unrotate-vec3 v)) vs))
          (f za zb z4 z1 z2 z3))))
 
 ;; -----------------------------------------------------------------------------
@@ -197,6 +211,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; single triangle
 
+(: polys1000 Facet-Fun)
 (define (polys1000 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t za z1 z2) 0 za)
@@ -206,6 +221,7 @@ above.
 (define polys0010 (rotate-facet2 polys1000))
 (define polys0001 (rotate-facet3 polys1000))
 
+(: polys1222 Facet-Fun)
 (define (polys1222 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -218,6 +234,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; single trapezoid
 
+(: polys2000 Facet-Fun)
 (define (polys2000 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t zb z1 z2) 0 zb)
               (vector (solve-t za z1 z2) 0 za)
@@ -228,6 +245,7 @@ above.
 (define polys0020 (rotate-facet2 polys2000))
 (define polys0002 (rotate-facet3 polys2000))
 
+(: polys0222 Facet-Fun)
 (define (polys0222 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -241,6 +259,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; single rectangle
 
+(: polys1100 Facet-Fun)
 (define (polys1100 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector 1 0 z2)
@@ -251,6 +270,7 @@ above.
 (define polys0011 (rotate-facet2 polys1100))
 (define polys1001 (rotate-facet3 polys1100))
 
+(: polys1122 Facet-Fun)
 (define (polys1122 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector 1 0 z2)
@@ -261,6 +281,7 @@ above.
 (define polys2211 (rotate-facet2 polys1122))
 (define polys1221 (rotate-facet3 polys1122))
 
+(: polys0022 Facet-Fun)
 (define (polys0022 za zb z1 z2 z3 z4)
   (list (list (vector 0 (solve-t za z1 z4) za)
               (vector 1 (solve-t za z2 z3) za)
@@ -274,6 +295,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; single pentagon
 
+(: polys0111 Facet-Fun)
 (define (polys0111 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector 1 0 z2)
@@ -285,6 +307,7 @@ above.
 (define polys1101 (rotate-facet2 polys0111))
 (define polys1110 (rotate-facet3 polys0111))
 
+(: polys2111 Facet-Fun)
 (define (polys2111 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t zb z1 z2) 0 zb)
               (vector 1 0 z2)
@@ -296,6 +319,7 @@ above.
 (define polys1121 (rotate-facet2 polys2111))
 (define polys1112 (rotate-facet3 polys2111))
 
+(: polys1002 Facet-Fun)
 (define (polys1002 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t za z1 z2) 0 za)
@@ -307,6 +331,7 @@ above.
 (define polys0210 (rotate-facet2 polys1002))
 (define polys0021 (rotate-facet3 polys1002))
 
+(: polys1220 Facet-Fun)
 (define (polys1220 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -318,6 +343,7 @@ above.
 (define polys2012 (rotate-facet2 polys1220))
 (define polys2201 (rotate-facet3 polys1220))
 
+(: polys1200 Facet-Fun)
 (define (polys1200 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -329,6 +355,7 @@ above.
 (define polys0012 (rotate-facet2 polys1200))
 (define polys2001 (rotate-facet3 polys1200))
 
+(: polys1022 Facet-Fun)
 (define (polys1022 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t za z1 z2) 0 za)
@@ -343,6 +370,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; single hexagon
 
+(: polys0112 Facet-Fun)
 (define (polys0112 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector 1 0 z2)
@@ -355,6 +383,7 @@ above.
 (define polys1201 (rotate-facet2 polys0112))
 (define polys1120 (rotate-facet3 polys0112))
 
+(: polys2110 Facet-Fun)
 (define (polys2110 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t zb z1 z2) 0 zb)
               (vector 1 0 z2)
@@ -367,6 +396,7 @@ above.
 (define polys1021 (rotate-facet2 polys2110))
 (define polys1102 (rotate-facet3 polys2110))
 
+(: polys0121 Facet-Fun)
 (define (polys0121 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector 1 0 z2)
@@ -382,6 +412,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; 6-sided saddle
 
+(: polys10100 Facet-Fun)
 (define (polys10100 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t za z1 z2) 0 za)
@@ -390,6 +421,7 @@ above.
               (vector (solve-t za z4 z3) 1 za)
               (vector 1 (solve-t za z2 z3) za))))
 
+(: polys10101 Facet-Fun)
 (define (polys10101 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t za z1 z2) 0 za)
@@ -398,6 +430,7 @@ above.
               (vector (solve-t za z4 z3) 1 za)
               (vector 0 (solve-t za z1 z4) za))))
 
+(: polys1010 Facet-Fun)
 (define (polys1010 za zb z1 z2 z3 z4)
   (define z5 (/ (+ z1 z2 z3 z4) 4))
   (cond [(z5 . < . za)  (polys10100 za zb z1 z2 z3 z4)]
@@ -406,6 +439,7 @@ above.
 
 (define polys0101 (rotate-facet polys1010))
 
+(: polys1212-2 Facet-Fun)
 (define (polys1212-2 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -414,6 +448,7 @@ above.
               (vector (solve-t zb z4 z3) 1 zb)
               (vector 1 (solve-t zb z2 z3) zb))))
 
+(: polys1212-1 Facet-Fun)
 (define (polys1212-1 za zb z1 z2 z3 z4)
   (list (list (vector 0 0 z1)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -422,6 +457,7 @@ above.
               (vector (solve-t zb z4 z3) 1 zb)
               (vector 0 (solve-t zb z1 z4) zb))))
 
+(: polys1212 Facet-Fun)
 (define (polys1212 za zb z1 z2 z3 z4)
   (define z5 (/ (+ z1 z2 z3 z4) 4))
   (cond [(z5 . >= . zb)  (polys1212-2 za zb z1 z2 z3 z4)]
@@ -433,6 +469,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; 7-sided saddle
 
+(: polys0212-1 Facet-Fun)
 (define (polys0212-1 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -442,6 +479,7 @@ above.
               (vector 0 (solve-t zb z1 z4) zb)
               (vector 0 (solve-t za z1 z4) za))))
 
+(: polys0212-2 Facet-Fun)
 (define (polys0212-2 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -451,6 +489,7 @@ above.
               (vector 1 1 z3)
               (vector (solve-t zb z4 z3) 1 zb))))
 
+(: polys0212 Facet-Fun)
 (define (polys0212 za zb z1 z2 z3 z4)
   (define z5 (/ (+ z1 z2 z3 z4) 4))
   (cond [(z5 . < . zb)  (polys0212-1 za zb z1 z2 z3 z4)]
@@ -461,6 +500,7 @@ above.
 (define polys1202 (rotate-facet2 polys0212))
 (define polys2120 (rotate-facet3 polys0212))
 
+(: polys2010-1 Facet-Fun)
 (define (polys2010-1 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t zb z1 z2) 0 zb)
               (vector (solve-t za z1 z2) 0 za)
@@ -470,6 +510,7 @@ above.
               (vector 0 (solve-t za z1 z4) za)
               (vector 0 (solve-t zb z1 z4) zb))))
 
+(: polys2010-0 Facet-Fun)
 (define (polys2010-0 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t zb z1 z2) 0 zb)
               (vector (solve-t za z1 z2) 0 za)
@@ -479,6 +520,7 @@ above.
               (vector 1 1 z3)
               (vector (solve-t za z4 z3) 1 za))))
 
+(: polys2010 Facet-Fun)
 (define (polys2010 za zb z1 z2 z3 z4)
   (define z5 (/ (+ z1 z2 z3 z4) 4))
   (cond [(z5 . >= . za)  (polys2010-1 za zb z1 z2 z3 z4)]
@@ -492,6 +534,7 @@ above.
 ;; -----------------------------------------------------------------------------
 ;; 8-sided saddle
 
+(: polys0202-0 Facet-Fun)
 (define (polys0202-0 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -502,6 +545,7 @@ above.
               (vector (solve-t zb z4 z3) 1 zb)
               (vector 0 (solve-t zb z1 z4) zb))))
 
+(: polys0202-1 Facet-Fun)
 (define (polys0202-1 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -512,6 +556,7 @@ above.
               (vector 0 (solve-t zb z1 z4) zb)
               (vector 0 (solve-t za z1 z4) za))))
 
+(: polys0202-2 Facet-Fun)
 (define (polys0202-2 za zb z1 z2 z3 z4)
   (list (list (vector (solve-t za z1 z2) 0 za)
               (vector (solve-t zb z1 z2) 0 zb)
@@ -522,6 +567,7 @@ above.
               (vector (solve-t za z4 z3) 1 za)
               (vector (solve-t zb z4 z3) 1 zb))))
 
+(: polys0202 Facet-Fun)
 (define (polys0202 za zb z1 z2 z3 z4)
   (define z5 (/ (+ z1 z2 z3 z4) 4))
   (cond [(z5 . < . za)  (polys0202-0 za zb z1 z2 z3 z4)]
@@ -542,6 +588,7 @@ above.
 (printf "))")
 |#
 
+(: polys-dispatch-table (Vectorof Maybe-Facet-Fun))
 (define polys-dispatch-table
   (vector polys0000 polys0001 polys0002 
           polys0010 polys0011 polys0012 
@@ -571,6 +618,7 @@ above.
           polys2210 polys2211 polys2212 
           polys2220 polys2221 polys2222))
 
+(: do-heights->polys Maybe-Facet-Fun)
 (define (do-heights->polys za zb z1 z2 z3 z4)
   (define t1 (if (z1 . < . za) 0 (if (z1 . <= . zb) 1 2)))
   (define t2 (if (z2 . < . za) 0 (if (z2 . <= . zb) 1 2)))
@@ -584,10 +632,10 @@ above.
   (define f (vector-ref polys-dispatch-table facet-num))
   (f za zb z1 z2 z3 z4))
 
-(defproc (heights->polys [xa real?] [xb real?] [ya real?] [yb real?]
-                         [za real?] [zb real?]
-                         [z1 real?] [z2 real?] [z3 real?] [z4 real?]
-                         ) (listof (listof (vector/c real? real? real?)))
+(:: heights->polys (-> Real Real Real Real Real Real
+                       Real Real Real Real
+                       (Listof (Listof (Vector Real Real Real)))))
+(define (heights->polys xa xb ya yb za zb z1 z2 z3 z4)
   (cond
     [(= za zb z1 z2 z3 z4)  (list (list (vector xa ya z1) (vector xb ya z2)
                                         (vector xb yb z3) (vector xa yb z4)))]
@@ -596,6 +644,6 @@ above.
      (for/list ([poly  (in-list polys)])
        (cond [(eq? poly 'full)  (list (vector xa ya z1) (vector xb ya z2)
                                       (vector xb yb z3) (vector xa yb z4))]
-             [else  (for/list ([uvz  (in-list poly)])
+             [else  (for/list : (Listof (Vector Real Real Real)) ([uvz  (in-list poly)])
                       (match-define (vector u v z) uvz)
                       (vector (unsolve-t xa xb u) (unsolve-t ya yb v) z))]))]))

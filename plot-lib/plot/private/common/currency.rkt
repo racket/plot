@@ -1,7 +1,8 @@
-#lang racket/base
+#lang typed/racket/base
 
 (provide (all-defined-out))
 
+(: currency-code->sign (HashTable Symbol String))
 (define currency-code->sign
   #hash((ALL . "Lek")
         (AFN . "\u60b")
@@ -119,4 +120,5 @@
         (YER . "\ufdfc")
         (ZWD . "Z$")))
 
-(define known-currency-codes (sort (hash-keys currency-code->sign) string<=? #:key symbol->string))
+(define known-currency-codes
+  (sort (hash-keys currency-code->sign) symbol<?))

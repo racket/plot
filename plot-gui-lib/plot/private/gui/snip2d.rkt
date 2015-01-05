@@ -1,12 +1,14 @@
 #lang racket/base
 
-(require racket/gui/base racket/class racket/match racket/list racket/math unstable/parameter-group
+(require racket/gui/base racket/class racket/match racket/list racket/math
          plot/private/common/plot-device
          plot/private/common/math
          plot/private/common/format
          plot/private/common/ticks
-         plot/private/common/worker-thread
          plot/private/common/parameters
+         plot/private/common/parameter-groups
+         plot/private/common/parameter-group
+         "worker-thread.rkt"
          "snip.rkt")
 
 (provide 2d-plot-snip% make-2d-plot-snip)
@@ -180,13 +182,11 @@
         (send pd set-alpha 1)
         
         (send pd draw-text new-x-min-str (vector new-area-x-min new-area-y-mid)
-              'center (* 1/2 pi) #:outline? #t)
+              'center (* 1/2 pi) 0 #t)
         (send pd draw-text new-x-max-str (vector new-area-x-max new-area-y-mid)
-              'center (* 1/2 pi) #:outline? #t)
-        (send pd draw-text new-y-min-str (vector new-area-x-mid new-area-y-max)
-              'center #:outline? #t)
-        (send pd draw-text new-y-max-str (vector new-area-x-mid new-area-y-min)
-              'center #:outline? #t)
+              'center (* 1/2 pi) 0 #t)
+        (send pd draw-text new-y-min-str (vector new-area-x-mid new-area-y-max) 'center 0 0 #t)
+        (send pd draw-text new-y-max-str (vector new-area-x-mid new-area-y-min) 'center 0 0 #t)
         
         (send pd restore-drawing-params)))
     

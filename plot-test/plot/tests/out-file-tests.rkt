@@ -13,28 +13,29 @@
 (define (dest fn)
   (build-path (find-system-path 'temp-dir) fn))
 
-(parameterize ([plot-title  "Survival Rate of Torsion Widgets"]
-               [plot-x-label "Torsion"]
-               [plot-y-label "Widgetyness"])
-  (time
-   (plot (contour-intervals f #:alphas '(0.5))
-         #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
-         #:out-file (dest "contour-test.png")))
-  
-  (time
-   (plot (contour-intervals f)
-         #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
-         #:out-file (dest "contour-test.ps")))
-  
-  (time
-   (plot (contour-intervals f #:alphas '(0.5))
-         #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
-         #:out-file (dest "contour-test.pdf")))
-  
-  (time
-   (plot (contour-intervals f)
-         #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
-         #:out-file (dest "contour-test.svg"))))
+(plot-title "Survival Rate of Torsion Widgets")
+(plot-x-label "Torsion")
+(plot-y-label "Widgetyness")
+
+(time
+ (plot (contour-intervals f #:alphas '(1/4 3/4))
+       #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
+       #:out-file (dest "contour-test.png")))
+
+(time
+ (plot (contour-intervals f #:alphas '(1/4 3/4))
+       #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
+       #:out-file (dest "contour-test.ps")))
+
+(time
+ (plot (contour-intervals f #:alphas '(1/4 3/4))
+       #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
+       #:out-file (dest "contour-test.pdf")))
+
+(time
+ (plot (contour-intervals f #:alphas '(1/4 3/4))
+       #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5
+       #:out-file (dest "contour-test.svg")))
 
 (time
  (plot3d (contour-intervals3d f -5 5 -5 5 #:alphas '(1/4 3/4))

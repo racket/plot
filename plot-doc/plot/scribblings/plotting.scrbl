@@ -18,7 +18,7 @@ Each 3D plotting procedure behaves the same way as its corresponding 2D procedur
 
 @section{GUI Plotting Procedures}
 
-@defmodule*/no-declare[(plot plot/typed) #:link-target? #f]
+@defmodule*/no-declare[(plot) #:link-target? #f]
 
 @defproc[(plot [renderer-tree (treeof (or/c renderer2d? nonrenderer?))]
                [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
@@ -111,7 +111,7 @@ Use @(racket plot-snip) and @(racket plot3d-snip) to create an interactive @(rac
 
 @section{Non-GUI Plotting Procedures}
 
-@defmodule*/no-declare[(plot/no-gui plot/typed/no-gui)]
+@defmodule*/no-declare[(plot/no-gui)]
 
 @defproc[(plot-file [renderer-tree (treeof (or/c renderer2d? nonrenderer?))]
                     [output (or/c path-string? output-port?)]
@@ -182,7 +182,7 @@ Use these if you need to continually update a plot on a @(racket canvas%), or to
 @section{Pict-Plotting Work-a-Likes}
 
 @declare-exporting[plot/pict]
-@defmodule*/no-declare[(plot/pict plot/typed/pict)]
+@defmodule*/no-declare[(plot/pict)]
 
 When setting up an evaluator for a Scribble manual, require @racketmodname[plot/pict] instead of @racketmodname[plot].
 Evaluation will produce picts instead of snips, which scale nicely in PDF-rendered documentation.
@@ -211,7 +211,7 @@ Like the functions of the same name exported from @racketmodname[plot], but thes
 @section{Bitmap-Plotting Work-a-Likes}
 
 @declare-exporting[plot/bitmap]
-@defmodule*/no-declare[(plot/bitmap plot/typed/bitmap)]
+@defmodule*/no-declare[(plot/bitmap)]
 
 When plotting in an environment where @racket[bitmap%] instances can be shown but @racket[snip%] instances cannot (for example, on a web page that evaluates Racket code), require @racketmodname[plot/bitmap] instead of @racketmodname[plot].
 

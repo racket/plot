@@ -1,13 +1,14 @@
-#lang racket/base
+#lang typed/racket/base
 
-(require racket/contract racket/flonum racket/fixnum racket/list racket/match racket/unsafe/ops
-         unstable/latent-contract/defthing
-         (for-syntax racket/base racket/syntax racket/match racket/list)
+(require (for-syntax racket/base racket/syntax racket/match racket/list)
+         racket/list racket/match racket/unsafe/ops
+         "type-doc.rkt"
          "math.rkt"
-         "utils.rkt"
          "marching-utils.rkt")
 
-(provide heights->cube-polys heights->cube-polys:doc)
+(provide heights->cube-polys
+         ;heights->cube-polys:doc
+         )
 
 (define-for-syntax (->datum x)
   (if (syntax? x) (syntax->datum x) x))
@@ -17,20 +18,20 @@
 
 ;; edge vertexes 
 
-(define-syntax-rule (edge-1-2 d d1 d2) (vector (solve-t d d1 d2) 0 0))
-(define-syntax-rule (edge-2-3 d d2 d3) (vector 1 (solve-t d d2 d3) 0))
-(define-syntax-rule (edge-3-4 d d3 d4) (vector (solve-t d d4 d3) 1 0))
-(define-syntax-rule (edge-1-4 d d1 d4) (vector 0 (solve-t d d1 d4) 0))
+(define-syntax-rule (edge-1-2 d d1 d2) (ann (vector (solve-t d d1 d2) 0 0) (Vectorof Real)))
+(define-syntax-rule (edge-2-3 d d2 d3) (ann (vector 1 (solve-t d d2 d3) 0) (Vectorof Real)))
+(define-syntax-rule (edge-3-4 d d3 d4) (ann (vector (solve-t d d4 d3) 1 0) (Vectorof Real)))
+(define-syntax-rule (edge-1-4 d d1 d4) (ann (vector 0 (solve-t d d1 d4) 0) (Vectorof Real)))
 
-(define-syntax-rule (edge-5-6 d d5 d6) (vector (solve-t d d5 d6) 0 1))
-(define-syntax-rule (edge-6-7 d d6 d7) (vector 1 (solve-t d d6 d7) 1))
-(define-syntax-rule (edge-7-8 d d7 d8) (vector (solve-t d d7 d8) 1 1))
-(define-syntax-rule (edge-5-8 d d5 d8) (vector 0 (solve-t d d5 d8) 1))
+(define-syntax-rule (edge-5-6 d d5 d6) (ann (vector (solve-t d d5 d6) 0 1) (Vectorof Real)))
+(define-syntax-rule (edge-6-7 d d6 d7) (ann (vector 1 (solve-t d d6 d7) 1) (Vectorof Real)))
+(define-syntax-rule (edge-7-8 d d7 d8) (ann (vector (solve-t d d7 d8) 1 1) (Vectorof Real)))
+(define-syntax-rule (edge-5-8 d d5 d8) (ann (vector 0 (solve-t d d5 d8) 1) (Vectorof Real)))
 
-(define-syntax-rule (edge-1-5 d d1 d5) (vector 0 0 (solve-t d d1 d5)))
-(define-syntax-rule (edge-2-6 d d2 d6) (vector 1 0 (solve-t d d2 d6)))
-(define-syntax-rule (edge-3-7 d d3 d7) (vector 1 1 (solve-t d d3 d7)))
-(define-syntax-rule (edge-4-8 d d4 d8) (vector 0 1 (solve-t d d4 d8)))
+(define-syntax-rule (edge-1-5 d d1 d5) (ann (vector 0 0 (solve-t d d1 d5)) (Vectorof Real)))
+(define-syntax-rule (edge-2-6 d d2 d6) (ann (vector 1 0 (solve-t d d2 d6)) (Vectorof Real)))
+(define-syntax-rule (edge-3-7 d d3 d7) (ann (vector 1 1 (solve-t d d3 d7)) (Vectorof Real)))
+(define-syntax-rule (edge-4-8 d d4 d8) (ann (vector 0 1 (solve-t d d4 d8)) (Vectorof Real)))
 
 #|
 Cube vertex numbers:
@@ -44,33 +45,42 @@ Cube vertex numbers:
  1--------2        +--- x
 |#
 
+(define-type Facet (Listof (Listof (Vectorof Real))))
+(define-type Facet-Fun (-> Real Real Real Real Real Real Real Real Real Facet))
+
+(: known-cube-0000-0000 Facet-Fun)
 (define (known-cube-0000-0000 d d1 d2 d3 d4 d5 d6 d7 d8) empty)
 
 (define known-cube-1111-1111 known-cube-0000-0000)
 
+(: known-cube-1000-0000 Facet-Fun)
 (define (known-cube-1000-0000 d d1 d2 d3 d4 d5 d6 d7 d8)
   (list (list (edge-1-2 d d1 d2) (edge-1-5 d d1 d5) (edge-1-4 d d1 d4))))
 
 (define known-cube-0111-1111 known-cube-1000-0000)
 
+(: known-cube-1100-0000 Facet-Fun)
 (define (known-cube-1100-0000 d d1 d2 d3 d4 d5 d6 d7 d8)
   (list (list (edge-1-5 d d1 d5) (edge-2-6 d d2 d6)
               (edge-2-3 d d2 d3) (edge-1-4 d d1 d4))))
 
 (define known-cube-0011-1111 known-cube-1100-0000)
 
+(: known-cube-1110-0000 Facet-Fun)
 (define (known-cube-1110-0000 d d1 d2 d3 d4 d5 d6 d7 d8)
   (list (list (edge-1-5 d d1 d5) (edge-2-6 d d2 d6) (edge-3-7 d d3 d7)
               (edge-3-4 d d3 d4) (edge-1-4 d d1 d4))))
 
 (define known-cube-0001-1111 known-cube-1110-0000)
 
+(: known-cube-1111-0000 Facet-Fun)
 (define (known-cube-1111-0000 d d1 d2 d3 d4 d5 d6 d7 d8)
   (list (list (edge-1-5 d d1 d5) (edge-2-6 d d2 d6)
               (edge-3-7 d d3 d7) (edge-4-8 d d4 d8))))
 
 (define known-cube-0000-1111 known-cube-1111-0000)
 
+(: make-known-cube-1010-0000 (-> (-> Real Real Boolean) Facet-Fun))
 (define ((make-known-cube-1010-0000 test?) d d1 d2 d3 d4 d5 d6 d7 d8)
   (define da (/ (+ d1 d2 d3 d4) 4))
   (cond
@@ -86,12 +96,14 @@ Cube vertex numbers:
 (define known-cube-1010-0000 (make-known-cube-1010-0000 >=))
 (define known-cube-0101-1111 (make-known-cube-1010-0000 <))
 
+(: known-cube-1000-0010 Facet-Fun)
 (define (known-cube-1000-0010 d d1 d2 d3 d4 d5 d6 d7 d8)
   (list (list (edge-1-2 d d1 d2) (edge-1-5 d d1 d5) (edge-1-4 d d1 d4))
         (list (edge-6-7 d d6 d7) (edge-3-7 d d3 d7) (edge-7-8 d d7 d8))))
 
 (define known-cube-0111-1101 known-cube-1000-0010)
 
+(: make-known-cube-1100-0010 (-> (-> Real Real Boolean) Facet-Fun))
 (define ((make-known-cube-1100-0010 test?) d d1 d2 d3 d4 d5 d6 d7 d8)
   (define da (/ (+ d2 d6 d7 d3) 4))
   (cond
@@ -109,6 +121,7 @@ Cube vertex numbers:
 (define known-cube-1100-0010 (make-known-cube-1100-0010 >=))
 (define known-cube-0011-1101 (make-known-cube-1100-0010 <))
 
+(: make-known-cube-1100-0011 (-> (-> Real Real Boolean) Facet-Fun))
 (define ((make-known-cube-1100-0011 test?) d d1 d2 d3 d4 d5 d6 d7 d8)
   (define da (/ (+ d1 d5 d8 d4) 4))
   (define db (/ (+ d2 d6 d7 d3) 4))
@@ -155,19 +168,7 @@ Cube vertex numbers:
 (define known-cube-1100-0011 (make-known-cube-1100-0011 >=))
 (define known-cube-0011-1100 (make-known-cube-1100-0011 <))
 
-#|
-Cube vertex numbers:
-
-   8--------7
-  /|       /|
- 5--------6 |
- | |      | |      d  y
- | 4------|-3      | /
- |/       |/       |/
- 1--------2        +--- x
-|#
-
-
+(: make-known-cube-1010-0101 (-> (-> Real Real Boolean) Facet-Fun))
 (define ((make-known-cube-1010-0101 test?) d d1 d2 d3 d4 d5 d6 d7 d8)
   (define da (/ (+ d1 d2 d3 d4) 4))
   (define db (/ (+ d1 d5 d8 d4) 4))
@@ -208,22 +209,23 @@ Cube vertex numbers:
 (define known-cube-1010-0101 (make-known-cube-1010-0101 >=))
 (define known-cube-0101-1010 (make-known-cube-1010-0101 <))
 
-(define ((make-known-cube-1110-0001 >=) d d1 d2 d3 d4 d5 d6 d7 d8)
+(: make-known-cube-1110-0001 (-> (-> Real Real Boolean) Facet-Fun))
+(define ((make-known-cube-1110-0001 test?) d d1 d2 d3 d4 d5 d6 d7 d8)
   (define da (/ (+ d1 d5 d8 d4) 4))
   (define db (/ (+ d7 d8 d4 d3) 4))
   (cond
-    [(and (da . >= . d) (db . >= . d))
+    [(and (test? da d) (test? db d))
      (list (list (edge-1-5 d d1 d5) (edge-2-6 d d2 d6) (edge-3-7 d d3 d7))
            (list (edge-1-5 d d1 d5) (edge-3-7 d d3 d7)
                  (edge-7-8 d d7 d8) (edge-5-8 d d5 d8))
            (list (edge-1-4 d d1 d4) (edge-3-4 d d3 d4) (edge-4-8 d d4 d8)))]
-    [(da . >= . d)
+    [(test? da d)
      (define ec (v* (v+ (edge-1-5 d d1 d5) (edge-3-7 d d3 d7)) 1/2))
      (list (list (edge-1-5 d d1 d5) (edge-2-6 d d2 d6) (edge-3-7 d d3 d7))
            (list ec (edge-3-7 d d3 d7) (edge-3-4 d d3 d4) (edge-1-4 d d1 d4))
            (list ec (edge-1-5 d d1 d5) (edge-5-8 d d5 d8) (edge-7-8 d d7 d8))
            (list ec (edge-1-4 d d1 d4) (edge-4-8 d d4 d8) (edge-7-8 d d7 d8)))]
-    [(db . >= . d)
+    [(test? db d)
      (define ec (v* (v+ (edge-1-5 d d1 d5) (edge-3-7 d d3 d7)) 1/2))
      (list (list (edge-1-5 d d1 d5) (edge-2-6 d d2 d6) (edge-3-7 d d3 d7))
            (list ec (edge-1-5 d d1 d5) (edge-1-4 d d1 d4) (edge-3-4 d d3 d4))
@@ -238,18 +240,21 @@ Cube vertex numbers:
 (define known-cube-1110-0001 (make-known-cube-1110-0001 >=))
 (define known-cube-0001-1110 (make-known-cube-1110-0001 <))
 
+(: known-cube-1110-0100 Facet-Fun)
 (define (known-cube-1110-0100 d d1 d2 d3 d4 d5 d6 d7 d8)
   (list (list (edge-1-5 d d1 d5) (edge-5-6 d d5 d6) (edge-6-7 d d6 d7)
               (edge-3-7 d d3 d7) (edge-3-4 d d3 d4) (edge-1-4 d d1 d4))))
 
 (define known-cube-0001-1011 known-cube-1110-0100)
 
+(: known-cube-1110-0010 Facet-Fun)
 (define (known-cube-1110-0010 d d1 d2 d3 d4 d5 d6 d7 d8)
   (list (list (edge-1-5 d d1 d5) (edge-2-6 d d2 d6) (edge-6-7 d d6 d7)
               (edge-7-8 d d7 d8) (edge-3-4 d d3 d4) (edge-1-4 d d1 d4))))
 
 (define known-cube-0001-1101 known-cube-1110-0010)
 
+(: make-known-cube-1010-0001 (-> (-> Real Real Boolean) Facet-Fun))
 (define ((make-known-cube-1010-0001 test?) d d1 d2 d3 d4 d5 d6 d7 d8)
   (define da (/ (+ d1 d2 d3 d4) 4))
   (define db (/ (+ d1 d5 d8 d4) 4))
@@ -306,80 +311,98 @@ Cube vertex numbers:
 
 ;; cube transformations: mirror
 
+(: mirror-vec-d (-> (Vectorof Real) (Vectorof Real)))
 (define (mirror-vec-d v)
   (match-define (vector x y d) v)
   (vector x y (- 1 d)))
 
+(: mirror-cube-d (-> Facet-Fun Facet-Fun))
 (define ((mirror-cube-d f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map mirror-vec-d poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map mirror-vec-d poly))
        (f d d5 d6 d7 d8 d1 d2 d3 d4)))
 
+(: mirror-vec-y (-> (Vectorof Real) (Vectorof Real)))
 (define (mirror-vec-y v)
   (match-define (vector x y d) v)
   (vector x (- 1 y) d))
 
+(: mirror-cube-y (-> Facet-Fun Facet-Fun))
 (define ((mirror-cube-y f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map mirror-vec-y poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map mirror-vec-y poly))
        (f d d4 d3 d2 d1 d8 d7 d6 d5)))
 
+(: mirror-vec-x (-> (Vectorof Real) (Vectorof Real)))
 (define (mirror-vec-x v)
   (match-define (vector x y d) v)
   (vector (- 1 x) y d))
 
+(: mirror-cube-x (-> Facet-Fun Facet-Fun))
 (define ((mirror-cube-x f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map mirror-vec-x poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map mirror-vec-x poly))
        (f d d2 d1 d4 d3 d6 d5 d8 d7)))
 
 ;; cube transformations: rotate clockwise (looking positively along axis)
 
+(: unrotate-vec-d (-> (Vectorof Real) (Vectorof Real)))
 (define (unrotate-vec-d v)
   (match-define (vector x y d) v)
   (vector (- 1 y) x d))
 
+(: rotate-cube-d (-> Facet-Fun Facet-Fun))
 (define ((rotate-cube-d f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map unrotate-vec-d poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map unrotate-vec-d poly))
        (f d d2 d3 d4 d1 d6 d7 d8 d5)))
 
+(: unrotate-vec-y (-> (Vectorof Real) (Vectorof Real)))
 (define (unrotate-vec-y v)
   (match-define (vector x y d) v)
   (vector d y (- 1 x)))
 
+(: rotate-cube-y (-> Facet-Fun Facet-Fun))
 (define ((rotate-cube-y f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map unrotate-vec-y poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map unrotate-vec-y poly))
        (f d d5 d1 d4 d8 d6 d2 d3 d7)))
 
+(: unrotate-vec-x (-> (Vectorof Real) (Vectorof Real)))
 (define (unrotate-vec-x v)
   (match-define (vector x y d) v)
   (vector x (- 1 d) y))
 
+(: rotate-cube-x (-> Facet-Fun Facet-Fun))
 (define ((rotate-cube-x f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map unrotate-vec-x poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map unrotate-vec-x poly))
        (f d d4 d3 d7 d8 d1 d2 d6 d5)))
 
 ;; cube transformations: rotate counterclockwise (looking negatively along axis)
 
+(: rotate-vec-d (-> (Vectorof Real) (Vectorof Real)))
 (define (rotate-vec-d v)
   (match-define (vector x y d) v)
   (vector y (- 1 x) d))
 
+(: unrotate-cube-d (-> Facet-Fun Facet-Fun))
 (define ((unrotate-cube-d f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map rotate-vec-d poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map rotate-vec-d poly))
        (f d d4 d1 d2 d3 d8 d5 d6 d7)))
 
+(: rotate-vec-y (-> (Vectorof Real) (Vectorof Real)))
 (define (rotate-vec-y v)
   (match-define (vector x y d) v)
   (vector (- 1 d) y x))
 
+(: unrotate-cube-y (-> Facet-Fun Facet-Fun))
 (define ((unrotate-cube-y f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map rotate-vec-y poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map rotate-vec-y poly))
        (f d d2 d6 d7 d3 d1 d5 d8 d4)))
 
+(: rotate-vec-x (-> (Vectorof Real) (Vectorof Real)))
 (define (rotate-vec-x v)
   (match-define (vector x y d) v)
   (vector x d (- 1 y)))
 
+(: unrotate-cube-x (-> Facet-Fun Facet-Fun))
 (define ((unrotate-cube-x f) d d1 d2 d3 d4 d5 d6 d7 d8)
-  (map (λ (poly) (map rotate-vec-x poly))
+  (map (λ ([poly : (Listof (Vectorof Real))]) (map rotate-vec-x poly))
        (f d d5 d6 d2 d1 d8 d7 d3 d4)))
 
 (define-for-syntax (cube-points-transform trans src)
@@ -484,7 +507,9 @@ Cube vertex numbers:
        (define new-stx
          (syntax-case #'path ()
            [()          #'(define cube-dst cube-src)]
-           [(path ...)  #'(define cube-dst ((compose path ...) cube-src))]))
+           [(t)         #'(define cube-dst (t cube-src))]
+           [(t2 t1)     #'(define cube-dst (t2 (t1 cube-src)))]
+           [(t3 t2 t1)  #'(define cube-dst (t3 (t2 (t1 cube-src))))]))
        ;(printf "~a~n" (syntax->datum new-stx))
        new-stx)]))
 
@@ -511,6 +536,7 @@ Cube vertex numbers:
 (define-syntax-rule (add-digit j idx)
   (unsafe-fx+ (unsafe-fx* idx 2) j))
 
+(: do-heights->cube-polys Facet-Fun)
 (define (do-heights->cube-polys d d1 d2 d3 d4 d5 d6 d7 d8)
   (define j1 (if (d1 . < . d) 0 1))
   (define j2 (if (d2 . < . d) 0 1))
@@ -531,16 +557,15 @@ Cube vertex numbers:
   (define f (vector-ref cube-dispatch-table facet-num))
   (f d d1 d2 d3 d4 d5 d6 d7 d8))
 
-(defproc (heights->cube-polys [xa real?] [xb real?] [ya real?] [yb real?] [za real?] [zb real?]
-                              [d real?]
-                              [d1 real?] [d2 real?] [d3 real?] [d4 real?]
-                              [d5 real?] [d6 real?] [d7 real?] [d8 real?]
-                              ) (listof (listof (vector/c real? real? real?)))
+(:: heights->cube-polys (-> Real Real Real Real Real Real
+                            Real Real Real Real Real Real Real Real Real
+                            (Listof (Listof (Vector Real Real Real)))))
+(define (heights->cube-polys xa xb ya yb za zb d d1 d2 d3 d4 d5 d6 d7 d8)
   (cond [(= d d1 d2 d3 d4 d5 d6 d7 d8)  empty]
         [else
          (define polys (do-heights->cube-polys d d1 d2 d3 d4 d5 d6 d7 d8))
          (for/list ([poly  (in-list polys)])
-           (for/list ([uvw  (in-list poly)])
+           (for/list : (Listof (Vector Real Real Real)) ([uvw  (in-list poly)])
              (match-define (vector u v w) uvw)
              (vector (unsolve-t xa xb u)
                      (unsolve-t ya yb v)

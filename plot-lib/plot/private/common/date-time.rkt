@@ -1,13 +1,66 @@
-#lang racket/base
+#lang typed/racket/base
 
-(require racket/date racket/contract racket/match unstable/latent-contract/defthing
-         (prefix-in srfi-date: srfi/19)
-         db
-         "contract.rkt"
+(require racket/match
+         racket/math
+         (prefix-in srfi-date: "typed-srfi19.rkt")
+         "type-doc.rkt"
          "math.rkt"
          "format.rkt")
 
 (provide (all-defined-out))
+
+(require/typed
+ db
+ [#:struct sql-date ([year : Integer]
+                     [month : Byte]
+                     [day : Byte])]
+ [#:struct sql-time ([hour : Natural]
+                     [minute : Natural]
+                     [second : Natural]
+                     [nanosecond : Natural]
+                     [tz : (U Integer #f)])]
+ [#:struct sql-timestamp ([year : Integer]
+                          [month : Natural]
+                          [day : Natural]
+                          [hour : Natural]
+                          [minute : Natural]
+                          [second : Natural]
+                          [nanosecond : Natural]
+                          [tz : (U Integer #f)])])
+
+(require/typed
+ racket/base
+ [#:struct date ([second : Byte]
+                 [minute : Byte]
+                 [hour : Byte]
+                 [day : Positive-Byte]
+                 [month : Positive-Byte]
+                 [year : Integer]
+                 [week-day : Byte]
+                 [year-day : Index]
+                 [dst? : Boolean]
+                 [time-zone-offset : Integer])
+           #:extra-constructor-name make-date]
+ [#:struct (date* date) ([nanosecond : Nonnegative-Fixnum]
+                         [time-zone-name : String])
+           #:extra-constructor-name make-date*]
+ [seconds->date  (->* [Real] [Any] date*)]
+ )
+
+(require/typed
+ racket/date
+ [current-date  (-> date*)]
+ [date->string  (->* [date] [Any] String)]
+ [date-display-format  (-> (U 'american
+                              'chinese
+                              'german
+                              'indian
+                              'irish
+                              'iso-8601
+                              'rfc2822
+                              'julian))]
+ [date->seconds  (->* [date] [Any] Integer)]
+ [date*->seconds  (->* [date] [Any] Real)])
 
 (define seconds-per-minute 60)
 (define seconds-per-hour (* 60 seconds-per-minute))
@@ -21,17 +74,21 @@
 
 ;; A date is always represented by the number of seconds since the platform-specific, UTC epoch
 
+(: date*->utc-seconds (-> date Real))
 (define (date*->utc-seconds dt)
   (- (date*->seconds dt #f) (date-time-zone-offset dt)))
 
+(: date->utc-seconds (-> date Real))
 (define (date->utc-seconds dt)
   (- (date->seconds dt #f) (date-time-zone-offset dt)))
 
+(: utc-seconds-second (-> Real Real))
 (define (utc-seconds-second secs)
   (define w (floor secs))
   (define f (- secs w))
   (+ f (date-second (seconds->date w #f))))
 
+(: utc-seconds-round-year (-> Real Integer))
 (define (utc-seconds-round-year secs)
   (define dt (seconds->date secs #f))
   (define y1 (date-year dt))
@@ -40,55 +97,100 @@
   (define s2 (date->seconds (date 0 0 0 1 1 (+ y1 1) 0 0 #f 0) #f))
   (define diff (- s2 s1))
   ;; Round by 1) subtracting this year; 2) rounding to this year or next; 3) adding this year
-  (+ (* (round (/ (- secs s1) diff)) diff) s1))
+  (+ (* (exact-round (/ (- secs s1) diff)) diff) s1))
 
+(: utc-seconds-round-month (-> Real Integer))
 (define (utc-seconds-round-month secs)
   (define dt (seconds->date secs #f))
   (define m1 (date-month dt))
   (define y1 (date-year dt))
   ;; Find start of this month, start of next month, and difference between them in UTC seconds
   (define s1 (date->seconds (date 0 0 0 1 m1 y1 0 0 #f 0) #f))
-  (define-values (m2 y2) (cond [((+ m1 1) . > . 12)  (values 1 (+ y1 1))]
-                               [else                 (values (+ m1 1) y1)]))
+  (define-values (m2 y2)
+    (let ([m2  (+ m1 1)])
+      (cond [(m2 . > . 12)  (values 1 (+ y1 1))]
+            [else           (values m2 y1)])))
   (define s2 (date->seconds (date 0 0 0 1 m2 y2 0 0 #f 0) #f))
   (define diff (- s2 s1))
   ;; Round by 1) subtracting this month; 2) rounding to this month or next; 3) adding this month
-  (+ (* (round (/ (- secs s1) diff)) diff) s1))
+  (+ (* (exact-round (/ (- secs s1) diff)) diff) s1))
 
 ;; ===================================================================================================
 ;; Time
 
 ;; A date-independent representation of time
 
-(struct plot-time (second minute hour day) #:transparent)
+(struct plot-time ([second : Nonnegative-Exact-Rational]
+                   [minute : Byte]
+                   [hour : Byte]
+                   [day : Integer])
+  #:transparent)
 
-(defproc (seconds->plot-time [s real?]) plot-time?
+(:: seconds->plot-time (-> Real plot-time))
+(define (seconds->plot-time s)
   (let* ([s  (inexact->exact s)]
-         [day  (floor (/ s seconds-per-day))]
+         [day  (exact-floor (/ s seconds-per-day))]
          [s  (- s (* day seconds-per-day))]
-         [hour  (floor (/ s seconds-per-hour))]
+         [hour  (exact-floor (/ s seconds-per-hour))]
          [s  (- s (* hour seconds-per-hour))]
-         [minute  (floor (/ s seconds-per-minute))]
+         [minute  (exact-floor (/ s seconds-per-minute))]
          [s  (- s (* minute seconds-per-minute))])
-    (plot-time s minute hour day)))
+    (plot-time (max 0 s)
+               (assert (max 0 (min 59 minute)) byte?)
+               (assert (max 0 (min 23 hour)) byte?)
+               day)))
 
-(defproc (plot-time->seconds [t plot-time?]) real?
+(:: plot-time->seconds (-> plot-time Exact-Rational))
+(define (plot-time->seconds t)
   (match-define (plot-time second minute hour day) t)
   (+ second
      (* minute seconds-per-minute)
      (* hour seconds-per-hour)
      (* day seconds-per-day)))
 
-(defproc (datetime->real [x (or/c plot-time? date? date*? sql-date? sql-time? sql-timestamp?)]) real?
-  (match x
-    [(? plot-time?)    (plot-time->seconds x)]
-    [(? date*?)        (date*->utc-seconds x)]
-    [(? date?)         (date->utc-seconds x)]
-    [(sql-date y m d)  (date->utc-seconds (date 0 0 0 d m y 0 0 #t 0))]
-    [(sql-time h m s ns tz)  (plot-time->seconds (- (plot-time (+ s (/ ns 1000000000)) m h 0)
-                                                    (if tz tz 0)))]
-    [(sql-timestamp y m d h mn s ns tz)  (date*->utc-seconds
-                                          (date* s mn h d m y 0 0 #t (if tz tz 0) ns "UTC"))]))
+(: sql-date->date* (-> sql-date date*))
+(define (sql-date->date* x)
+  (match-define (sql-date y m d) x)
+  (if (or (zero? m) (zero? d))
+      (raise-argument-error 'sql-date->date* "complete sql-date" x)
+      (date* 0 0 0 d m y 0 0 #t 0 0 "UTC")))
+
+(: sql-time->plot-time (-> sql-time plot-time))
+(define (sql-time->plot-time x)
+  (match-define (sql-time h m s ns tz) x)
+  (cond [(and (<= 0 m 59)
+              (<= 0 h 23))
+         (seconds->plot-time
+          (- (plot-time->seconds
+              (plot-time (+ s (/ ns 1000000000)) (assert m byte?) (assert h byte?) 0))
+             (if tz tz 0)))]
+        [else
+         (raise-argument-error 'sql-time->plot-time "valid sql-time" x)]))
+
+(: sql-timestamp->date* (-> sql-timestamp date*))
+(define (sql-timestamp->date* x)
+  (match-define (sql-timestamp y m d h mn s ns tz) x)
+  (cond [(or (zero? m) (zero? d))
+         (raise-argument-error 'sql-timestamp->date* "complete sql-timestamp" x)]
+        [(and (<= 0 s 60)  ; leap seconds
+              (<= 0 mn 59)
+              (<= 0 h 23)
+              (<= 1 d 31)
+              (<= 1 m 12))
+         (date* (assert s byte?) (assert mn byte?) (assert h byte?)
+                (assert d byte?) (assert m byte?) (assert y byte?)
+                0 0 #t (if tz tz 0) (assert ns fixnum?) "UTC")]
+        [else
+         (raise-argument-error 'sql-timestamp->date* "valid sql-timestamp" x)]))
+
+(:: datetime->real (-> (U plot-time date date* sql-date sql-time sql-timestamp) Real))
+(define (datetime->real x)
+  (cond [(plot-time? x)      (plot-time->seconds x)]
+        [(date*? x)          (date*->utc-seconds x)]
+        [(date? x)           (date->utc-seconds x)]
+        [(sql-date? x)       (date*->utc-seconds (sql-date->date* x))]
+        [(sql-time? x)       (plot-time->seconds (sql-time->plot-time x))]
+        [(sql-timestamp? x)  (date*->utc-seconds (sql-timestamp->date* x))]))
 
 ;; ===================================================================================================
 ;; Formatting following SRFI 19, with alterations
@@ -131,6 +233,7 @@ Supported format specifiers:
 ~5  ISO-8601 year-month-day-hour-minute-second format
 |#
 
+(: plot-date-formatter (-> Real Real (-> Symbol Real (U String #f))))
 (define (plot-date-formatter x-min x-max)
   (define digits (digits-for-range x-min x-max))
   (λ (fmt secs)
@@ -141,8 +244,7 @@ Supported format specifiers:
       [(~s)  (real->plot-label secs digits)]
       [(~a ~A ~b ~B ~d ~D ~e ~h ~H ~I ~j ~k ~l ~m ~M ~N
            ~p ~r ~S ~f ~s ~T ~U ~V ~w ~W ~x ~X ~y ~Y ~1 ~3 ~5)
-       (match-define (date* s mn h d m y _wd _yd _dst? tz ns _tz-name)
-         (seconds->date secs #f))
+       (match-define (date* s mn h d m y _wd _yd _dst? tz ns _tz-name) (seconds->date secs #f))
        (srfi-date:date->string (srfi-date:make-date ns s mn h d m y tz) (symbol->string fmt))]
       [else  #f])))
 
@@ -164,6 +266,7 @@ Supported format specifiers:
 ~3  ISO-8601 hour-minute-second format
 |#
 
+(: plot-time-formatter (-> Real Real (-> Symbol Real (U String #f))))
 (define (plot-time-formatter x-min x-max)
   (define digits (digits-for-range x-min x-max))
   (λ (fmt secs)

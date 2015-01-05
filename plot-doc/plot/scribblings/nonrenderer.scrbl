@@ -3,7 +3,7 @@
 @(require "common.rkt")
 
 @declare-exporting[plot]
-@defmodule*/no-declare[(plot plot/typed) #:link-target? #f]
+@defmodule*/no-declare[(plot) #:link-target? #f]
 
 @title[#:tag "nonrenderer"]{Nonrenderers}
 

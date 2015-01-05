@@ -37,27 +37,35 @@
                                                 'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch
                                                 'horizontal-hatch 'vertical-hatch  'cross-hatch)))
 
-(defthing known-point-symbols (listof symbol?) #:document-value
-  (list 'dot               'point            'pixel
-        'plus              'times            'asterisk
-        '5asterisk         'odot             'oplus
-        'otimes            'oasterisk        'o5asterisk
-        'circle            'square           'diamond
-        'triangle          'fullcircle       'fullsquare
-        'fulldiamond       'fulltriangle     'triangleup
-        'triangledown      'triangleleft     'triangleright
-        'fulltriangleup    'fulltriangledown 'fulltriangleleft
-        'fulltriangleright 'rightarrow       'leftarrow
-        'uparrow           'downarrow        '4star
-        '5star             '6star            '7star
-        '8star             'full4star        'full5star
-        'full6star         'full7star        'full8star
-        'circle1           'circle2          'circle3
-        'circle4           'circle5          'circle6
-        'circle7           'circle8          'bullet
-        'fullcircle1       'fullcircle2      'fullcircle3
-        'fullcircle4       'fullcircle5      'fullcircle6
-        'fullcircle7       'fullcircle8))
+(module typed-defs typed/racket/base
+  (require "type-doc.rkt")
+  
+  (provide (all-defined-out))
+  
+  (defthing known-point-symbols (Listof Symbol) #:document-value
+    (list 'dot               'point            'pixel
+          'plus              'times            'asterisk
+          '5asterisk         'odot             'oplus
+          'otimes            'oasterisk        'o5asterisk
+          'circle            'square           'diamond
+          'triangle          'fullcircle       'fullsquare
+          'fulldiamond       'fulltriangle     'triangleup
+          'triangledown      'triangleleft     'triangleright
+          'fulltriangleup    'fulltriangledown 'fulltriangleleft
+          'fulltriangleright 'rightarrow       'leftarrow
+          'uparrow           'downarrow        '4star
+          '5star             '6star            '7star
+          '8star             'full4star        'full5star
+          'full6star         'full7star        'full8star
+          'circle1           'circle2          'circle3
+          'circle4           'circle5          'circle6
+          'circle7           'circle8          'bullet
+          'fullcircle1       'fullcircle2      'fullcircle3
+          'fullcircle4       'fullcircle5      'fullcircle6
+          'fullcircle7       'fullcircle8)))
+
+(require (submod "." typed-defs))
+(provide (all-from-out 'typed-defs))
 
 (defcontract point-sym/c (or/c char? string? integer? (apply one-of/c known-point-symbols)))
 

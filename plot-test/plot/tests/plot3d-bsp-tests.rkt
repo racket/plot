@@ -1,7 +1,7 @@
 #lang racket
 
 (require plot
-         (except-in plot/utils sum flsum sample)
+         (except-in plot/utils sample)
          math
          profile
          contract-profile)

@@ -1,4 +1,4 @@
-#lang racket/base
+#lang typed/racket/base
 
 (require (for-syntax racket/base)
          racket/match
@@ -44,10 +44,12 @@
 ;; ===================================================================================================
 ;; Points
 
+(: point-in-bounds? (-> (Vectorof Real) Real Real Real Real Real Real Boolean))
 (define (point-in-bounds? v x-min x-max y-min y-max z-min z-max)
   (match-define (vector x y z) v)
   (and (<= x-min x x-max) (<= y-min y y-max) (<= z-min z z-max)))
 
+(: point-inside-plane? (-> (Vectorof Real) (Vector Real Real Real Real) Boolean))
 (define (point-inside-plane? v plane)
   (match-define (vector x y z) v)
   (match-define (vector a b c d) plane)
@@ -56,6 +58,8 @@
 ;; ===================================================================================================
 ;; Line clipping
 
+(: clip-line/plane (-> (Vectorof Real) (Vectorof Real) (Vector Real Real Real Real)
+                       (Values (U #f (Vectorof Real)) (U #f (Vectorof Real)))))
 (define (clip-line/plane v1 v2 plane)
   (match-define (vector x1 y1 z1) v1)
   (match-define (vector x2 y2 z2) v2)
@@ -72,7 +76,7 @@
 ;; Clipping inside axial bounding box
 
 (define-syntax-rule (make-clip-line/axis a b c gte?)
-  (λ (val x1 y1 z1 x2 y2 z2)
+  (λ ([val : Real] [x1 : Real] [y1 : Real] [z1 : Real] [x2 : Real] [y2 : Real] [z2 : Real])
     (define v1? (gte? (plane-point-dist a b c (- val) x1 y1 z1) 0))
     (define v2? (gte? (plane-point-dist a b c (- val) x2 y2 z2) 0))
     (cond [(or (and v1? v2?) (not (or v1? v2?))) (values x1 y1 z1 x2 y2 z2)]
@@ -87,8 +91,10 @@
 (define clip-line-z-min (make-clip-line/axis 0 0 1 >=))
 (define clip-line-z-max (make-clip-line/axis 0 0 1 <=))
 
+(: clip-line/bounds (-> (Vectorof Real) (Vectorof Real) Real Real Real Real Real Real
+                        (Values (U #f (Vectorof Real)) (U #f (Vectorof Real)))))
 (define (clip-line/bounds v1 v2 x-min x-max y-min y-max z-min z-max)
-  (let/ec return
+  (let/ec return : (Values (U #f (Vectorof Real)) (U #f (Vectorof Real)))
     (match-define (vector x1 y1 z1) v1)
     (match-define (vector x2 y2 z2) v2)
     ;; early accept: both endpoints in bounds
@@ -123,7 +129,12 @@
        (define init-vss (if v1? (list (list v1)) (list empty)))
        
        (define-values (vss _x1 _y1 _z1 _v1?)
-         (for/fold ([vss init-vss] [x1 x1] [y1 y1] [z1 z1] [v1? v1?]) ([v2  (in-list (rest vs))])
+         (for/fold ([vss : (Listof (Listof (Vectorof Real)))  init-vss]
+                    [x1 : Real  x1]
+                    [y1 : Real  y1]
+                    [z1 : Real  z1]
+                    [v1? : Boolean  v1?])
+                   ([v2  (in-list (rest vs))])
            (define x2 (vector-ref v2 0))
            (define y2 (vector-ref v2 1))
            (define z2 (vector-ref v2 2))
@@ -138,6 +149,8 @@
        
        (filter (compose not empty?) vss)])))
 
+(: clip-lines/plane (-> (Listof (Vectorof Real)) (Vector Real Real Real Real)
+                        (Listof (Listof (Vectorof Real)))))
 (define (clip-lines/plane vs plane)
   (match-define (vector a b c d) plane)
   ((make-clip-lines/plane a b c d >=) vs))
@@ -145,24 +158,27 @@
 ;; ---------------------------------------------------------------------------------------------------
 ;; Clipping inside axial bounding box
 
+(: early-accept? (-> (Listof (Vectorof Real)) Real Real Real Real Real Real Boolean))
 ;; Early accept: all endpoints in bounds (or empty vs)
 (define (early-accept? vs x-min x-max y-min y-max z-min z-max)
-  (andmap (λ (v) (and (<= x-min (vector-ref v 0) x-max)
-                      (<= y-min (vector-ref v 1) y-max)
-                      (<= z-min (vector-ref v 2) z-max)))
+  (andmap (λ ([v : (Vectorof Real)])
+            (and (<= x-min (vector-ref v 0) x-max)
+                 (<= y-min (vector-ref v 1) y-max)
+                 (<= z-min (vector-ref v 2) z-max)))
           vs))
 
+(: early-reject? (-> (Listof (Vectorof Real)) Real Real Real Real Real Real Boolean))
 ;; Early reject: all endpoints on the outside of the same plane
 (define (early-reject? vs x-min x-max y-min y-max z-min z-max)
-  (or (andmap (λ (v) ((vector-ref v 0) . < . x-min)) vs)
-      (andmap (λ (v) ((vector-ref v 0) . > . x-max)) vs)
-      (andmap (λ (v) ((vector-ref v 1) . < . y-min)) vs)
-      (andmap (λ (v) ((vector-ref v 1) . > . y-max)) vs)
-      (andmap (λ (v) ((vector-ref v 2) . < . z-min)) vs)
-      (andmap (λ (v) ((vector-ref v 2) . > . z-max)) vs)))
+  (or (andmap (λ ([v : (Vectorof Real)]) ((vector-ref v 0) . < . x-min)) vs)
+      (andmap (λ ([v : (Vectorof Real)]) ((vector-ref v 0) . > . x-max)) vs)
+      (andmap (λ ([v : (Vectorof Real)]) ((vector-ref v 1) . < . y-min)) vs)
+      (andmap (λ ([v : (Vectorof Real)]) ((vector-ref v 1) . > . y-max)) vs)
+      (andmap (λ ([v : (Vectorof Real)]) ((vector-ref v 2) . < . z-min)) vs)
+      (andmap (λ ([v : (Vectorof Real)]) ((vector-ref v 2) . > . z-max)) vs)))
 
 (define-syntax-rule (make-clip-lines/axis a b c gte?)
-  (λ (val vs)
+  (λ ([val : Real] [vs : (Listof (Vectorof Real))])
     ((make-clip-lines/plane a b c (- val) gte?) vs)))
 
 (define clip-lines-x-min (make-clip-lines/axis 1 0 0 >=))
@@ -172,28 +188,40 @@
 (define clip-lines-z-min (make-clip-lines/axis 0 0 1 >=))
 (define clip-lines-z-max (make-clip-lines/axis 0 0 1 <=))
 
+(: clip-lines/bounds (-> (Listof (Vectorof Real)) Real Real Real Real Real Real
+                         (Listof (Listof (Vectorof Real)))))
 (define (clip-lines/bounds vs x-min x-max y-min y-max z-min z-max)
-  (let/ec return
+  (let/ec return : (Listof (Listof (Vectorof Real)))
     (when (early-accept? vs x-min x-max y-min y-max z-min z-max) (return (list vs)))
     (when (early-reject? vs x-min x-max y-min y-max z-min z-max) (return empty))
     (let* ([vss  (clip-lines-x-min x-min vs)]
            [_    (when (empty? vss) (return empty))]
-           [vss  (append* (map (λ (vs) (clip-lines-x-max x-max vs)) vss))]
+           [vss  (append* (map (λ ([vs : (Listof (Vectorof Real))])
+                                 (clip-lines-x-max x-max vs))
+                               vss))]
            [_    (when (empty? vss) (return empty))]
-           [vss  (append* (map (λ (vs) (clip-lines-y-min y-min vs)) vss))]
+           [vss  (append* (map (λ ([vs : (Listof (Vectorof Real))])
+                                 (clip-lines-y-min y-min vs))
+                               vss))]
            [_    (when (empty? vss) (return empty))]
-           [vss  (append* (map (λ (vs) (clip-lines-y-max y-max vs)) vss))]
+           [vss  (append* (map (λ ([vs : (Listof (Vectorof Real))])
+                                 (clip-lines-y-max y-max vs))
+                               vss))]
            [_    (when (empty? vss) (return empty))]
-           [vss  (append* (map (λ (vs) (clip-lines-z-min z-min vs)) vss))]
+           [vss  (append* (map (λ ([vs : (Listof (Vectorof Real))])
+                                 (clip-lines-z-min z-min vs))
+                               vss))]
            [_    (when (empty? vss) (return empty))]
-           [vss  (append* (map (λ (vs) (clip-lines-z-max z-max vs)) vss))])
+           [vss  (append* (map (λ ([vs : (Listof (Vectorof Real))])
+                                 (clip-lines-z-max z-max vs))
+                               vss))])
       vss)))
 
 ;; ===================================================================================================
 ;; Polygon clipping
 
 (define-syntax-rule (make-clip-polygon/plane a b c d gte?)
-  (λ (vs ls)
+  (plambda: (L) ([vs : (Listof (Vectorof Real))] [ls : (Listof L)])
     (define v1 (last vs))
     (define x1 (vector-ref v1 0))
     (define y1 (vector-ref v1 1))
@@ -201,8 +229,14 @@
     (define v1? (gte? (plane-point-dist a b c d x1 y1 z1) 0))
     
     (define-values (new-vs new-ls _x1 _y1 _z1 _v1?)
-      (for/fold ([vs empty] [ls empty] [x1 x1] [y1 y1] [z1 z1] [v1? v1?]) ([v2  (in-list vs)]
-                                                                           [l   (in-list ls)])
+      (for/fold ([vs : (Listof (Vectorof Real))  empty]
+                 [ls : (Listof (U #t L))  empty]
+                 [x1 : Real  x1]
+                 [y1 : Real  y1]
+                 [z1 : Real  z1]
+                 [v1? : Boolean  v1?])
+                ([v2  (in-list vs)]
+                 [l   (in-list ls)])
         (define x2 (vector-ref v2 0))
         (define y2 (vector-ref v2 1))
         (define z2 (vector-ref v2 2))
@@ -217,6 +251,8 @@
     
     (values (reverse new-vs) (reverse new-ls))))
 
+(: clip-polygon/plane (All (L) (-> (Listof (Vectorof Real)) (Listof L) (Vector Real Real Real Real)
+                                   (Values (Listof (Vectorof Real)) (Listof (U #t L))))))
 (define (clip-polygon/plane vs ls plane)
   (match-define (vector a b c d) plane)
   ((make-clip-polygon/plane a b c d >=) vs ls))
@@ -225,7 +261,7 @@
 ;; Clipping inside axial bounding box
 
 (define-syntax-rule (make-clip-polygon/axis a b c gte?)
-  (λ (vs ls val)
+  (plambda: (L) ([vs : (Listof (Vectorof Real))] [ls : (Listof L)] [val : Real])
     ((make-clip-polygon/plane a b c (- val) gte?) vs ls)))
 
 (define clip-polygon-x-min (make-clip-polygon/axis 1 0 0 >=))
@@ -235,8 +271,10 @@
 (define clip-polygon-z-min (make-clip-polygon/axis 0 0 1 >=))
 (define clip-polygon-z-max (make-clip-polygon/axis 0 0 1 <=))
 
+(: clip-polygon/bounds (All (L) (-> (Listof (Vectorof Real)) (Listof L) Real Real Real Real Real Real
+                                    (Values (Listof (Vectorof Real)) (Listof (U #t L))))))
 (define (clip-polygon/bounds vs ls x-min x-max y-min y-max z-min z-max)
-  (let/ec return
+  (let/ec return : (Values (Listof (Vectorof Real)) (Listof (U #t L)))
     (when (early-accept? vs x-min x-max y-min y-max z-min z-max) (return vs ls))
     (when (early-reject? vs x-min x-max y-min y-max z-min z-max) (return empty empty))
     (let*-values ([(vs ls)  (clip-polygon-x-min vs ls x-min)]

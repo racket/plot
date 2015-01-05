@@ -1,43 +1,77 @@
-#lang racket/base
+#lang typed/racket/base
 
-(require racket/snip racket/match racket/list racket/class racket/contract
-         unstable/contract
-         unstable/parameter-group
-         racket/lazy-require
-         unstable/latent-contract/defthing
-         plot/private/common/contract
-         plot/private/common/math
+(require (only-in typed/mred/mred Snip% Frame%)
+         typed/racket/draw typed/racket/class racket/match racket/list
+         plot/utils
+         plot/private/common/parameter-group
          plot/private/common/draw
-         plot/private/common/parameters
-         plot/private/common/plot-element
          plot/private/common/deprecation-warning
+         plot/private/common/type-doc
+         plot/private/common/utils
          plot/private/plot3d/plot-area
          plot/private/no-gui/plot3d
-         plot/private/no-gui/plot3d-utils)
+         plot/private/no-gui/plot3d-utils
+         plot/private/no-gui/utils)
 
-;; Require lazily, in case someone wants to just (require plot) in a headless setup
-(lazy-require ["snip3d.rkt" (make-3d-plot-snip)]
-              ["gui.rkt" (make-snip-frame)])
+(require/typed
+ "untyped.rkt"
+ [make-3d-plot-snip
+  (-> (Instance Bitmap%)
+      Plot-Parameters
+      (-> Boolean Real Real Positive-Integer Positive-Integer (Instance Bitmap%))
+      Real
+      Real
+      Positive-Integer
+      Positive-Integer
+      (Instance Snip%))]
+ [make-snip-frame
+  (-> (Instance Snip%)
+      Positive-Real
+      Positive-Real
+      String
+      (Instance Frame%))])
 
 (provide plot3d-snip plot3d-frame plot3d)
 
 ;; ===================================================================================================
 ;; Plot to a snip
 
-(defproc (plot3d-snip [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
-                      [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
-                      [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
-                      [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
-                      [#:width width exact-positive-integer? (plot-width)]
-                      [#:height height exact-positive-integer? (plot-height)]
-                      [#:angle angle real? (plot3d-angle)]
-                      [#:altitude altitude real? (plot3d-altitude)]
-                      [#:title title (or/c string? #f) (plot-title)]
-                      [#:x-label x-label (or/c string? #f) (plot-x-label)]
-                      [#:y-label y-label (or/c string? #f) (plot-y-label)]
-                      [#:z-label z-label (or/c string? #f) (plot-z-label)]
-                      [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
-                      ) (is-a?/c image-snip%)
+(:: plot3d-snip
+    (->* [(Treeof (U renderer3d nonrenderer))]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:y-min (U Real #f) #:y-max (U Real #f)
+          #:z-min (U Real #f) #:z-max (U Real #f)
+          #:width Positive-Integer
+          #:height Positive-Integer
+          #:angle Real #:altitude Real
+          #:title (U String #f)
+          #:x-label (U String #f)
+          #:y-label (U String #f)
+          #:z-label (U String #f)
+          #:legend-anchor Anchor]
+         (Instance Snip%)))
+(define (plot3d-snip renderer-tree
+                     #:x-min [x-min #f] #:x-max [x-max #f]
+                     #:y-min [y-min #f] #:y-max [y-max #f]
+                     #:z-min [z-min #f] #:z-max [z-max #f]
+                     #:width [width (plot-width)]
+                     #:height [height (plot-height)]
+                     #:angle [angle (plot3d-angle)]
+                     #:altitude [altitude (plot3d-altitude)]
+                     #:title [title (plot-title)]
+                     #:x-label [x-label (plot-x-label)]
+                     #:y-label [y-label (plot-y-label)]
+                     #:z-label [z-label (plot-z-label)]
+                     #:legend-anchor [legend-anchor (plot-legend-anchor)])
+  (define fail/kw (make-raise-keyword-error 'plot3d-snip))
+  (cond
+    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
+    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
+    [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
+    [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [(and z-min (not (rational? z-min)))  (fail/kw "#f or rational" '#:z-min z-min)]
+    [(and z-max (not (rational? z-max)))  (fail/kw "#f or rational" '#:z-max z-max)])
+  
   (parameterize ([plot-title          title]
                  [plot-x-label        x-label]
                  [plot-y-label        y-label]
@@ -49,9 +83,10 @@
     (define-values (x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks)
       (get-ticks renderer-list bounds-rect))
     
-    (define render-tasks-hash (make-hash))
-    (define legend-entries-hash (make-hash))
+    (define render-tasks-hash ((inst make-hash Boolean render-tasks)))
+    (define legend-entries-hash ((inst make-hash Boolean (Listof legend-entry))))
     
+    (: make-bm (-> Boolean Real Real Positive-Integer Positive-Integer (Instance Bitmap%)))
     (define (make-bm anim? angle altitude width height)
       (parameterize/group ([plot-parameters  saved-plot-parameters]
                            [plot-animating?  (if anim? #t (plot-animating?))]
@@ -67,12 +102,13 @@
            (cond [(not (hash-ref render-tasks-hash (plot-animating?) #f))
                   (hash-set!
                    legend-entries-hash (plot-animating?)
-                   (flatten (for/list ([rend  (in-list renderer-list)])
-                              (match-define (renderer3d rend-bounds-rect _bf _tf render-proc) rend)
-                              (send area start-renderer (if rend-bounds-rect
-                                                            (rect-inexact->exact rend-bounds-rect)
-                                                            (unknown-rect 3)))
-                              (if render-proc (render-proc area) empty))))
+                   (flatten-legend-entries
+                    (for/list : (Listof (Treeof legend-entry)) ([rend  (in-list renderer-list)])
+                      (match-define (renderer3d rend-bounds-rect _bf _tf render-proc) rend)
+                      (send area start-renderer (if rend-bounds-rect
+                                                    (rect-inexact->exact rend-bounds-rect)
+                                                    (unknown-rect 3)))
+                      (if render-proc (render-proc area) empty))))
                   
                   (hash-set! render-tasks-hash (plot-animating?) (send area get-render-tasks))]
                  [else
@@ -81,7 +117,7 @@
            (send area end-renderers)
            
            (define legend-entries (hash-ref legend-entries-hash (plot-animating?) #f))
-           (when (not (empty? legend-entries))
+           (when (and legend-entries (not (empty? legend-entries)))
              (send area draw-legend legend-entries))
            
            (send area end-plot))
@@ -94,20 +130,42 @@
 ;; ===================================================================================================
 ;; Plot to a frame
 
-(defproc (plot3d-frame [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
-                       [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
-                       [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
-                       [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
-                       [#:width width exact-positive-integer? (plot-width)]
-                       [#:height height exact-positive-integer? (plot-height)]
-                       [#:angle angle real? (plot3d-angle)]
-                       [#:altitude altitude real? (plot3d-altitude)]
-                       [#:title title (or/c string? #f) (plot-title)]
-                       [#:x-label x-label (or/c string? #f) (plot-x-label)]
-                       [#:y-label y-label (or/c string? #f) (plot-y-label)]
-                       [#:z-label z-label (or/c string? #f) (plot-z-label)]
-                       [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
-                       ) (is-a?/c object%)
+(:: plot3d-frame
+    (->* [(Treeof (U renderer3d nonrenderer))]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:y-min (U Real #f) #:y-max (U Real #f)
+          #:z-min (U Real #f) #:z-max (U Real #f)
+          #:width Positive-Integer
+          #:height Positive-Integer
+          #:angle Real #:altitude Real
+          #:title (U String #f)
+          #:x-label (U String #f)
+          #:y-label (U String #f)
+          #:z-label (U String #f)
+          #:legend-anchor Anchor]
+         (Instance Frame%)))
+(define (plot3d-frame renderer-tree
+                      #:x-min [x-min #f] #:x-max [x-max #f]
+                      #:y-min [y-min #f] #:y-max [y-max #f]
+                      #:z-min [z-min #f] #:z-max [z-max #f]
+                      #:width [width (plot-width)]
+                      #:height [height (plot-height)]
+                      #:angle [angle (plot3d-angle)]
+                      #:altitude [altitude (plot3d-altitude)]
+                      #:title [title (plot-title)]
+                      #:x-label [x-label (plot-x-label)]
+                      #:y-label [y-label (plot-y-label)]
+                      #:z-label [z-label (plot-z-label)]
+                      #:legend-anchor [legend-anchor (plot-legend-anchor)])
+  (define fail/kw (make-raise-keyword-error 'plot3d-frame))
+  (cond
+    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
+    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
+    [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
+    [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [(and z-min (not (rational? z-min)))  (fail/kw "#f or rational" '#:z-min z-min)]
+    [(and z-max (not (rational? z-max)))  (fail/kw "#f or rational" '#:z-max z-max)])
+  
   (define snip
     (plot3d-snip
      renderer-tree
@@ -119,24 +177,45 @@
 ;; ===================================================================================================
 ;; Plot to a frame or a snip, depending on the value of plot-new-window?
 
-(defproc (plot3d [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
-                 [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
-                 [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
-                 [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
-                 [#:width width exact-positive-integer? (plot-width)]
-                 [#:height height exact-positive-integer? (plot-height)]
-                 [#:angle angle real? #f] [#:altitude altitude real? #f]
-                 [#:az az real? #f] [#:alt alt real? #f]  ; backward-compatible aliases
-                 [#:title title (or/c string? #f) (plot-title)]
-                 [#:x-label x-label (or/c string? #f) (plot-x-label)]
-                 [#:y-label y-label (or/c string? #f) (plot-y-label)]
-                 [#:z-label z-label (or/c string? #f) (plot-z-label)]
-                 [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
-                 [#:out-file out-file (or/c path-string? output-port? #f) #f]
-                 [#:out-kind out-kind (one-of/c 'auto 'png 'jpeg 'xmb 'xpm 'bmp 'ps 'pdf 'svg) 'auto]
-                 [#:fgcolor fgcolor plot-color/c #f] [#:bgcolor bgcolor plot-color/c #f]
-                 [#:lncolor lncolor plot-color/c #f]  ; unused
-                 ) (or/c (is-a?/c snip%) void?)
+(:: plot3d
+    (->* [(Treeof (U renderer3d nonrenderer))]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:y-min (U Real #f) #:y-max (U Real #f)
+          #:z-min (U Real #f) #:z-max (U Real #f)
+          #:width Positive-Integer
+          #:height Positive-Integer
+          #:angle Real #:altitude Real
+          #:az Real #:alt Real
+          #:title (U String #f)
+          #:x-label (U String #f)
+          #:y-label (U String #f)
+          #:z-label (U String #f)
+          #:legend-anchor Anchor
+          #:out-file (U Path-String Output-Port #f)
+          #:out-kind (U 'auto Image-File-Format)
+          #:fgcolor Plot-Color
+          #:bgcolor Plot-Color
+          #:lncolor Plot-Color]
+         (U (Instance Snip%) Void)))
+(define (plot3d renderer-tree
+                #:x-min [x-min #f] #:x-max [x-max #f]
+                #:y-min [y-min #f] #:y-max [y-max #f]
+                #:z-min [z-min #f] #:z-max [z-max #f]
+                #:width [width (plot-width)]
+                #:height [height (plot-height)]
+                #:angle [angle (plot3d-angle)]
+                #:altitude [altitude (plot3d-altitude)]
+                #:az [az #f] #:alt [alt #f]  ; backward-compatible aliases
+                #:title [title (plot-title)]
+                #:x-label [x-label (plot-x-label)]
+                #:y-label [y-label (plot-y-label)]
+                #:z-label [z-label (plot-z-label)]
+                #:legend-anchor [legend-anchor (plot-legend-anchor)]
+                #:out-file [out-file #f]
+                #:out-kind [out-kind 'auto]
+                #:fgcolor [fgcolor #f]
+                #:bgcolor [bgcolor #f]
+                #:lncolor [lncolor #f])  ; unused
   (when fgcolor
     (deprecation-warning "the plot3d #:fgcolor keyword argument" "plot-foreground"))
   (when bgcolor
@@ -147,20 +226,40 @@
     (deprecation-warning "the plot3d #:az keyword argument" "#:angle"))
   (when alt
     (deprecation-warning "the plot3d #:alt keyword argument" "#:altitude"))
-  
-  (define (call f . args)
-    (apply f renderer-tree args
-           #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
-           #:width width #:height height #:title title
-           #:angle (or angle az (plot3d-angle)) #:altitude (or altitude alt (plot3d-altitude))
-           #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
+
+  (define fail/kw (make-raise-keyword-error 'plot3d))
+  (cond
+    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
+    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
+    [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
+    [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [(and z-min (not (rational? z-min)))  (fail/kw "#f or rational" '#:z-min z-min)]
+    [(and z-max (not (rational? z-max)))  (fail/kw "#f or rational" '#:z-max z-max)])
   
   (parameterize ([plot-foreground  (if fgcolor fgcolor (plot-foreground))]
                  [plot-background  (if bgcolor bgcolor (plot-background))])
     (when out-file
-      (call plot3d-file out-file out-kind))
+      (plot3d-file
+       renderer-tree out-file out-kind
+       #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
+       #:width width #:height height #:title title
+       #:angle (or angle az (plot3d-angle)) #:altitude (or altitude alt (plot3d-altitude))
+       #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
     
-    (cond [(plot-new-window?)  (define frame (call plot3d-frame))
-                               (send frame show #t)
-                               (void)]
-          [else  (call plot3d-snip)])))
+    (cond [(plot-new-window?)
+           (define frame
+             (plot3d-frame
+              renderer-tree
+              #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
+              #:width width #:height height #:title title
+              #:angle (or angle az (plot3d-angle)) #:altitude (or altitude alt (plot3d-altitude))
+              #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
+           (send frame show #t)
+           (void)]
+          [else
+           (plot3d-snip
+            renderer-tree
+            #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
+            #:width width #:height height #:title title
+            #:angle (or angle az (plot3d-angle)) #:altitude (or altitude alt (plot3d-altitude))
+            #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor)])))

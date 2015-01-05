@@ -5,7 +5,7 @@
 @title[#:tag "utils"]{Plot Utilities}
 
 @declare-exporting[plot/utils]
-@defmodule*/no-declare[(plot/utils plot/typed/utils)]
+@defmodule*/no-declare[(plot/utils)]
 
 @;====================================================================================================
 @section{Formatting}

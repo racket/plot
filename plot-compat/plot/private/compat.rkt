@@ -8,8 +8,12 @@
          plot/private/common/math
          plot/private/common/contract
          plot/private/common/plot-element
+         plot/private/common/nonrenderer
+         plot/private/common/ticks
          plot/private/plot2d/plot-area
+         plot/private/plot2d/renderer
          plot/private/plot3d/plot-area
+         plot/private/plot3d/renderer
          (prefix-in new. (only-in plot
                                   x-axis y-axis
                                   plot-x-ticks plot-y-ticks plot-z-ticks
@@ -69,8 +73,8 @@
                [#:lncolor lncolor (list/c byte? byte? byte?) '(255 0 0)]
                [#:out-file out-file (or/c path-string? output-port? #f) #f]
                ) (is-a?/c image-snip%)
-  (define x-ticks ((new.plot-x-ticks) x-min x-max))
-  (define y-ticks ((new.plot-y-ticks) y-min y-max))
+  (define x-ticks (ticks-generate (new.plot-x-ticks) x-min x-max))
+  (define y-ticks (ticks-generate (new.plot-y-ticks) y-min y-max))
   (define bounds-rect (vector (ivl x-min x-max) (ivl y-min y-max)))
   
   (parameterize ([new.plot-title       title]
@@ -111,9 +115,9 @@
                  [#:lncolor lncolor (list/c byte? byte? byte?) '(255 0 0)]
                  [#:out-file out-file (or/c path-string? output-port? #f) #f]
                  ) (is-a?/c image-snip%)
-  (define x-ticks ((new.plot-x-ticks) x-min x-max))
-  (define y-ticks ((new.plot-y-ticks) y-min y-max))
-  (define z-ticks ((new.plot-z-ticks) z-min z-max))
+  (define x-ticks (ticks-generate (new.plot-x-ticks) x-min x-max))
+  (define y-ticks (ticks-generate (new.plot-y-ticks) y-min y-max))
+  (define z-ticks (ticks-generate (new.plot-z-ticks) z-min z-max))
   (define bounds-rect (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)))
   
   (parameterize ([new.plot-title       title]

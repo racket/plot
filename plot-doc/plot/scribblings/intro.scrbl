@@ -4,7 +4,7 @@
 
 @title[#:tag "intro"]{Introduction}
 
-@defmodule*/no-declare[(plot plot/typed) #:link-target? #f]
+@defmodule*/no-declare[(plot) #:link-target? #f]
 
 @section{Plotting 2D Graphs}
 

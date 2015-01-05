@@ -5,7 +5,7 @@
 @title[#:tag "ticks and transforms"]{Axis Transforms and Ticks}
 
 @declare-exporting[plot]
-@defmodule*/no-declare[(plot plot/typed) #:link-target? #f]
+@defmodule*/no-declare[(plot) #:link-target? #f]
 
 @section[#:tag "transforms"]{Axis Transforms}
 

@@ -2,10 +2,7 @@
 @(require (for-label racket
                      racket/gui/base
                      plot/compat)
-          plot/compat
-          (only-in unstable/latent-contract/defthing
-                   doc-apply)
-          (only-in "common.rkt" plot-name))
+          (only-in "common.rkt" doc-apply))
 
 @title[#:tag "compat"]{Compatibility Module}
 
@@ -13,12 +10,14 @@
 
 @defmodule[plot/compat]
 
-This module provides an interface compatible with @(plot-name) 5.1.3 and earlier.
+This module provides an interface compatible with Plot 5.1.3 and earlier.
 
-@bold{Do not use both @racketmodname[plot] and @racketmodname[plot/compat] in the same module.}
-It is tempting to try it, to get both the new features and comprehensive backward compatibility.
-But to enable the new features, the objects plotted in @racketmodname[plot] have to be a different data type than the objects plotted in @racketmodname[plot/compat].
-They do not coexist easily, and trying to make them do so will result in contract violations.
+@bold{Do not use this module in new programs.}
+It is likely to disappear in a near future release.
+
+@bold{Do not try to use both @racketmodname[plot] and @racketmodname[plot/compat] in the same program.}
+The new features in Plot 5.2 and later require the objects plotted in @racketmodname[plot] have to be a different data type than the objects plotted in @racketmodname[plot/compat].
+They do not coexist easily, and trying to make them do so will result in errors.
 
 @; ----------------------------------------
 

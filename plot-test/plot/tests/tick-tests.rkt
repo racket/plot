@@ -39,8 +39,10 @@
        #:x-min 0 #:x-max 10 #:y-min 0 #:y-max 10
        #:x-label "bounds min" #:y-label "bounds size"))
 
-(plot (function (λ (x) (count pre-tick-major? ((linear-ticks) 0 x))) #e0.1 10))
-(plot (function (λ (x) (count pre-tick-major? ((linear-ticks #:number 40) 0 x))) 1 100))
+(plot (function (λ (x) (count pre-tick-major? (ticks-generate (linear-ticks) 0 x)))
+                #e0.1 10))
+(plot (function (λ (x) (count pre-tick-major? (ticks-generate (linear-ticks #:number 40) 0 x)))
+                1 100))
 
 (parameterize ([plot-x-ticks  (linear-ticks #:base 2 #:divisors '(1 2))]
                #;[plot-y-ticks  (linear-ticks #:base (* 1 2 3 4 5) #:divisors '(1 2 3 4 5))])

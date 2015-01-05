@@ -1,18 +1,20 @@
-#lang racket/base
+#lang typed/racket/base
 
 ;; Functions to format numbers, and data structures containing numbers.
 
-(require racket/string racket/list racket/pretty racket/contract racket/match
-         unstable/latent-contract/defthing
-         "contract.rkt"
+(require racket/string racket/list racket/pretty racket/match
+         "type-doc.rkt"
+         "types.rkt"
          "math.rkt")
 
 (provide (all-defined-out))
 
+(: string-map (-> (-> Char Char) String String))
 (define (string-map f str)
   (list->string (map f (string->list str))))
 
-(defproc (integer->superscript [x exact-integer?]) string?
+(:: integer->superscript (-> Integer String))
+(define (integer->superscript x)
   (string-map (λ (c) (case c
                        [(#\0)  #\u2070]
                        [(#\1)  #\u00b9]
@@ -29,9 +31,8 @@
                        [else   c]))
               (number->string x)))
 
-(defproc (real->decimal-string* [x  real?]
-                                [min-digits exact-nonnegative-integer?]
-                                [max-digits exact-nonnegative-integer? min-digits]) string?
+(:: real->decimal-string* (->* [Real Natural] [Natural] String))
+(define (real->decimal-string* x min-digits [max-digits min-digits])
   (when (min-digits . > . max-digits)
     (error 'real->decimal-string* "expected min-digits <= max-digits; given ~e and ~e"
            min-digits max-digits))
@@ -42,6 +43,7 @@
           [(char=? #\0 (string-ref str (- i 1)))  (loop (- i 1) (- j 1))]
           [else  (substring str 0 i)])))
 
+(: remove-trailing-zeros (-> String String))
 (define (remove-trailing-zeros str)
   (let loop ([i  (string-length str)])
     (cond [(zero? i)  "0"]
@@ -49,13 +51,17 @@
           [(char=? #\. (string-ref str (sub1 i)))  (substring str 0 (sub1 i))]
           [else  (substring str 0 i)])))
 
+(:: digits-for-range (->* [Real Real] [Positive-Integer Integer] Integer))
 ;; Returns the number of fractional digits needed to distinguish numbers [x-min..x-max]
-(defproc (digits-for-range [x-min real?] [x-max real?]
-                           [base (and/c exact-integer? (>=/c 2)) 10]
-                           [extra-digits exact-integer? 3]) exact-integer?
-  (define range (abs (- x-max x-min)))
-  (+ extra-digits (if (zero? range) 0 (- (floor-log/base base range)))))
+(define (digits-for-range x-min x-max [base 10] [extra-digits 3])
+  (cond [(not (base . >= . 2))
+         (raise-argument-error 'digits-for-range "exact integer >= 2"
+                               2 x-min x-max base extra-digits)]
+        [else
+         (define range (abs (- x-max x-min)))
+         (+ extra-digits (if (zero? range) 0 (- (floor-log/base base range))))]))
 
+(: int-str->e-str (-> String String))
 (define (int-str->e-str str)
   (define n (string-length str))
   (cond [(or (= 0 n) (string=? str "0"))  "0"]
@@ -66,6 +72,7 @@
                  (remove-trailing-zeros (format "~a.~a" fst rst))
                  (integer->superscript (sub1 n)))]))
 
+(: frac-str->e-str (-> String String))
 (define (frac-str->e-str str)
   (define n (string-length str))
   (let loop ([i 0])
@@ -78,10 +85,12 @@
                        [else
                         (format "~a.~a×10~a" fst rst (integer->superscript (- (add1 i))))])])))
 
+(: zero-string (-> Natural String))
 (define (zero-string n)
   (make-string n #\0))
 
-(defproc (real->plot-label [x real?] [digits exact-integer?] [scientific? boolean? #t]) any
+(:: real->plot-label (->* [Real Integer] [Boolean] String))
+(define (real->plot-label x digits [scientific? #t])
   (cond
     [(zero? x)  "0"]
     [(eqv? x +nan.0)  "+nan.0"]
@@ -98,7 +107,8 @@
        (define-values (int-str frac-str)
          (match-let ([(list _ int-str frac-str)
                       (regexp-match #rx"(.*)\\.(.*)" (real->decimal-string y (max 0 digits)))])
-           (values int-str (remove-trailing-zeros frac-str))))
+           (values (assert int-str values)
+                   (remove-trailing-zeros (assert frac-str values)))))
        (define int-zero? (string=? int-str "0"))
        (define frac-zero? (string=? frac-str "0"))
        (cond
@@ -137,6 +147,7 @@
                 [frac-zero?  (format "~a~a" front-sign int-str)]
                 [else        (format "~a~a.~a" front-sign int-str frac-str)])]))]))
 
+(: format-special (-> (U Real #f) String))
 (define (format-special x)
   (case x
     [(#f)  "#f"]
@@ -145,19 +156,20 @@
     [(-inf.0)  "-inf.0"]
     [else  "<unknown>"]))
 
-(defproc (ivl->plot-label [i ivl?] [extra-digits exact-integer? 3]) string?
+(:: ivl->plot-label (->* [ivl] [Integer] String))
+(define (ivl->plot-label i [extra-digits 3])
   (match-define (ivl a b) i)
-  (cond [(and (not (rational? a)) (not (rational? b)))
-         (format "[~a,~a]" (format-special a) (format-special b))]
-        [(not (rational? a))  (format "[~a,~a]" (format-special a) (real->plot-label b 15))]
-        [(not (rational? b))  (format "[~a,~a]" (real->plot-label a 15) (format-special b))]
-        [else
+  (cond [(and (rational?* a) (rational?* b))
          (define digits (digits-for-range a b 10 extra-digits))
          (format "[~a,~a]"
                  (real->plot-label a digits)
-                 (real->plot-label b digits))]))
+                 (real->plot-label b digits))]
+        [(rational?* a)  (format "[~a,~a]" (real->plot-label a 15) (format-special b))]
+        [(rational?* b)  (format "[~a,~a]" (format-special a) (real->plot-label b 15))]
+        [else            (format "[~a,~a]" (format-special a) (format-special b))]))
 
-(defproc (->plot-label [a any/c] [digits exact-integer? 7]) string?
+(:: ->plot-label (->* [Any] [Integer] String))
+(define (->plot-label a [digits 7])
   (let loop ([a a])
     (cond [(string? a)   a]
           [(symbol? a)   (symbol->string a)]
@@ -169,25 +181,27 @@
           [(char? a)     (list->string (list a))]
           [else  (pretty-format a)])))
 
+(:: real->string/trunc (-> Real Integer String))
 ;; Like real->decimal-string, but removes trailing zeros
-(defproc (real->string/trunc [x real?] [e exact-integer?]) string?
+(define (real->string/trunc x e)
   (remove-trailing-zeros (real->decimal-string x (max 0 e))))
 
 ;; ===================================================================================================
 ;; Format strings
 
-(defproc (parse-format-string [str string?]) (listof (or/c string? symbol?))
+(:: parse-format-string (-> String (Listof (U String Symbol))))
+(define (parse-format-string str)
   (define n (string-length str))
-  (let loop ([i 0] [fmt-list  empty])
+  (let loop ([i 0] [fmt-list : (Listof (U String Symbol))  empty])
     (cond [(i . >= . n)  (reverse fmt-list)]
           [(i . = . (- n 1))  (reverse (cons (substring str i (+ i 1)) fmt-list))]
           [(char=? #\~ (string-ref str i))
            (loop (+ i 2) (cons (string->symbol (substring str i (+ i 2))) fmt-list))]
           [else  (loop (+ i 1) (cons (substring str i (+ i 1)) fmt-list))])))
 
-(defproc (apply-formatter [formatter (symbol? any/c . -> . (or/c string? #f))]
-                          [fmt-list (listof (or/c string? symbol?))]
-                          [d any/c]) (listof string?)
+(:: apply-formatter (All (T) (-> (-> Symbol T (U String #f)) (Listof (U String Symbol)) T
+                                 (Listof String))))
+(define (apply-formatter formatter fmt-list d)
   (for/list ([fmt  (in-list fmt-list)])
     (cond [(eq? fmt '~~)  "~"]
           [(symbol? fmt)  (let ([val  (formatter fmt d)])

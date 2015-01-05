@@ -1,8 +1,7 @@
-#lang racket/base
+#lang typed/racket/base
 
-(require unstable/latent-contract
-         "no-gui.rkt"
+(require "no-gui.rkt"
          "private/no-gui/plot-bitmap.rkt")
 
 (provide (all-from-out "no-gui.rkt")
-         (activate-contract-out plot plot3d))
+         plot plot3d)

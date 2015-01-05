@@ -5,7 +5,7 @@
 @title[#:tag "params"]{Plot and Renderer Parameters}
 
 @declare-exporting[plot]
-@defmodule*/no-declare[(plot plot/typed) #:link-target? #f]
+@defmodule*/no-declare[(plot) #:link-target? #f]
 
 @section{Compatibility}
 

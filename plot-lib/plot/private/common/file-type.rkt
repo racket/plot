@@ -1,11 +1,13 @@
-#lang racket/base
+#lang typed/racket/base
 
 ;; Detect an image file type from a filename extension.
 
-(require racket/match racket/list)
+(require racket/list
+         "types.rkt")
 
 (provide (all-defined-out))
 
+(: file-type-hash (Listof (Pair Regexp Image-File-Format)))
 (define file-type-hash
   '((#rx"(?i:.*\\.png)$" . png)
     (#rx"(?i:.*\\.(jpg)|(jpeg))$" . jpeg)
@@ -16,6 +18,7 @@
     (#rx"(?i:.*\\.ps)$" . ps)
     (#rx"(?i:.*\\.svg)$" . svg)))
 
+(: detect-image-file-type (-> Path-String Image-File-Format))
 (define (detect-image-file-type output)
   (define name
     (cond [(string? output)  output]

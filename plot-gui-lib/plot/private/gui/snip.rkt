@@ -1,10 +1,12 @@
 #lang racket/base
 
-(require racket/gui/base racket/class racket/list unstable/parameter-group
+(require racket/gui/base racket/class racket/list
          plot/private/common/math
          plot/private/common/parameters
+         plot/private/common/parameter-groups
+         plot/private/common/parameter-group
          plot/private/common/plot-device
-         plot/private/common/worker-thread)
+         "worker-thread.rkt")
 
 (provide plot-snip%)
 
@@ -99,7 +101,7 @@
       (for ([line  (in-list lines)] [i  (in-naturals)])
         (send pd draw-text
               line (vector box-x-min (+ box-y-min baseline (* i (+ char-height baseline))))
-              'top-left #:outline? #t))
+              'top-left 0 0 #t))
       (send pd restore-drawing-params))
     
     (define/override (draw dc x y left top right bottom dx dy draw-caret)
