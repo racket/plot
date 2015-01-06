@@ -7,23 +7,17 @@
 
 (provide (all-defined-out))
 
-(: all-bsp-trees (HashTable Symbol (HashTable Integer BSP-Tree)))
-(define all-bsp-trees (make-weak-hasheq))
-
-(: build-bsp-trees (-> (HashTable Integer (Listof BSP-Shape)) Symbol))
+(: build-bsp-trees (-> (HashTable Integer (Listof BSP-Shape))
+                       (HashTable Integer BSP-Tree)))
 (define (build-bsp-trees structural-shapes)
-  (define key (gensym))
-  (define bsp-trees
-    (for/hasheq : (HashTable Integer BSP-Tree) ([(layer ss)  (in-hash structural-shapes)])
-      (values layer (build-bsp-tree ss))))
-  (hash-set! all-bsp-trees key bsp-trees)
-  key)
+  (for/hasheq : (HashTable Integer BSP-Tree) ([(layer ss)  (in-hash structural-shapes)])
+    (values layer (build-bsp-tree ss))))
 
-(: walk-bsp-trees (-> Symbol FlVector (HashTable Integer (Listof BSP-Shape))
+(: walk-bsp-trees (-> (HashTable Integer BSP-Tree)
+                      FlVector
+                      (HashTable Integer (Listof BSP-Shape))
                       (HashTable Integer (Listof BSP-Shape))))
-(define (walk-bsp-trees key view-dir detail-shapes)
-  (define bsp-trees (hash-ref all-bsp-trees key
-                              (λ () ((inst make-immutable-hasheq Integer BSP-Tree)))))
+(define (walk-bsp-trees bsp-trees view-dir detail-shapes)
   (define vx (flvector-ref view-dir 0))
   (define vy (flvector-ref view-dir 1))
   (define vz (flvector-ref view-dir 2))

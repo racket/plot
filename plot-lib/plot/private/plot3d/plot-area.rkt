@@ -32,7 +32,7 @@
 
 (struct render-tasks ([structural-shapes : (HashTable Integer (Listof BSP-Shape))]
                       [detail-shapes : (HashTable Integer (Listof BSP-Shape))]
-                      [bsp-trees : Symbol]))
+                      [bsp-trees : (HashTable Integer BSP-Tree)]))
 
 (struct data ([alpha : Nonnegative-Real]) #:transparent)
 
@@ -967,7 +967,7 @@
     ;; View-dependent shapes, inserted into BSP trees before each refresh
     (define detail-shapes ((inst make-immutable-hash Integer (Listof BSP-Shape))))
     
-    (: bsp-trees (U #f Symbol))
+    (: bsp-trees (U #f (HashTable Integer BSP-Tree)))
     ;; Structural shapes partitioned in BSP trees, indexed by drawing layer
     ;; #f means not in sync with structural-shapes
     (define bsp-trees #f)
@@ -1003,7 +1003,7 @@
       (set! detail-shapes dts)
       (set! bsp-trees bsps))
     
-    (: sync-bsp-trees (-> Symbol))
+    (: sync-bsp-trees (-> (HashTable Integer BSP-Tree)))
     (define/private (sync-bsp-trees)
       (define bsp-trees-val bsp-trees)
       (cond
