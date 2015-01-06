@@ -26,27 +26,36 @@ Returns @racket[#t] if @racket[value] is a @tech{nonrenderer}. See @secref["nonr
 
 @section{Appearance Argument Contracts}
 
-@doc-apply[anchor/c]{
+@defthing[anchor/c contract? #:value (one-of/c 'top-left    'top    'top-right
+                                               'left        'center 'right
+                                               'bottom-left 'bottom 'bottom-right)]{
 The contract for @(racket anchor) arguments and parameters, such as @(racket plot-legend-anchor).
 }
 
-@doc-apply[color/c]{
+@defthing[color/c contract? #:value (or/c (list/c real? real? real?)
+                                          string? symbol?
+                                          (is-a?/c color%))]{
 A contract for very flexible color arguments.
 Functions that accept a @racket[color/c] almost always convert it to an RGB triplet using @racket[->color].
 }
 
-@doc-apply[plot-color/c]{
+@defthing[plot-color/c contract? #:value (or/c exact-integer? color/c)]{
 The contract for @(racket #:color) arguments, and parameters such as @(racket line-color) and @(racket surface-color).
 For the meaning of integer colors, see @(racket ->pen-color) and @(racket ->brush-color).
 }
 
-@doc-apply[plot-pen-style/c]{
-The contract for @(racket #:style) arguments (when they refer to lines), and paramters such as @(racket line-style).
+@defthing[plot-pen-style/c contract? #:value (or/c exact-integer?
+                                                   (one-of/c 'transparent 'solid    'dot 'long-dash
+                                                             'short-dash  'dot-dash))]{
+The contract for @(racket #:style) arguments when they refer to lines, and paramters such as @(racket line-style).
 For the meaning of integer pen styles, see @(racket ->pen-style).
 }
 
-@doc-apply[plot-brush-style/c]{
-The contract for @(racket #:style) arguments (when they refer to fills), and parameters such as @(racket interval-style).
+@defthing[plot-brush-style/c contract? #:value (or/c exact-integer?
+                                                     (one-of/c 'transparent      'solid
+                                                               'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch
+                                                               'horizontal-hatch 'vertical-hatch  'cross-hatch))]{
+The contract for @(racket #:style) arguments when they refer to fills, and parameters such as @(racket interval-style).
 For the meaning of integer brush styles, see @(racket ->brush-style).
 }
 
@@ -64,17 +73,40 @@ Identifies legal font family values. The same as @ff/c-element
 from @racketmodname[racket/draw].
 }
 
-@doc-apply[point-sym/c]{
+@defthing[point-sym/c contract? #:value (or/c char? string? integer? (apply one-of/c known-point-symbols))]{
 The contract for the @(racket #:sym) arguments in @(racket points) and @(racket points3d), and the parameter @(racket point-sym).
 }
 
-@doc-apply[known-point-symbols]{
+@defthing[known-point-symbols (listof symbol?)
+  #:value
+  (list 'dot               'point            'pixel
+        'plus              'times            'asterisk
+        '5asterisk         'odot             'oplus
+        'otimes            'oasterisk        'o5asterisk
+        'circle            'square           'diamond
+        'triangle          'fullcircle       'fullsquare
+        'fulldiamond       'fulltriangle     'triangleup
+        'triangledown      'triangleleft     'triangleright
+        'fulltriangleup    'fulltriangledown 'fulltriangleleft
+        'fulltriangleright 'rightarrow       'leftarrow
+        'uparrow           'downarrow        '4star
+        '5star             '6star            '7star
+        '8star             'full4star        'full5star
+        'full6star         'full7star        'full8star
+        'circle1           'circle2          'circle3
+        'circle4           'circle5          'circle6
+        'circle7           'circle8          'bullet
+        'fullcircle1       'fullcircle2      'fullcircle3
+        'fullcircle4       'fullcircle5      'fullcircle6
+        'fullcircle7       'fullcircle8)]{
 A list containing the symbols that are valid @(racket points) symbols.
 }
 
 @section{Appearance Argument List Contracts}
 
-@doc-apply[maybe-function/c]{
+@defproc[(maybe-function/c [in-contract contract?] [out-contract contract?])
+         contract?
+         #:value (or/c out-contract (in-contract . -> . out-contract))]{
 Returns a contract that accepts either a function from @racket[in-contract] to @racket[out-contract], or a plain @racket[out-contract] value. 
 
 @interaction[#:eval plot-eval
@@ -98,13 +130,15 @@ In @racketmodname[plot] functions, if @racket[in-contract] is a @racket[listof] 
 If it is shorter, the appearance values will cycle; if longer, the tail will not be used.
 }
 
-@doc-apply[maybe-apply]{
+@defproc[(maybe-apply [f (maybe-function/c any/c any/c)]
+                      [arg any/c])
+         any/c]{
 If @racket[f] is a function, applies @racket[f] to @racket[args]; otherwise returns @racket[f].
 
 This is used inside many renderer-producing @racket[plot] functions to convert @racket[maybe-function/c] values to lists of appearance values.
 }
 
-@doc-apply[plot-colors/c]{
+@defproc[(plot-colors/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof plot-color/c))]{
 Returns a contract for @(racket #:colors) arguments, as in @(racket contours) and @racket[contour-intervals].
 See @racket[maybe-function/c] for a discussion of the returned contract.
 
@@ -129,23 +163,23 @@ The function constructs colors from the values of the contour intervals.
                                              #:colors brown-interval-colors))]
 }
 
-@doc-apply[plot-pen-styles/c]{
-Like @(racket plot-colors/c), but for line styles.
-}
-
-@doc-apply[pen-widths/c]{
+@defproc[(pen-widths/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof (>=/c 0)))]{
 Like @(racket plot-colors/c), but for line widths.
 }
 
-@doc-apply[plot-brush-styles/c]{
+@defproc[(plot-pen-styles/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof plot-pen-style/c))]{
+Like @(racket plot-colors/c), but for line styles.
+}
+
+@defproc[(plot-brush-styles/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof plot-brush-style/c))]{
 Like @(racket plot-colors/c), but for fill styles.
 }
 
-@doc-apply[alphas/c]{
+@defproc[(alphas/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof (real-in 0 1)))]{
 Like @(racket plot-colors/c), but for opacities.
 }
 
-@doc-apply[labels/c]{
+@defproc[(labels/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof (or/c string? #f)))]{
 Like @racket[plot-colors/c], but for strings.
 This is used, for example, to label @racket[stacked-histogram]s.
 }

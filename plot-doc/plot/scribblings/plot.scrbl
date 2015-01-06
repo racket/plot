@@ -13,7 +13,7 @@ Thanks to Racket's excellent multiple-backend drawing library, Plot can render p
 
 @bold{Plot is a Typed Racket library}, but it can be used in untyped Racket programs with @bold{little to no performance loss}.
 The old typed interface module @racketmodname[plot/typed] is still available for old Typed Racket programs.
-New Typed Racket programs should simply use @racketmodname[plot].
+New Typed Racket programs should use @racketmodname[plot].
 
 For plotting without a GUI, see @racketmodname[plot/no-gui].
 For plotting in REPL-like environments outside of DrRacket, including Scribble manuals, see @racketmodname[plot/pict] and @racketmodname[plot/bitmap].
@@ -32,15 +32,15 @@ For plotting in REPL-like environments outside of DrRacket, including Scribble m
 
 @include-section["ticks.scrbl"]
 
-@include-section["utils.scrbl"]}
+@include-section["utils.scrbl"]
 
 @include-section["params.scrbl"]
 
-@;{@include-section["contracts.scrbl"]
+@include-section["contracts.scrbl"]}
 
 @include-section["porting.scrbl"]
 
-@include-section["typed-compat.scrbl"]
+@;{@include-section["typed-compat.scrbl"]
 
 @include-section["compat.scrbl"]}
 
