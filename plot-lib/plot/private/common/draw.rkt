@@ -360,10 +360,6 @@
 
 (: draw-bitmap/supersampling (-> (-> (Instance DC<%>) Any) Positive-Integer Positive-Integer
                                  (Instance Bitmap%)))
-#;
-(define (draw-bitmap/supersampling draw width height)
-  (draw-bitmap draw width height))
-
 (define (draw-bitmap/supersampling draw width height)
   (define bm (make-bitmap width height #:backing-scale 2))
   (define dc (make-object bitmap-dc% bm))
