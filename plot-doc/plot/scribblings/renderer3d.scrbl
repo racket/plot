@@ -59,7 +59,7 @@ For example, a scatter plot of points sampled uniformly from the surface of a sp
           [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
           [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
           [z-min (or/c rational? #f) #f] [z-max (or/c rational? #f) #f]
-          [#:samples samples exact-positive-integer? ( vector-field3d-samples)]
+          [#:samples samples exact-positive-integer? (vector-field3d-samples)]
           [#:scale scale (or/c real? (one-of/c 'auto 'normalized)) (vector-field-scale)]
           [#:color color plot-color/c (vector-field-color)]
           [#:line-width line-width (>=/c 0) (vector-field-line-width)]
