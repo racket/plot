@@ -1,6 +1,6 @@
 #lang racket
 
-(require rackunit plot plot/utils)
+(require rackunit plot plot/utils math/flonum)
 
 ;(plot-new-window? #t)
 
@@ -112,7 +112,7 @@
 (time
  (parameterize ([plot-x-tick-label-angle 15])
    (plot (list (function (λ (x) x) #:label "Exact")
-               (function (λ (x) (exact->inexact x)) #:color 2 #:label "Inexact"))
+               (function (λ (x) (fl x)) #:color 2 #:label "Inexact"))
          #:x-min #e100000000000000.0 #:x-max #e100000000000000.1
          #:width 450)))
 
@@ -287,7 +287,7 @@
               #:alpha 0.5 #:label "Random walk")))
 
 (time
- (plot (function (λ (x) (/ 1.0 (exact->inexact x))) -2 2)))
+ (plot (function (λ (x) (/ 1.0 (fl x))) -2 2)))
 
 (time
  (plot (parametric (λ (t) (vector (sin t) (cos t))) (- pi) pi

@@ -7,8 +7,6 @@
          ;; Plotting
          plot/private/common/math
          plot/private/common/contract
-         plot/private/common/plot-element
-         plot/private/common/nonrenderer
          plot/private/common/ticks
          plot/private/plot2d/plot-area
          plot/private/plot2d/renderer

@@ -132,7 +132,7 @@
 
 (defthing log-transform Axis-Transform
   (λ (x-min x-max old-function)
-    (when ((exact->inexact x-min) . <= . 0)
+    (when ((fl x-min) . <= . 0)
       (raise-type-error 'log-transform "positive real" 0 x-min x-max))
     ((make-axis-transform (invertible-function real-log real-exp)) x-min x-max old-function)))
 

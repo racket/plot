@@ -1,6 +1,6 @@
 #lang racket
 
-(require plot plot/utils unstable/flonum)
+(require plot plot/utils math/flonum)
 
 (module+ test
   (module config info
@@ -17,10 +17,10 @@
       #:y-min 0 #:y-max 1 #:z-min 0 #:z-max 1)
 
 (printf "Steps should appear all the way from the bottom to the top:~n")
-(plot (function exact->inexact (flstep 0.0 -1) (flstep 0.0 2)))
+(plot (function fl (flstep 0.0 -1) (flstep 0.0 2)))
 
 (printf "Steps should appear all the way from the bottom to the top:~n")
-(plot3d (surface3d (λ (x y) (exact->inexact x))
+(plot3d (surface3d (λ (x y) (fl x))
                    (flstep 0.0 -1) (flstep 0.0 2)
                    (flstep 0.0 -1) (flstep 0.0 2)))
 

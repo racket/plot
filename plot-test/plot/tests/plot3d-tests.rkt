@@ -1,6 +1,6 @@
 #lang racket
 
-(require plot plot/utils unstable/flonum)
+(require plot plot/utils math/flonum)
 
 ;(plot-new-window? #t)
 
@@ -78,8 +78,8 @@
 ;(plot-z-transform cbrt-transform)
 
 (time
- (plot3d (surface3d (λ (x y) (+ (/ 1.0 (exact->inexact x))
-                                (/ 1.0 (exact->inexact y))))
+ (plot3d (surface3d (λ (x y) (+ (/ 1.0 (fl x))
+                                (/ 1.0 (fl y))))
                     -2 2 -2 2
                     #:color '(255 128 128)
                     #:line-color '(255 128 128)
@@ -171,8 +171,7 @@
   (+ (* 1/8 (cos d)) (- (sqr x) (sqr y))))
 
 (define (f4 x y)
-  (imag-part (log (make-rectangular (exact->inexact x)
-                                    (exact->inexact y)))))
+  (imag-part (log (make-rectangular (fl x) (fl y)))))
 
 (define (f5 x y)
   (+ (* 1.1 (norm -1.5 -1.5 x y))

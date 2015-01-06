@@ -2,7 +2,7 @@
 
 ;; Data structure that represents a tick, and functions that produce ticks.
 
-(require racket/string racket/list racket/pretty racket/match racket/sequence racket/math
+(require racket/string racket/list racket/match racket/math math/flonum
          "type-doc.rkt"
          "types.rkt"
          "math.rkt"
@@ -193,7 +193,7 @@
     [else
      (with-exact-bounds x-min x-max
        (cond
-         [(or (x-min . <= . 0) ((exact->inexact x-min) . <= . 0))
+         [(or (x-min . <= . 0) ((fl x-min) . <= . 0))
           (raise-argument-error 'log-ticks-layout "positive Real" 0 x-min x-max)]
          [(x-max . < . x-min)
           (raise-argument-error 'log-ticks-layout (format "Real > ~a" x-min) 1 x-min x-max)]

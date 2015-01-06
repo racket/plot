@@ -2,7 +2,7 @@
 
 ;; These tests aren't meant to be run so much as manipulated after running
 
-(require plot plot/utils unstable/flonum)
+(require plot plot/utils math/flonum)
 
 (parameterize ([plot-x-transform  log-transform])
   (plot (function values +min.0 1)))
