@@ -11,6 +11,9 @@
 
 (defcontract axis-transform/c (real? real? invertible-function? . -> . invertible-function?))
 
+(defcontract ticks-layout/c (real? real? . -> . (listof pre-tick?)))
+(defcontract ticks-format/c (real? real? (listof pre-tick?) . -> . (listof string?)))
+
 (defcontract sampler/c
   (-> rational-ivl? exact-nonnegative-integer? sample?))
 
@@ -23,9 +26,6 @@
   (-> (vector/c rational-ivl? rational-ivl? rational-ivl?)
       (vector/c exact-nonnegative-integer? exact-nonnegative-integer? exact-nonnegative-integer?)
       3d-sample?))
-
-(defcontract ticks-layout/c (real? real? . -> . (listof pre-tick?)))
-(defcontract ticks-format/c (real? real? (listof pre-tick?) . -> . (listof string?)))
 
 (defcontract bounds-fun/c ((vectorof ivl?) . -> . (vectorof ivl?)))
 (defcontract ticks-fun/c ((vectorof ivl?) . -> . any))

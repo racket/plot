@@ -73,7 +73,7 @@ Because @racket[integer->superscript] is used by every number formatting functio
 }
 
 @;{
-@doc-apply[format-tick-labels]{
+format-tick-labels
 }
 }
 
@@ -128,13 +128,13 @@ This is used to generate samples for transformed axes.
 }
 
 @;{
-@doc-apply[build-linear-seq]
-@doc-apply[make-function->sampler]
-@doc-apply[make-2d-function->sampler]
-@doc-apply[make-3d-function->sampler]
-@doc-apply[sample-exact->inexact]
-@doc-apply[2d-sample-exact->inexact]
-@doc-apply[3d-sample-exact->inexact]
+build-linear-seq
+make-function->sampler
+make-2d-function->sampler
+make-3d-function->sampler
+sample-exact->inexact
+2d-sample-exact->inexact
+3d-sample-exact->inexact
 }
 
 @defproc[(kde [xs (listof real?)]
@@ -396,7 +396,7 @@ Returns @racket[#t] if @racket[i] is an interval and each of its endpoints is @r
 }
 
 @;{
-@doc-apply[empty-ivl]{
+@defthing[empty-ivl ivl?]{
 The empty interval.
 }
 

@@ -7,9 +7,7 @@
                     db
                     plot
                     plot/utils
-                    unstable/contract)
-         (rename-in unstable/latent-contract/defthing
-                    [doc-apply  old-doc-apply]))
+                    unstable/contract))
 
 (provide (all-defined-out)
          (all-from-out scribble/eval)
@@ -19,8 +17,7 @@
                                   db
                                   plot
                                   plot/utils
-                                  unstable/contract))
-         doc-apply)
+                                  unstable/contract)))
 
 (require (for-syntax racket/base
                      syntax/parse
@@ -30,15 +27,6 @@
          (for-label (only-in racket/contract any/c)))
 
 (define (author-email) "neil.toronto@gmail.com")
-
-(define-syntax (doc-apply stx)
-  (syntax-parse stx
-    [(_ name:id . pre-flows)
-     (with-syntax ([name:doc  (format-id #'name "~a:doc" #'name)])
-       (syntax-protect
-        (syntax/loc stx (s.defthing name any/c . pre-flows))
-        #;
-        (syntax/loc stx (name:doc . pre-flows))))]))
 
 (define (plot-name) "Plot")
 

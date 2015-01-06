@@ -24,11 +24,14 @@
 (provide
  (struct-out ivl))
 
-(require "common/axis-transform.rkt")
+(require "common/axis-transform.rkt"
+         (only-in "common/leftover-contracts.rkt"
+                  axis-transform/c))
 
 (provide
  (struct-out invertible-function)
  Axis-Transform
+ axis-transform/c
  id-function
  invertible-compose
  invertible-inverse
@@ -214,7 +217,10 @@
  seconds->plot-time
  datetime->real)
 
-(require "common/ticks.rkt")
+(require "common/ticks.rkt"
+         (only-in "common/leftover-contracts.rkt"
+                  ticks-layout/c
+                  ticks-format/c))
 
 (provide
  (struct-out pre-tick)
@@ -222,6 +228,8 @@
  (struct-out ticks)
  Ticks-Layout
  Ticks-Format
+ ticks-layout/c
+ ticks-format/c
  ticks-generate
  24h-descending-date-ticks-formats
  12h-descending-date-ticks-formats

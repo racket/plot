@@ -20,7 +20,7 @@ For plotting in REPL-like environments outside of DrRacket, including Scribble m
 
 @table-of-contents[]
 
-@;{@include-section["intro.scrbl"]
+@include-section["intro.scrbl"]
 
 @include-section["plotting.scrbl"]
 
@@ -36,13 +36,13 @@ For plotting in REPL-like environments outside of DrRacket, including Scribble m
 
 @include-section["params.scrbl"]
 
-@include-section["contracts.scrbl"]}
+@include-section["contracts.scrbl"]
 
 @include-section["porting.scrbl"]
 
-@;{@include-section["typed-compat.scrbl"]
+@include-section["typed-compat.scrbl"]
 
-@include-section["compat.scrbl"]}
+@include-section["compat.scrbl"]
 
 @close-plot-eval[]
 

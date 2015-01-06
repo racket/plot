@@ -122,18 +122,37 @@ Set @(racket (plot-deprecation-warnings? #t)) to be alerted the first time each 
 See @(secref "compat") for the original documentation. Replace this with @(racket list).
 }
 
-@doc-apply[line]{
+@defproc[(line [f (real? . -> . (or/c real? (vector/c real? real?)))]
+               [#:samples samples (and/c exact-integer? (>=/c 2)) 150]
+               [#:width width (>=/c 0) 1]
+               [#:color color plot-color/c 'red]
+               [#:mode mode (one-of/c 'standard 'parametric) 'standard]
+               [#:mapping mapping (one-of/c 'cartesian 'polar) 'cartesian]
+               [#:t-min t-min real? -5] [#:t-max t-max real? 5])
+         renderer2d?]{
 See @(secref "compat") for the original documentation. Replace this with @(racket function), @(racket parametric) or @(racket polar), depending on keyword arguments.
 }
 
-@doc-apply[contour]{
+@defproc[(contour [f (real? real? . -> . real?)]
+                  [#:samples samples (and/c exact-integer? (>=/c 2)) 50]
+                  [#:width width (>=/c 0) 1]
+                  [#:color color plot-color/c 'black]
+                  [#:levels levels (or/c (and/c exact-integer? (>=/c 2)) (listof real?)) 10])
+         renderer2d?]{
 See @(secref "compat") for the original documentation. Replace this with @(racket contours).
 }
 
-@doc-apply[shade]{
+@defproc[(shade [f (real? real? . -> . real?)]
+                [#:samples samples (and/c exact-integer? (>=/c 2)) 50]
+                [#:levels levels (or/c (and/c exact-integer? (>=/c 2)) (listof real?)) 10])
+         renderer2d?]{
 See @(secref "compat") for the original documentation. Replace this with @(racket contour-intervals).
 }
 
-@doc-apply[surface]{
+@defproc[(surface [f (real? real? . -> . real?)]
+                  [#:samples samples (and/c exact-integer? (>=/c 2)) 50]
+                  [#:width width (>=/c 0) 1]
+                  [#:color color plot-color/c 'black])
+         renderer3d?]{
 See @(secref "compat") for the original documentation. Replace this with @(racket surface3d).
 }
