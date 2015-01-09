@@ -68,8 +68,7 @@
            "type-doc.rkt"
            "types.rkt"
            "axis-transform.rkt"
-           "ticks.rkt"
-           "typed-ps-setup.rkt")
+           "ticks.rkt")
   
   (provide Plot-Parameters)
   

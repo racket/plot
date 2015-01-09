@@ -9,8 +9,7 @@
          "draw-attribs.rkt"
          "axis-transform.rkt"
          "ticks.rkt"
-         "math.rkt"
-         "typed-ps-setup.rkt")
+         "math.rkt")
 
 (provide (except-out (all-defined-out)
                      unit-ivl
