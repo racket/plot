@@ -3,7 +3,6 @@
 (require typed/racket/draw typed/racket/class
          "../common/type-doc.rkt"
          "../common/types.rkt"
-         "../common/typed-ps-setup.rkt"
          "../common/draw.rkt"
          "../common/parameters.rkt"
          "../common/parameter-groups.rkt"
