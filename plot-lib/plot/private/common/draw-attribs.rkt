@@ -2,7 +2,7 @@
 
 ;; Extra font, color and style functions.
 
-(require (except-in typed/racket/draw make-pen make-brush)
+(require typed/racket/draw
          typed/racket/class racket/match racket/list
          (except-in math/base sum)
          (except-in math/flonum flsum)
@@ -12,16 +12,6 @@
          "sample.rkt")
 
 (provide (all-defined-out))
-
-(require/typed
- typed/racket/draw
- [make-pen  (->* [] [#:color (Instance Color%)
-                     #:width Nonnegative-Real
-                     #:style Pen-Style]
-                 (Instance Pen%))]
- [make-brush  (->* [] [#:color (Instance Color%)
-                       #:style Brush-Style]
-                   (Instance Brush%))])
 
 ;; ===================================================================================================
 ;; Anchors
@@ -59,21 +49,24 @@
 (: make-pen% (-> Byte Byte Byte Nonnegative-Real Pen-Style (Instance Pen%)))
 ;; Returns an immutable instance of pen%. Same reasoning as for make-color%.
 (define (make-pen% r g b w s)
-  (new pen%
-       [color (make-color% r g b)]
-       [width w]
-       [style s])
-  #;
   (make-pen #:color (make-color% r g b) #:width w #:style s))
 
 (: make-brush% (-> Byte Byte Byte Brush-Style (Instance Brush%)))
 ;; Returns an immutable instance of brush%. Same reasoning as for make-color%.
 (define (make-brush% r g b s)
-  (new brush%
-       [color (make-color% r g b)]
-       [style s])
-  #;
-  (make-brush #:color (make-color% r g b) #:style s))
+  ;; A strange error in TR forces this annotation
+  ((ann make-brush
+        (-> [#:color (U String (Instance Color%))]
+            [#:style Brush-Style]
+            [#:gradient (U #f
+                           (Instance Linear-Gradient%)
+                           (Instance Radial-Gradient%))]
+            [#:transformation (U #f (Vector (Vector Real Real Real
+                                                    Real Real Real)
+                                            Real Real Real Real Real))]
+            [#:immutable? Any]
+            (Instance Brush%)))
+   #:color (make-color% r g b) #:style s))
 
 (:: ->color (-> Color (List Real Real Real)))
 (define (->color c)

@@ -2,8 +2,7 @@
 
 ;; Extra drawing functions.
 
-(require (except-in typed/racket/draw make-pen make-brush)
-         typed/racket/class racket/match racket/list
+(require typed/racket/draw typed/racket/class racket/match racket/list
          (except-in math/base sum)
          (except-in math/flonum flsum)
          "math.rkt"
@@ -354,16 +353,12 @@
 ;; ===================================================================================================
 ;; Drawing a bitmap using 2x supersampling
 
-(require/typed
- "untyped-draw.rkt"
- [set-dc-alignment-scale  (-> (Instance DC<%>) Positive-Real Void)])
-
 (: draw-bitmap/supersampling (-> (-> (Instance DC<%>) Any) Positive-Integer Positive-Integer
                                  (Instance Bitmap%)))
 (define (draw-bitmap/supersampling draw width height)
   (define bm (make-bitmap width height #:backing-scale 2))
   (define dc (make-object bitmap-dc% bm))
-  (set-dc-alignment-scale dc 2)
+  (send dc set-alignment-scale 2)
   (draw dc)
   bm)
 
