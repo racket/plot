@@ -4,8 +4,7 @@
 
 (define deps '("base"
                "plot-lib"
-               "plot-gui-lib"
-               "unstable-latent-contract-lib"))
+               "plot-gui-lib"))
 
 (define build-deps '("db-doc"
                      "db-lib"

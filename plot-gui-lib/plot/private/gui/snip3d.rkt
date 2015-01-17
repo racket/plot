@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require racket/gui/base racket/class racket/match unstable/parameter-group
+(require racket/gui/base racket/class racket/match
          plot/private/common/math
          plot/private/common/parameters
          "worker-thread.rkt"

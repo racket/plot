@@ -11,10 +11,7 @@
                "typed-racket-more"
                "compatibility-lib"
                "math-lib"
-               "unstable-contract-lib"
-               "unstable-flonum-lib"
-               "unstable-latent-contract-lib"
-               "unstable-parameter-group-lib"))
+               "unstable-latent-contract-lib"))
 
 (define build-deps '())
 

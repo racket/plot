@@ -8,10 +8,7 @@
                "snip-lib"
                "typed-racket-lib"
                "typed-racket-more"
-               "unstable-lib"
-               "unstable-contract-lib"
-               "unstable-latent-contract-lib"
-               "unstable-parameter-group-lib"))
+               "unstable-lib"))
 
 (define build-deps '())
 

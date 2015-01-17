@@ -12,8 +12,7 @@
                "rackunit-lib"
                "slideshow-lib"
                "typed-racket-lib"
-               "typed-racket-more"
-               "unstable-flonum-lib"))
+               "typed-racket-more"))
 
 (define build-deps '())
 (define update-implies '("plot-lib"))
