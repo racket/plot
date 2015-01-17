@@ -5,7 +5,7 @@
          plot/private/common/parameters
          plot/private/common/parameter-groups
          plot/private/common/parameter-group
-         plot/private/common/plot-device
+         plot/private/common/draw-attribs
          "worker-thread.rkt")
 
 (provide plot-snip%)
@@ -18,6 +18,30 @@
 
 ;; message disappears after this long
 (define message-timeout 2000)
+
+(define sin45 (/ 1.0 (sqrt 2.0)))
+
+;; Copied from private/common/draw.rkt because using the function exported from TR causes drawing the
+;; selection box numeric bounds to take 15MB of memory
+;; Can remove when TR's class contracts are slimmer
+(define (draw-text/anchor dc str x y [anchor 'top-left] [angle 0] [dist 0])
+  (define-values (width height _1 _2) (send dc get-text-extent str #f #t 0))
+  (let ([dist  (case anchor
+                 [(top-left bottom-left top-right bottom-right)  (* sin45 dist)]
+                 [else  dist])])
+    (define dx (case anchor
+                 [(top-left left bottom-left)     (- dist)]
+                 [(top center bottom)             (* 1/2 width)]
+                 [(top-right right bottom-right)  (+ width dist)]
+                 [else  (raise-type-error 'draw-text/anchor "anchor/c" anchor)]))
+    (define dy (case anchor
+                 [(top-left top top-right)           (- dist)]
+                 [(left center right)                (* 1/2 height)]
+                 [(bottom-left bottom bottom-right)  (+ height dist)]))
+    (define rdx (+ (* (sin angle) dy) (* (cos angle) dx)))
+    (define rdy (- (* (cos angle) dy) (* (sin angle) dx)))
+    
+    (send dc draw-text str (- x rdx) (- y rdy) #t 0 angle)))
 
 (define plot-snip%
   (class image-snip%
@@ -63,51 +87,92 @@
         (reset-message-timeout)
         (when refresh? (refresh))))
     
+    (define/public (draw-text dc str x y pen-color brush-color [anchor 'top-left] [angle 0] [dist 0])
+      (send dc set-text-foreground brush-color)
+      (for* ([dx  (list -1 0 1)]
+             [dy  (list -1 0 1)]
+             #:when (not (and (zero? dx) (zero? dy))))
+        (draw-text/anchor dc str (+ x dx) (+ y dy) anchor angle dist))
+      (send dc set-text-foreground pen-color)
+      (draw-text/anchor dc str x y anchor angle dist))
+    
     (define (draw-message dc dc-x-min dc-y-min)
+      (with-handlers ([exn?  (λ (e) (printf "draw-message: ~v~n" e))])
       (define bm (get-bitmap))
       (define width (send bm get-width))
       (define height (send bm get-height))
       
-      (define pd (make-object plot-device% dc dc-x-min dc-y-min width height))
-      (send pd reset-drawing-params #f)
+      (define-values (scale-x scale-y) (send dc get-scale))
+      (define-values (origin-x origin-y) (send dc get-origin))
+      (define smoothing (send dc get-smoothing))
+      (define text-mode (send dc get-text-mode))
+      (define font (send dc get-font))
+      (define pen (send dc get-pen))
+      (define brush (send dc get-brush))
+      (define alpha (send dc get-alpha))
+      (define text-foreground (send dc get-text-foreground))
+        
+      (send dc set-origin
+            (+ origin-x (* scale-x dc-x-min))
+            (+ origin-y (* scale-y dc-y-min)))
+      (send dc set-smoothing 'smoothed)
+      (send dc set-text-mode 'transparent)
+      (send dc set-font (send the-font-list find-or-create-font
+                              (real->font-size (plot-font-size))
+                              (plot-font-face)
+                              (plot-font-family)
+                              'normal
+                              'normal))
       
       (define lines (map (λ (line) (format " ~a " line)) (regexp-split "\n" message)))
       
-      (define-values (_1 char-height baseline _2) (send pd get-text-extent (first lines)))
-      (define line-widths (map (λ (line) (send pd get-text-width line)) lines))
+      (define-values (char-height baseline)
+        (let-values ([(_1 h b _2)  (send dc get-text-extent (first lines) #f #t 0)])
+          (values (inexact->exact h) (inexact->exact b))))
+      (define line-widths (map (λ (line)
+                                 (define-values (w _1 _2 _3)
+                                   (send dc get-text-extent line #f #t 0))
+                                 (inexact->exact w))
+                               lines))
       
       (define box-x-size (apply max line-widths))
       (define box-y-size (+ baseline (* (length lines) (+ char-height baseline))))
       (define box-x-min (- x-mid (* 1/2 box-x-size)))
-      (define box-x-max (+ x-mid (* 1/2 box-x-size)))
       (define box-y-min (- y-mid (* 1/2 box-y-size)))
-      (define box-y-max (+ y-mid (* 1/2 box-y-size)))
       
-      (define box-rect (vector (ivl box-x-min box-x-max) (ivl box-y-min box-y-max)))
+      (define pen-color (color->color% (->pen-color (plot-foreground))))
+      (define brush-color (color->color% (->brush-color (plot-background))))
       
       ;; inside selection
-      (send pd set-pen (plot-foreground) 1 'transparent)
-      (send pd set-brush (plot-background) 'solid)
-      (send pd set-alpha 1/4)
-      (send pd draw-rect box-rect)
+      (send dc set-pen pen-color 1 'transparent)
+      (send dc set-brush brush-color 'solid)
+      (send dc set-alpha 1/4)
+      (send dc draw-rectangle box-x-min box-y-min box-x-size box-y-size)
       
       ;; selection border
-      (send pd set-minor-pen)
-      (send pd set-brush (plot-background) 'transparent)
-      (send pd set-alpha 3/4)
-      (send pd draw-rect box-rect)
+      (send dc set-pen pen-color (* 1/2 (plot-line-width)) 'solid)
+      (send dc set-brush brush-color 'transparent)
+      (send dc set-alpha 3/4)
+      (send dc draw-rectangle box-x-min box-y-min box-x-size box-y-size)
       
-      (send pd set-alpha 1)
+      (send dc set-alpha 1)
       (for ([line  (in-list lines)] [i  (in-naturals)])
-        (send pd draw-text
-              line (vector box-x-min (+ box-y-min baseline (* i (+ char-height baseline))))
-              'top-left 0 0 #t))
-      (send pd restore-drawing-params))
+        (define x box-x-min)
+        (define y (+ box-y-min baseline (* i (+ char-height baseline))))
+        (send this draw-text dc line x y pen-color brush-color))
+      
+      (send dc set-origin origin-x origin-y)
+      (send dc set-smoothing smoothing)
+      (send dc set-text-mode text-mode)
+      (send dc set-font font)
+      (send dc set-pen pen)
+      (send dc set-brush brush)
+      (send dc set-alpha alpha)
+      (send dc set-text-foreground text-foreground)))
     
     (define/override (draw dc x y left top right bottom dx dy draw-caret)
       ;(printf "~a: drawing~n" (current-milliseconds))
       (super draw dc x y left top right bottom dx dy draw-caret)
-      ;(send dc draw-bitmap-section bm x y 0 0 width height)
       (when message
         (parameterize/group ([plot-parameters  saved-plot-parameters])
           (draw-message dc x y))))

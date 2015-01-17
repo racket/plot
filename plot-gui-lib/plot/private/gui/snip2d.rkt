@@ -1,13 +1,13 @@
 #lang racket/base
 
 (require racket/gui/base racket/class racket/match racket/list racket/math
-         plot/private/common/plot-device
          plot/private/common/math
          plot/private/common/format
          plot/private/common/ticks
          plot/private/common/parameters
          plot/private/common/parameter-groups
          plot/private/common/parameter-group
+         plot/private/common/draw-attribs
          "worker-thread.rkt"
          "snip.rkt")
 
@@ -140,26 +140,52 @@
       (super on-event dc x y editorx editory evt))
     
     (define (draw-selection dc dc-x-min dc-y-min rect)
+      (with-handlers ([exn?  (λ (e) (printf "draw-selection: ~v~n" e))])
       (when (and (rect-rational? rect) (not (rect-zero-area? rect)))
         (define width (send (get-bitmap) get-width))
         (define height (send (get-bitmap) get-height))
         
-        (define pd (make-object plot-device% dc dc-x-min dc-y-min width height))
-        (send pd reset-drawing-params #f)
+        (define-values (scale-x scale-y) (send dc get-scale))
+        (define-values (origin-x origin-y) (send dc get-origin))
+        (define smoothing (send dc get-smoothing))
+        (define text-mode (send dc get-text-mode))
+        (define font (send dc get-font))
+        (define pen (send dc get-pen))
+        (define brush (send dc get-brush))
+        (define alpha (send dc get-alpha))
+        (define text-foreground (send dc get-text-foreground))
+        
+        (send dc set-origin
+              (+ origin-x (* scale-x dc-x-min))
+              (+ origin-y (* scale-y dc-y-min)))
+        (send dc set-smoothing 'smoothed)
+        (send dc set-text-mode 'transparent)
+        (send dc set-font (send the-font-list find-or-create-font
+                                (real->font-size (plot-font-size))
+                                (plot-font-face)
+                                (plot-font-family)
+                                'normal
+                                'normal))
+        
+        (match-define (vector (ivl sel-x-min sel-x-max) (ivl sel-y-min sel-y-max)) rect)
+        (define sel-x-size (- sel-x-max sel-x-min))
+        (define sel-y-size (- sel-y-max sel-y-min))
         
         (define select-color (get-highlight-background-color))
+        (define pen-color (color->color% (->pen-color (plot-foreground))))
+        (define brush-color (color->color% (->brush-color (plot-background))))
         
         ;; inside selection
-        (send pd set-pen select-color 1 'transparent)
-        (send pd set-brush select-color 'solid)
-        (send pd set-alpha 1/4)
-        (send pd draw-rect rect)
+        (send dc set-pen select-color 1 'transparent)
+        (send dc set-brush select-color 'solid)
+        (send dc set-alpha 1/4)
+        (send dc draw-rectangle sel-x-min sel-y-min sel-x-size sel-y-size)
         
         ;; selection border
-        (send pd set-minor-pen)
-        (send pd set-brush select-color 'transparent)
-        (send pd set-alpha 3/4)
-        (send pd draw-rect rect)
+        (send dc set-pen select-color (* 1/2 (plot-line-width)) 'solid)
+        (send dc set-brush select-color 'transparent)
+        (send dc set-alpha 3/4)
+        (send dc draw-rectangle sel-x-min sel-y-min sel-x-size sel-y-size)
         
         ;; format side labels
         (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) plot-bounds-rect)
@@ -179,16 +205,25 @@
         (define new-area-x-mid (* 1/2 (+ new-area-x-min new-area-x-max)))
         (define new-area-y-mid (* 1/2 (+ new-area-y-min new-area-y-max)))
         
-        (send pd set-alpha 1)
+        (send dc set-alpha 1)
         
-        (send pd draw-text new-x-min-str (vector new-area-x-min new-area-y-mid)
-              'center (* 1/2 pi) 0 #t)
-        (send pd draw-text new-x-max-str (vector new-area-x-max new-area-y-mid)
-              'center (* 1/2 pi) 0 #t)
-        (send pd draw-text new-y-min-str (vector new-area-x-mid new-area-y-max) 'center 0 0 #t)
-        (send pd draw-text new-y-max-str (vector new-area-x-mid new-area-y-min) 'center 0 0 #t)
+        (send this draw-text dc new-x-min-str new-area-x-min new-area-y-mid
+              pen-color brush-color 'center (* 1/2 pi) 0)
+        (send this draw-text dc new-x-max-str new-area-x-max new-area-y-mid
+              pen-color brush-color 'center (* 1/2 pi) 0)
+        (send this draw-text dc new-y-min-str new-area-x-mid new-area-y-max
+              pen-color brush-color 'center 0 0)
+        (send this draw-text dc new-y-max-str new-area-x-mid new-area-y-min
+              pen-color brush-color 'center 0 0)
         
-        (send pd restore-drawing-params)))
+        (send dc set-origin origin-x origin-y)
+        (send dc set-smoothing smoothing)
+        (send dc set-text-mode text-mode)
+        (send dc set-font font)
+        (send dc set-pen pen)
+        (send dc set-brush brush)
+        (send dc set-alpha alpha)
+        (send dc set-text-foreground text-foreground))))
     
     (define/override (draw dc x y left top right bottom dx dy draw-caret)
       ;(printf "~a: drawing~n" (current-milliseconds))
