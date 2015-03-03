@@ -1,41 +1,55 @@
 #lang racket/base
 
-(require racket/contract racket/draw racket/class unstable/contract unstable/latent-contract
-         unstable/latent-contract/defthing)
+(require racket/contract
+         racket/draw
+         racket/class
+         unstable/contract)
 
-(provide (except-out (all-defined-out)
-                     maybe-function/c maybe-apply
-                     plot-colors/c pen-widths/c plot-pen-styles/c plot-brush-styles/c alphas/c
-                     labels/c)
-         (activate-contract-out
-          maybe-function/c maybe-apply
-          plot-colors/c pen-widths/c plot-pen-styles/c plot-brush-styles/c alphas/c
-          labels/c)
-         (rename-out [natural-number/c nat/c])
-         font-family/c
-         truth/c)
+(provide
+ (except-out
+  (all-defined-out)
+  maybe-function/c
+  maybe-apply
+  plot-colors/c
+  pen-widths/c
+  plot-pen-styles/c
+  plot-brush-styles/c
+  alphas/c
+  labels/c)
+ (contract-out
+  [maybe-function/c  (-> contract? contract? contract?)]
+  [maybe-apply       (-> (maybe-function/c any/c any/c) any/c any/c)]
+  [plot-colors/c        (-> contract? contract?)]
+  [pen-widths/c         (-> contract? contract?)]
+  [plot-pen-styles/c    (-> contract? contract?)]
+  [plot-brush-styles/c  (-> contract? contract?)]
+  [alphas/c             (-> contract? contract?)]
+  [labels/c             (-> contract? contract?)])
+ (rename-out [natural-number/c nat/c])
+ font-family/c
+ truth/c)
 
 ;; ===================================================================================================
 ;; Plot-specific contracts
 
-(defcontract anchor/c (one-of/c 'top-left    'top    'top-right
-                                'left        'center 'right
-                                'bottom-left 'bottom 'bottom-right))
+(define anchor/c (one-of/c 'top-left    'top    'top-right
+                           'left        'center 'right
+                           'bottom-left 'bottom 'bottom-right))
 
-(defcontract color/c (or/c (list/c real? real? real?)
-                           string? symbol?
-                           (is-a?/c color%)))
+(define color/c (or/c (list/c real? real? real?)
+                      string? symbol?
+                      (is-a?/c color%)))
 
-(defcontract plot-color/c (or/c exact-integer? color/c))
+(define plot-color/c (or/c exact-integer? color/c))
 
-(defcontract plot-pen-style/c (or/c exact-integer?
-                                    (one-of/c 'transparent 'solid    'dot 'long-dash
-                                              'short-dash  'dot-dash)))
+(define plot-pen-style/c (or/c exact-integer?
+                               (one-of/c 'transparent 'solid    'dot 'long-dash
+                                         'short-dash  'dot-dash)))
 
-(defcontract plot-brush-style/c (or/c exact-integer?
-                                      (one-of/c 'transparent      'solid
-                                                'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch
-                                                'horizontal-hatch 'vertical-hatch  'cross-hatch)))
+(define plot-brush-style/c (or/c exact-integer?
+                                 (one-of/c 'transparent      'solid
+                                           'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch
+                                           'horizontal-hatch 'vertical-hatch  'cross-hatch)))
 
 (module typed-defs typed/racket/base
   (require "type-doc.rkt")
@@ -67,30 +81,29 @@
 (require (submod "." typed-defs))
 (provide (all-from-out 'typed-defs))
 
-(defcontract point-sym/c (or/c char? string? integer? (apply one-of/c known-point-symbols)))
+(define point-sym/c (or/c char? string? integer? (apply one-of/c known-point-symbols)))
 
-(defcontract (maybe-function/c [in-contract contract?] [out-contract contract?])
+(define (maybe-function/c in-contract out-contract)
   (or/c out-contract (in-contract . -> . out-contract)))
 
-(defproc (maybe-apply [f (maybe-function/c any/c any/c)]
-                      [arg any/c]) any/c
+(define (maybe-apply f arg)
   (cond [(procedure? f)  (f arg)]
         [else            f]))
 
-(defcontract (plot-colors/c [in-contract contract?])
+(define (plot-colors/c in-contract)
   (maybe-function/c in-contract (listof plot-color/c)))
 
-(defcontract (pen-widths/c [in-contract contract?])
+(define (pen-widths/c in-contract)
   (maybe-function/c in-contract (listof (>=/c 0))))
 
-(defcontract (plot-pen-styles/c [in-contract contract?])
+(define (plot-pen-styles/c in-contract)
   (maybe-function/c in-contract (listof plot-pen-style/c)))
 
-(defcontract (plot-brush-styles/c [in-contract contract?])
+(define (plot-brush-styles/c in-contract)
   (maybe-function/c in-contract (listof plot-brush-style/c)))
 
-(defcontract (alphas/c [in-contract contract?])
+(define (alphas/c in-contract)
   (maybe-function/c in-contract (listof (real-in 0 1))))
 
-(defcontract (labels/c [in-contract contract?])
+(define (labels/c in-contract)
   (maybe-function/c in-contract (listof (or/c string? #f))))

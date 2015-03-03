@@ -1,7 +1,5 @@
 #lang racket/base
 
-(require unstable/latent-contract)
-
 ;; ===================================================================================================
 ;; General exports
 
@@ -132,8 +130,7 @@
 (require "private/deprecated/deprecated.rkt")
 (provide
  mix
- (activate-contract-out
-  line
-  contour
-  shade
-  surface))
+ line
+ contour
+ shade
+ surface)

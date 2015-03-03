@@ -10,8 +10,7 @@
                "typed-racket-lib"
                "typed-racket-more"
                "compatibility-lib"
-               "math-lib"
-               "unstable-latent-contract-lib"))
+               "math-lib"))
 
 (define build-deps '())
 

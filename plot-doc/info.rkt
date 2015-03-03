@@ -20,8 +20,9 @@
                      "slideshow-doc"
                      "slideshow-lib"
                      "srfi-doc"
-                     "unstable-contract-lib"
-                     "unstable-doc"))
+                     "unstable-doc"
+                     "unstable-contract-lib"))
+
 (define update-implies '("plot-lib"))
 
 (define pkg-desc "Documentation for plot")

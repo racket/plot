@@ -3,7 +3,6 @@
 ;; A compatibility module for the old 'plot'.
 
 (require racket/contract racket/class racket/snip racket/draw racket/vector
-         unstable/latent-contract unstable/latent-contract/defthing
          ;; Plotting
          plot/private/common/math
          plot/private/common/contract
@@ -23,15 +22,96 @@
          ;; Miscellaneous
          plot/private/deprecated/math)
 
-(provide mix
-         (activate-contract-out plot-color?
-                                plot plot3d
-                                points vector-field error-bars
-                                line
-                                contour shade
-                                surface)
-         ;; Miscellaneous
-         make-vec derivative gradient)
+(provide
+ mix
+ (contract-out
+  [plot-color?  (-> any/c boolean?)]
+  [plot
+   (->* [((is-a?/c 2d-plot-area%) . -> . void?)]
+        [#:width real?
+         #:height real?
+         #:x-min real?
+         #:x-max real?
+         #:y-min real?
+         #:y-max real?
+         #:x-label string?
+         #:y-label string?
+         #:title string?
+         #:fgcolor (list/c byte? byte? byte?)
+         #:bgcolor (list/c byte? byte? byte?)
+         #:lncolor (list/c byte? byte? byte?)
+         #:out-file (or/c path-string? output-port? #f)]
+        (is-a?/c image-snip%))]
+  [plot3d
+   (->* [((is-a?/c 3d-plot-area%) . -> . void?)]
+        [#:width real?
+         #:height real?
+         #:x-min real?
+         #:x-max real?
+         #:y-min real?
+         #:y-max real?
+         #:z-min real?
+         #:z-max real?
+         #:alt real?
+         #:az real?
+         #:x-label string?
+         #:y-label string?
+         #:z-label string?
+         #:title string?
+         #:fgcolor (list/c byte? byte? byte?)
+         #:bgcolor (list/c byte? byte? byte?)
+         #:lncolor (list/c byte? byte? byte?)
+         #:out-file (or/c path-string? output-port? #f)]
+        (is-a?/c image-snip%))]
+  [points
+   (->* [(listof (vectorof real?))]
+        [#:sym (or/c char? string? exact-integer? symbol?)
+         #:color plot-color?]
+        ((is-a?/c 2d-plot-area%) . -> . void?))]
+  [vector-field
+   (->* [((vector/c real? real?) . -> . (vector/c real? real?))]
+        [#:samples (and/c exact-integer? (>=/c 2))
+         #:width exact-positive-integer?
+         #:color plot-color?
+         #:style (one-of/c 'scaled 'normalized 'real)]
+        ((is-a?/c 2d-plot-area%) . -> . void?))]
+  [error-bars
+   (->* [(listof (vector/c real? real? real?))]
+        [#:color plot-color?]
+        ((is-a?/c 2d-plot-area%) . -> . void?))]
+  [line
+   (->* [(real? . -> . (or/c real? (vector/c real? real?)))]
+        [#:samples (and/c exact-integer? (>=/c 2))
+         #:width (>=/c 0)
+         #:color plot-color/c
+         #:mode (one-of/c 'standard 'parametric)
+         #:mapping (one-of/c 'cartesian 'polar)
+         #:t-min real?
+         #:t-max real?]
+        ((is-a?/c 2d-plot-area%) . -> . void?))]
+  [contour
+   (->* [(real? real? . -> . real?)]
+        [#:samples exact-nonnegative-integer?
+         #:width (>=/c 0)
+         #:color plot-color/c
+         #:levels (or/c (and/c exact-integer? (>=/c 2)) (listof real?))]
+        ((is-a?/c 2d-plot-area%) . -> . void?))]
+  [shade
+   (->* [(real? real? . -> . real?)]
+        [#:samples (and/c exact-integer? (>=/c 2))
+         #:levels (or/c (and/c exact-integer? (>=/c 2)) (listof real?))]
+        ((is-a?/c 2d-plot-area%) . -> . void?))]
+  [surface
+   (->* [(real? real? . -> . real?)]
+        [#:samples (and/c exact-integer? (>=/c 2))
+         #:width (>=/c 0)
+         #:color plot-color/c]
+        ((is-a?/c 3d-plot-area%) . -> . void?))]
+  )
+ ;; Miscellaneous
+ make-vec
+ derivative
+ gradient)
 
 (define (mix . data)
   (for/fold ([f  (λ (area) (void))]) ([d  (in-list data)])
@@ -40,7 +120,7 @@
       (d area)
       (void))))
 
-(defproc (plot-color? [v any/c]) boolean?
+(define (plot-color? v)
   (and (member v '(white black yellow green aqua pink wheat gray brown blue violet cyan
                          turquoise magenta salmon red))
        #t))
@@ -59,17 +139,20 @@
 (define x-axis-data (renderer2d->plot-data (new.x-axis)))
 (define y-axis-data (renderer2d->plot-data (new.y-axis)))
 
-(defproc (plot [data ((is-a?/c 2d-plot-area%) . -> . void?)]
-               [#:width width real? 400] [#:height height real? 400]
-               [#:x-min x-min real? -5] [#:x-max x-max real? 5]
-               [#:y-min y-min real? -5] [#:y-max y-max real? 5]
-               [#:x-label x-label string? "X axis"] [#:y-label y-label string? "Y axis"]
-               [#:title title string? ""]
-               [#:fgcolor fgcolor (list/c byte? byte? byte?) '(0 0 0)]
-               [#:bgcolor bgcolor (list/c byte? byte? byte?) '(255 255 255)]
-               [#:lncolor lncolor (list/c byte? byte? byte?) '(255 0 0)]
-               [#:out-file out-file (or/c path-string? output-port? #f) #f]
-               ) (is-a?/c image-snip%)
+(define (plot data
+              #:width [width 400]
+              #:height [height 400]
+              #:x-min [x-min -5]
+              #:x-max [x-max 5]
+              #:y-min [y-min -5]
+              #:y-max [y-max 5]
+              #:x-label [x-label "X axis"]
+              #:y-label [y-label "Y axis"]
+              #:title [title ""]
+              #:fgcolor [fgcolor '(0 0 0)]
+              #:bgcolor [bgcolor '(255 255 255)]
+              #:lncolor [lncolor '(255 0 0)]
+              #:out-file [out-file #f])
   (define x-ticks (ticks-generate (new.plot-x-ticks) x-min x-max))
   (define y-ticks (ticks-generate (new.plot-y-ticks) y-min y-max))
   (define bounds-rect (vector (ivl x-min x-max) (ivl y-min y-max)))
@@ -96,22 +179,25 @@
     
     (make-object image-snip% bm)))
 
-(defproc (plot3d [data ((is-a?/c 3d-plot-area%) . -> . void?)]
-                 [#:width width real? 400] [#:height height real? 400]
-                 [#:x-min x-min real? -5] [#:x-max x-max real? 5]
-                 [#:y-min y-min real? -5] [#:y-max y-max real? 5]
-                 [#:z-min z-min real? -5] [#:z-max z-max real? 5]
-                 [#:alt alt real? 30]
-                 [#:az az real? 45]
-                 [#:x-label x-label string? "X axis"]
-                 [#:y-label y-label string? "Y axis"]
-                 [#:z-label z-label string? "Z axis"]
-                 [#:title title string? ""]
-                 [#:fgcolor fgcolor (list/c byte? byte? byte?) '(0 0 0)]
-                 [#:bgcolor bgcolor (list/c byte? byte? byte?) '(255 255 255)]
-                 [#:lncolor lncolor (list/c byte? byte? byte?) '(255 0 0)]
-                 [#:out-file out-file (or/c path-string? output-port? #f) #f]
-                 ) (is-a?/c image-snip%)
+(define (plot3d data
+                #:width [width 400]
+                #:height [height 400]
+                #:x-min [x-min -5]
+                #:x-max [x-max 5]
+                #:y-min [y-min -5]
+                #:y-max [y-max 5]
+                #:z-min [z-min -5]
+                #:z-max [z-max 5]
+                #:alt [alt 30]
+                #:az [az 45]
+                #:x-label [x-label "X axis"]
+                #:y-label [y-label "Y axis"]
+                #:z-label [z-label "Z axis"]
+                #:title [title ""]
+                #:fgcolor [fgcolor '(0 0 0)]
+                #:bgcolor [bgcolor '(255 255 255)]
+                #:lncolor [lncolor '(255 0 0)]
+                #:out-file [out-file #f])
   (define x-ticks (ticks-generate (new.plot-x-ticks) x-min x-max))
   (define y-ticks (ticks-generate (new.plot-y-ticks) y-min y-max))
   (define z-ticks (ticks-generate (new.plot-z-ticks) z-min z-max))
@@ -143,19 +229,15 @@
 ;; ===================================================================================================
 ;; Functions that generate "plot data"
 
-(defproc (points [vecs (listof (vectorof real?))]
-                 [#:sym sym (or/c char? string? exact-integer? symbol?) 'square]
-                 [#:color color plot-color? 'black]
-                 ) ((is-a?/c 2d-plot-area%) . -> . void?)
+(define (points vecs #:sym [sym 'square] #:color [color 'black])
   (renderer2d->plot-data (new.points (map (λ (v) (vector-take v 2)) vecs)
                                      #:sym sym #:size 6 #:color color)))
 
-(defproc (vector-field [f ((vector/c real? real?) . -> . (vector/c real? real?))]
-                       [#:samples samples (and/c exact-integer? (>=/c 2)) 20]
-                       [#:width width exact-positive-integer? 1]
-                       [#:color color plot-color? 'red]
-                       [#:style style (one-of/c 'scaled 'normalized 'real) 'scaled]
-                       ) ((is-a?/c 2d-plot-area%) . -> . void?)
+(define (vector-field f
+                      #:samples [samples 20]
+                      #:width [width 1]
+                      #:color [color 'red]
+                      #:style [style 'scaled])
   (define scale (case style
                   [(scaled)      'auto]
                   [(normalized)  'normalized]
@@ -163,38 +245,28 @@
   (renderer2d->plot-data
    (new.vector-field f #:samples samples #:line-width width #:color color #:scale scale)))
 
-(defproc (error-bars [vecs (listof (vector/c real? real? real?))]
-                     [#:color color plot-color? 'black]
-                     ) ((is-a?/c 2d-plot-area%) . -> . void?)
+(define (error-bars vecs #:color [color 'black])
   (renderer2d->plot-data (new.error-bars vecs #:color color #:alpha 1 #:width 4)))
 
-(defproc (line [f (real? . -> . (or/c real? (vector/c real? real?)))]
-               [#:samples samples (and/c exact-integer? (>=/c 2)) 150]
-               [#:width width (>=/c 0) 1]
-               [#:color color plot-color/c 'red]
-               [#:mode mode (one-of/c 'standard 'parametric) 'standard]
-               [#:mapping mapping (one-of/c 'cartesian 'polar) 'cartesian]
-               [#:t-min t-min real? -5] [#:t-max t-max real? 5]
-               ) ((is-a?/c 2d-plot-area%) . -> . void?)
+(define (line f
+              #:samples [samples 150]
+              #:width [width 1]
+              #:color [color 'red]
+              #:mode [mode 'standard]
+              #:mapping [mapping 'cartesian]
+              #:t-min [t-min -5]
+              #:t-max [t-max 5])
   (renderer2d->plot-data (line-renderer f samples width color mode mapping t-min t-max)))
 
-(defproc (contour [f (real? real? . -> . real?)]
-                  [#:samples samples exact-nonnegative-integer? 50]
-                  [#:width width (>=/c 0) 1]
-                  [#:color color plot-color/c 'black]
-                  [#:levels levels (or/c (and/c exact-integer? (>=/c 2)) (listof real?)) 10]
-                  ) ((is-a?/c 2d-plot-area%) . -> . void?)
+(define (contour f
+                 #:samples [samples 50]
+                 #:width [width 1]
+                 #:color [color 'black]
+                 #:levels [levels 10])
   (renderer2d->plot-data (contour-renderer f samples width color levels)))
 
-(defproc (shade [f (real? real? . -> . real?)]
-                [#:samples samples (and/c exact-integer? (>=/c 2)) 50]
-                [#:levels levels (or/c (and/c exact-integer? (>=/c 2)) (listof real?)) 10]
-                ) ((is-a?/c 2d-plot-area%) . -> . void?)
+(define (shade f #:samples [samples 50] #:levels [levels 10])
   (renderer2d->plot-data (shade-renderer f samples levels)))
 
-(defproc (surface [f (real? real? . -> . real?)]
-                  [#:samples samples (and/c exact-integer? (>=/c 2)) 50]
-                  [#:width width (>=/c 0) 1]
-                  [#:color color plot-color/c 'black]
-                  ) ((is-a?/c 3d-plot-area%) . -> . void?)
+(define (surface f #:samples [samples 50] #:width [width 1] #:color [color 'black])
   (renderer3d->plot-data (surface-renderer f samples width color)))

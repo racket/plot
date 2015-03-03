@@ -6,8 +6,7 @@
                "plot-gui-lib"
                "draw-lib"
                "plot-lib"
-               "snip-lib"
-               "unstable-latent-contract-lib"))
+               "snip-lib"))
 
 (define build-deps '())
 
