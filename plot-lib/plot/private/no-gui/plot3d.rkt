@@ -191,7 +191,8 @@
   (define real-kind
     (cond [(eq? kind 'auto)
            (cond [(port? output)  (error 'plot3d-file "can't detect file type from output stream")]
-                 [else  (detect-image-file-type output)])]))
+                 [else  (detect-image-file-type output)])]
+          [else  kind]))
   (case real-kind
     [(png jpeg xbm xpm bmp)
      (define bm
