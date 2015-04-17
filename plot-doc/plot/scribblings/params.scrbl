@@ -95,6 +95,12 @@ The opacity of the background and foreground colors.
 The font size (in drawing units), face, and family of the title, axis labels, tick labels, and other labels.
 }
 
+@deftogether[((defparam plot-legend-font-size size (or/c (>=/c 0) #f) #:value #f)
+              (defparam plot-legend-font-face face (or/c string? #f) #:value #f)
+              (defparam plot-legend-font-family family (or/c font-family/c #f) #:value #f))]{
+The font size (in drawing units), face, and family to prefer for the legend text. If set to @racket[#f], then the corresponding @racket[plot-font-X] parameter is used.
+}
+
 @deftogether[((defparam plot-legend-anchor anchor anchor/c #:value 'top-left)
               (defparam plot-legend-box-alpha alpha (real-in 0 1) #:value 2/3))]{
 The placement of the legend and the opacity of its background.

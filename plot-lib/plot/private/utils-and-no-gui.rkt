@@ -76,6 +76,9 @@
  plot-font-size
  plot-font-face
  plot-font-family
+ plot-legend-font-size
+ plot-legend-font-face
+ plot-legend-font-family
  plot-legend-anchor
  plot-legend-box-alpha
  plot-decorations?

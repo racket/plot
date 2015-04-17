@@ -587,6 +587,14 @@
       
       (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) rect)
       
+      (define old-size (send (send dc get-font) get-point-size))
+      (define old-face (send (send dc get-font) get-face))
+      (define old-family (send (send dc get-font) get-family))
+      (set-font-attribs
+       (or (plot-legend-font-size) old-size)
+       (or (plot-legend-font-face) old-face)
+       (or (plot-legend-font-family) old-family))
+
       (define-values (_1 label-y-size baseline _2) (get-text-extent (first labels)))
       (define horiz-gap (get-text-width " "))
       (define top-gap baseline)
@@ -656,6 +664,9 @@
         (send entry-pd reset-drawing-params #f)
         (draw-proc this draw-x-size draw-y-size)
         (send entry-pd restore-drawing-params))
+
+      ;; reset plot font attributes
+      (set-font-attribs old-size old-face old-family)
       
       (clear-clipping-rect))
     ))  ; end class
