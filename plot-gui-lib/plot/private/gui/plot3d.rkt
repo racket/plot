@@ -11,27 +11,12 @@
          plot/private/plot3d/plot-area
          plot/private/no-gui/plot3d
          plot/private/no-gui/plot3d-utils
-         plot/private/no-gui/utils)
+         plot/private/no-gui/utils
+         "lazy-snip-typed.rkt")
 
-(require/typed
- "untyped.rkt"
- [make-3d-plot-snip
-  (-> (Instance Bitmap%)
-      Plot-Parameters
-      (-> Boolean Real Real Positive-Integer Positive-Integer (Instance Bitmap%))
-      Real
-      Real
-      Positive-Integer
-      Positive-Integer
-      (Instance Snip%))]
- [make-snip-frame
-  (-> (Instance Snip%)
-      Positive-Real
-      Positive-Real
-      String
-      (Instance Frame%))])
-
-(provide plot3d-snip plot3d-frame plot3d)
+(provide plot3d-snip
+         plot3d-frame
+         plot3d)
 
 ;; ===================================================================================================
 ;; Plot to a snip

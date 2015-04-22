@@ -10,29 +10,12 @@
          plot/private/common/utils
          plot/private/plot2d/plot-area
          plot/private/no-gui/plot2d
-         plot/private/no-gui/plot2d-utils)
+         plot/private/no-gui/plot2d-utils
+         "lazy-snip-typed.rkt")
 
-(require/typed
- "untyped.rkt"
- [make-2d-plot-snip
-  (-> (Instance Bitmap%)
-      Plot-Parameters
-      (-> Boolean Rect Positive-Integer Positive-Integer
-          (Values (Instance Bitmap%) Rect (-> Rect Rect)))
-      Rect
-      Rect
-      (-> Rect Rect)
-      Positive-Integer
-      Positive-Integer
-      (Instance Snip%))]
- [make-snip-frame
-  (-> (Instance Snip%)
-      Positive-Real
-      Positive-Real
-      String
-      (Instance Frame%))])
-
-(provide plot-snip plot-frame plot)
+(provide plot-snip
+         plot-frame
+         plot)
 
 ;; ===================================================================================================
 ;; Plot to a snip
