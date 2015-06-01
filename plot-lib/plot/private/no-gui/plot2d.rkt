@@ -64,6 +64,12 @@
                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks dc x y width height))
        (plot-area area renderer-list))]))
 
+(require (for-syntax racket/base
+                     "plot2d-evil-box.rkt"))
+
+(begin-for-syntax
+  (set-box! plot/dc-box #'plot/dc))
+
 ;; ===================================================================================================
 ;; Plot to a bitmap
 
