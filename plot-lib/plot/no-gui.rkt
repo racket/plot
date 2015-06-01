@@ -1,5 +1,7 @@
 #lang racket/base
 
+(require typed/untyped-utils)
+
 ;; ===================================================================================================
 ;; General exports
 
@@ -20,7 +22,14 @@
 ;; ===================================================================================================
 ;; 2D exports
 
-(require "private/no-gui/plot2d.rkt")
+(require (rename-in "private/no-gui/plot2d.rkt"
+                    [plot/dc  typed-plot/dc])
+         "private/no-gui/plot2d-untyped.rkt")
+
+(define-typed/untyped-identifier plot/dc
+  typed-plot/dc
+  untyped-plot/dc)
+
 (provide
  plot/dc
  plot-bitmap
@@ -81,7 +90,14 @@
 ;; ===================================================================================================
 ;; 3D exports
 
-(require "private/no-gui/plot3d.rkt")
+(require (rename-in "private/no-gui/plot3d.rkt"
+                    [plot3d/dc  typed-plot3d/dc])
+         "private/no-gui/plot3d-untyped.rkt")
+
+(define-typed/untyped-identifier plot3d/dc
+  typed-plot3d/dc
+  untyped-plot3d/dc)
+
 (provide
  plot3d/dc
  plot3d-bitmap

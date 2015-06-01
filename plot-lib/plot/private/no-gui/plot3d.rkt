@@ -79,6 +79,12 @@
                       dc x y width height))
        (plot-area area renderer-list))]))
 
+(require (for-syntax racket/base
+                     "plot3d-evil-box.rkt"))
+
+(begin-for-syntax
+  (set-box! plot3d/dc-box #'plot3d/dc))
+
 ;; ===================================================================================================
 ;; Plot to a bitmap
 
