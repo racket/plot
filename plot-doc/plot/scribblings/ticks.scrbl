@@ -228,13 +228,10 @@ This is used internally by renderers returned from @racket[contours], @racket[co
 When @racket[levels] is @racket['auto], the returned values do not correspond @italic{exactly} with the values of ticks returned by @racket[z-ticks]: they might be missing the endpoint values. For example,
 @interaction[#:eval plot-eval
                  (map pre-tick-value 
-                      (filter pre-tick-major? ((plot-z-ticks) 0 1)))
+                      (filter pre-tick-major? (ticks-generate (plot-z-ticks) 0 1)))
                  (map pre-tick-value
                       (contour-ticks (plot-z-ticks) 0 1 'auto #f))]
 }
-
-
-(defparam plot-r-ticks ticks? (linear-ticks))
 
 @defparam[plot-d-ticks ticks ticks? #:value (linear-ticks)]{
 The ticks used for default isosurface values in @racket[isosurfaces3d].
@@ -246,6 +243,12 @@ The ticks used for radius lines in @racket[polar-axes].
 
 @defstruct[ticks ([layout ticks-layout/c] [format ticks-format/c])]{
 A @racket[ticks] for a near or far axis consists of a @racket[layout] function, which determines the number of ticks and where they will be placed, and a @racket[format] function, which determines the ticks' labels.
+}
+
+@defproc[(ticks-generate [ticks ticks?] [min real?] [max real?]) (listof tick?)]{
+Generates the @racket[tick] values for the range [@racket[min], @racket[max]], with layout and format specified by @racket[ticks].
+
+@examples[#:eval plot-eval (ticks-generate (plot-x-ticks) 1/3 2/3)]
 }
 
 @defparam[ticks-default-number number exact-positive-integer? #:value 4]{
