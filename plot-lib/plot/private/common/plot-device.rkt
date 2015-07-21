@@ -101,24 +101,24 @@
 (define plot-device%
   (class object%
     (init-field dc dc-x-min dc-y-min dc-x-size dc-y-size)
-    
+
     (super-new)
-    
+
     ;; ===============================================================================================
     ;; Drawing parameters
-    
+
     (define: old-scale-x : Real  0)
     (define: old-scale-y : Real  0)
     (let-values ([(x y)  (send dc get-scale)])
       (set! old-scale-x x)
       (set! old-scale-y y))
-    
+
     (define: old-origin-x : Real  0)
     (define: old-origin-y : Real  0)
     (let-values ([(x y)  (send dc get-origin)])
       (set! old-origin-x x)
       (set! old-origin-y y))
-    
+
     (: old-smoothing (U 'aligned 'unsmoothed 'smoothed))
     (: old-text-mode (U 'transparent 'solid))
     (: old-clipping-region (U #f (Instance Region%)))
@@ -128,7 +128,7 @@
     (: old-brush (Instance Brush%))
     (: old-background (Instance Color%))
     (: old-alpha Nonnegative-Real)
-    
+
     (define old-smoothing (send dc get-smoothing))
     (define old-text-mode (send dc get-text-mode))
     (define old-clipping-region (send dc get-clipping-region))
@@ -138,7 +138,7 @@
     (define old-brush (send dc get-brush))
     (define old-background (send dc get-background))
     (define old-alpha (send dc get-alpha))
-    
+
     (define/public (restore-drawing-params)
       (send dc set-origin old-origin-x old-origin-y)
       (send dc set-smoothing old-smoothing)
@@ -150,7 +150,7 @@
       (send dc set-brush old-brush)
       (send dc set-background old-background)
       (send dc set-alpha old-alpha))
-    
+
     (define/public (reset-drawing-params [clipping-rect? #t])
       (send dc set-origin
             (+ old-origin-x (* old-scale-x dc-x-min))
@@ -166,24 +166,24 @@
       (set-background (plot-background))
       (set-background-alpha (plot-background-alpha))
       (set-alpha (plot-foreground-alpha)))
-    
+
     ;; -----------------------------------------------------------------------------------------------
     ;; Pen, brush, alpha parameters
-    
+
     (define pen-hash ((inst make-hash (Vector Integer Integer Integer Real) (Instance Pen%))))
-    (define transparent-pen (make-pen% 0 0 0 1 'transparent))
-    
+    (define transparent-pen (make-pen% 0 0 0 1 'transparent 'round))
+
     (: pen-color (List Real Real Real))
     (: pen-width Nonnegative-Real)
     (: pen-style Plot-Pen-Style-Sym)
     (define pen-color (->pen-color (plot-foreground)))
     (define pen-width (plot-line-width))
     (define pen-style 'solid)
-    
+
     ;; Sets the pen, using a hash table to avoid making duplicate objects. At time of writing (and for
     ;; the forseeable future) this is much faster than using a pen-list%, because it doesn't have to
     ;; synchronize access. It's also not thread-safe.
-    (define/public (set-pen color width style)
+    (define/public (set-pen color width style [cap 'round])
       (set! pen-style (->pen-style style))
       (cond [(eq? pen-style 'transparent)
              (set! pen-color '(0 0 0))
@@ -197,24 +197,24 @@
                                  (app real->color-byte b))
                pen-color)
              (send dc set-pen (hash-ref! pen-hash (vector r g b width)
-                                         (λ () (make-pen% r g b width 'solid))))]))
-    
+                                         (λ () (make-pen% r g b width 'solid cap))))]))
+
     ;; Sets the pen used to draw major ticks.
     (define/public (set-major-pen [style 'solid])
       (set-pen (plot-foreground) (plot-line-width) style))
-    
+
     ;; Sets the pen used to draw minor ticks.
     (define/public (set-minor-pen [style 'solid])
       (set-pen (plot-foreground) (* 1/2 (plot-line-width)) style))
-    
+
     (define brush-hash ((inst make-hash (Vector Integer Integer Integer Symbol) (Instance Brush%))))
     (define transparent-brush (make-brush% 0 0 0 'transparent))
-    
+
     (: brush-style Brush-Style)
     (: brush-color (List Real Real Real))
     (define brush-style 'solid)
     (define brush-color (->brush-color (plot-background)))
-    
+
     ;; Sets the brush. Same idea as set-pen.
     (define/public (set-brush color style)
       (set! brush-style (->brush-style style))
@@ -229,28 +229,28 @@
                brush-color)
              (send dc set-brush (hash-ref! brush-hash (vector r g b brush-style)
                                            (λ () (make-brush% r g b brush-style))))]))
-    
+
     ;; Sets alpha.
     (define/public (set-alpha a)
       (send dc set-alpha a))
-    
+
     ;; Sets the background color.
     (define/public (set-background color)
       (send dc set-background (color->color% (->brush-color color))))
-    
+
     (: background-alpha Nonnegative-Real)
     (define background-alpha 1)
-    
+
     ;; Sets the background opacity.
     (define/public (set-background-alpha alpha)
       (set! background-alpha alpha))
-    
+
     ;; -----------------------------------------------------------------------------------------------
     ;; Text parameters
-    
+
     (define/public (set-font font)
       (send dc set-font font))
-    
+
     ;; Sets the font, using the-font-list to cache fonts.
     (define/public (set-font-attribs size face family)
       (send dc set-font
@@ -266,41 +266,41 @@
                       family
                       'normal
                       'normal))))
-    
+
     ;; Sets only the font size, not the face or family.
     (define/public (set-font-size size)
       (set-font-attribs size 
                         (send (send dc get-font) get-face)
                         (send (send dc get-font) get-family)))
-    
+
     ;; Returns the character height, as an exact real.
     (define/public (get-char-height)
       (inexact->exact (send dc get-char-height)))
-    
+
     ;; Returns the character baseline, as an exact real.
     (define/public (get-char-baseline)
       (define-values (_1 _2 b _3) (get-text-extent ""))
       (inexact->exact b))
-    
+
     ;; Returns the extent of a string, as exact reals.
     (define/public (get-text-extent str)
       (define-values (w h b d)
         (send dc get-text-extent str #f #t 0))
       (values (inexact->exact w) (inexact->exact h)
               (inexact->exact b) (inexact->exact d)))
-    
+
     ;; Returns the width of a string, as an exact real.
     (define/public (get-text-width str)
       (define-values (w _1 _2 _3) (get-text-extent str))
       (inexact->exact w))
-    
+
     ;; Sets the text foreground color.
     (define/public (set-text-foreground color)
       (send dc set-text-foreground (color->color% (->pen-color color))))
-    
+
     ;; -----------------------------------------------------------------------------------------------
     ;; Clipping
-    
+
     ;; Sets a clipping rectangle
     (define/public (set-clipping-rect r)
       (cond [(rect-rational? r)
@@ -311,27 +311,27 @@
                     (raise-argument-error 'set-clipping-rect "rect-known?" r)])]
             [else
              (raise-argument-error 'set-clipping-rect "rect-rational?" r)]))
-    
+
     ;; Clears the clipping rectangle.
     (define/public (clear-clipping-rect)
       (send dc set-clipping-region #f))
-    
+
     ;; Derived classes both do manual clipping against plot bounds (instead of dc bounds).
-    
+
     ;; ===============================================================================================
     ;; Drawing primitives
-    
+
     (define/public (clear)
       (define old-alpha (send dc get-alpha))
       (send dc set-alpha background-alpha)
       (send dc clear)
       (send dc set-alpha old-alpha))
-    
+
     (define/public (draw-point v)
       (when (vrational? v)
         (match-define (vector x y) v)
         (send dc draw-point x y)))
-    
+
     (define/public (draw-polygon vs)
       (when (andmap vrational? vs)
         (let ([vs  (map coord->cons vs)])
@@ -347,7 +347,7 @@
                  (send dc set-smoothing 'smoothed)
                  (send dc set-pen old-pen)
                  (draw-lines/pen-style dc (cons (last vs) vs) pen-style)]))))
-    
+
     (define/public (draw-rect r)
       (when (rect-rational? r)
         (match-define (vector (ivl x1 x2) (ivl y1 y2)) r)
@@ -355,25 +355,25 @@
                (draw-polygon (list (vector x1 y1) (vector x1 y2) (vector x2 y2) (vector x2 y1)))]
               [else
                (raise-argument-error 'draw-rect "rect-known?" r)])))
-    
+
     (define/public (draw-lines vs)
       (when (andmap vrational? vs)
         (draw-lines/pen-style dc (map coord->cons vs) pen-style)))
-    
+
     (define/public (draw-line v1 v2)
       (when (and (vrational? v1) (vrational? v2))
         (match-define (vector x1 y1) v1)
         (match-define (vector x2 y2) v2)
         (draw-line/pen-style dc x1 y1 x2 y2 pen-style)))
-    
+
     (define/public (draw-text str v [anchor 'top-left] [angle 0] [dist 0] [outline? #f])
       (when (vrational? v)
         (match-define (vector x y) v)
-        
+
         (when outline?
           ;(define alpha (send dc get-alpha))
           (define fg (send dc get-text-foreground))
-          
+
           ;(send dc set-alpha (alpha-expt alpha 1/2))
           (send dc set-text-foreground (send dc get-background))
           (for* ([dx  (list -1 0 1)]
@@ -382,9 +382,9 @@
             (draw-text/anchor dc str (+ x dx) (+ y dy) anchor angle dist))
           ;(send dc set-alpha alpha)
           (send dc set-text-foreground fg))
-        
+
         (draw-text/anchor dc str x y anchor angle dist)))
-    
+
     (define/public (get-text-corners str v [anchor 'top-left] [angle 0] [dist 0])
       (cond [(vrational? v)
              (match-define (vector x y) v)
@@ -393,7 +393,7 @@
                     (vector (ann (inexact->exact x) Real) (ann (inexact->exact y) Real)))
                   (get-text-corners/anchor dc str x y anchor angle dist))]
             [else  empty]))
-    
+
     (define/public (draw-arrow v1 v2)
       (when (and (vrational? v1) (vrational? v2))
         (match-define (vector x1 y1) v1)
@@ -411,16 +411,16 @@
         (send dc draw-line x1 y1 x2 y2)
         (send dc draw-line x2 y2 (- x2 dx1) (- y2 dy1))
         (send dc draw-line x2 y2 (- x2 dx2) (- y2 dy2))))
-    
+
     ;; -----------------------------------------------------------------------------------------------
     ;; Glyph (point sym) primitives
-    
+
     (: make-draw-circle-glyph (-> Nonnegative-Real (-> (Vectorof Real) Void)))
     (define/private ((make-draw-circle-glyph r) v)
       (when (vrational? v)
         (match-define (vector x y) v)
         (send dc draw-ellipse (- x r -1/2) (- y r -1/2) (* 2 r) (* 2 r))))
-    
+
     (: make-draw-polygon-glyph (-> Nonnegative-Real Natural Real (-> (Vectorof Real) Void)))
     (define/private (make-draw-polygon-glyph r sides start-angle)
       (define angles (linear-seq start-angle (+ start-angle (* 2 pi)) (+ 1 sides)))
@@ -430,7 +430,7 @@
           (send dc draw-polygon (map (λ ([a : Real])
                                        (cons (+ x (* (cos a) r)) (+ y (* (sin a) r))))
                                      angles)))))
-    
+
     (: make-draw-star-glyph (-> Real Natural Real (-> (Vectorof Real) Void)))
     (define/private (make-draw-star-glyph r sides start-angle)
       (define angles (linear-seq start-angle (+ start-angle (* 2 pi)) (+ 1 (* 2 sides))))
@@ -444,7 +444,7 @@
               (cond [(odd? i)  (cons (+ x r-cos-a) (+ y r-sin-a))]
                     [else      (cons (+ x (* 1/2 r-cos-a)) (+ y (* 1/2 r-sin-a)))])))
           (send dc draw-polygon pts))))
-    
+
     (: make-draw-flare-glyph (-> Real Natural Real (-> (Vectorof Real) Void)))
     (define/private (make-draw-flare-glyph r sticks start-angle)
       (define step (/ (* 2 pi) sticks))
@@ -454,20 +454,20 @@
           (match-define (vector x y) v)
           (for ([a  (in-list angles)])
             (send dc draw-line x y (+ x (* (cos a) r)) (+ y (* (sin a) r)))))))
-    
+
     (define/public (get-tick-endpoints v r angle)
       (match-define (vector x y) v)
       (define dx (* (inexact->exact (cos angle)) r))
       (define dy (* (inexact->exact (sin angle)) r))
       (list (vector (- x dx) (- y dy)) (vector (+ x dx) (+ y dy))))
-    
+
     (define/public (draw-tick v r angle)
       (when (vrational? v)
         (match-define (vector x y) v)
         (define dx (* (cos angle) r))
         (define dy (* (sin angle) r))
         (send dc draw-line (- x dx) (- y dy) (+ x dx) (+ y dy))))
-    
+
     (: make-draw-arrow-glyph (-> Real Real (-> (Vectorof Real) Void)))
     (define/private (make-draw-arrow-glyph r angle)
       (define head-r (* 4/5 r))
@@ -488,10 +488,10 @@
           (send dc draw-line head-x head-y tail-x tail-y)
           (send dc draw-line head-x head-y (- head-x dx1) (- head-y dy1))
           (send dc draw-line head-x head-y (- head-x dx2) (- head-y dy2)))))
-    
+
     (define/public (draw-arrow-glyph v r angle)
       ((make-draw-arrow-glyph r angle) v))
-    
+
     (: make-draw-text-glyph (-> String (-> (Vectorof Real) Void)))
     (define/private (make-draw-text-glyph str)
       (define-values (x-size y-size _1 _2) (get-text-extent str))
@@ -501,14 +501,14 @@
         (when (vrational? v)
           (match-define (vector x y) v)
           (send dc draw-text str (- x dx) (- y dy) #t))))
-    
+
     (: mix-draw-glyph (-> (-> (Vectorof Real) Void)
                           (-> (Vectorof Real) Void)
                           (-> (Vectorof Real) Void)))
     (define/private ((mix-draw-glyph d1 d2) v)
       (d1 v)
       (d2 v))
-    
+
     (define/public (draw-glyphs vs sym size)
       (let-values ([(real-sym size)  (translate-glyph-sym+size sym size)])
         (define draw-glyph
@@ -571,39 +571,39 @@
                [(8star)       (make-draw-star-glyph (+ 1 r) 8 (* 1/2 pi))]
                [else  (raise-type-error 'draw-glyphs (format "one of ~a" known-point-symbols) sym)])]
             [else  (raise-type-error 'draw-glyphs "integer, character, string or symbol" sym)]))
-      
+
         (for ([v  (in-list vs)])
           (draw-glyph v))))
-    
+
     ;; ===============================================================================================
     ;; Legend
-    
+
     (define/public (draw-legend legend-entries rect)
       (define n (length legend-entries))
       (match-define (list (legend-entry #{labels : (Listof String)}
                                         #{draw-procs : (Listof Legend-Draw-Proc)})
                           ...)
         legend-entries)
-      
+
       (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) rect)
-      
+
       (define-values (_1 label-y-size baseline _2) (get-text-extent (first labels)))
       (define horiz-gap (get-text-width " "))
       (define top-gap baseline)
       (define bottom-gap (* 1/2 baseline))
       (define baseline-skip (+ label-y-size baseline))
-      
+
       (define max-label-x-size (apply max (map (λ ([label : String]) (get-text-width label)) labels)))
       (define labels-x-size (+ max-label-x-size horiz-gap))
-      
+
       (define draw-y-size (max 0 (- label-y-size baseline)))
       (define draw-x-size (* 4 draw-y-size))
-      
+
       (define legend-x-size (+ horiz-gap
                                labels-x-size (* 2 horiz-gap)
                                draw-x-size horiz-gap))
       (define legend-y-size (+ top-gap (* n baseline-skip) bottom-gap))
-      
+
       (define legend-x-min
         (cond
           [(and x-min x-max)
@@ -614,7 +614,7 @@
                                                  (* 1/2 legend-x-size))])]
           [else
            (raise-argument-error 'draw-legend "rect-known?" 1 legend-entries rect)]))
-      
+
       (define legend-y-min
         (cond
           [(and y-min y-max)
@@ -625,37 +625,37 @@
                                                     (* 1/2 legend-y-size))])]
           [else
            (raise-argument-error 'draw-legend "rect-known?" 1 legend-entries rect)]))
-      
+
       (define legend-rect (vector (ivl legend-x-min (+ legend-x-min legend-x-size))
                                   (ivl legend-y-min (+ legend-y-min legend-y-size))))
-      
+
       (define label-x-min (+ legend-x-min horiz-gap))
       (define draw-x-min (+ legend-x-min (* 2 horiz-gap) labels-x-size horiz-gap))
-      
+
       ;; legend background
       (set-pen (plot-foreground) 1 'transparent)
       (set-brush (plot-background) 'solid)
       (set-alpha (plot-legend-box-alpha))
       (draw-rect legend-rect)
-      
+
       ;; legend border
       (set-minor-pen)
       (set-brush (plot-background) 'transparent)
       (set-alpha 3/4)
       (draw-rect legend-rect)
-      
+
       (set-alpha (plot-foreground-alpha))
       (set-clipping-rect legend-rect)
       (for ([label  (in-list labels)] [draw-proc  (in-list draw-procs)] [i  (in-naturals)])
         (define label-y-min (+ legend-y-min top-gap (* i baseline-skip)))
         (draw-text label (vector (ann label-x-min Real) (ann label-y-min Real)) 'top-left 0 0 #t)
-        
+
         (define draw-y-min (+ label-y-min (* 1/2 baseline)))
-        
+
         (define entry-pd (make-object plot-device% dc draw-x-min draw-y-min draw-x-size draw-y-size))
         (send entry-pd reset-drawing-params #f)
         (draw-proc this draw-x-size draw-y-size)
         (send entry-pd restore-drawing-params))
-      
+
       (clear-clipping-rect))
     ))  ; end class

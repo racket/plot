@@ -96,7 +96,7 @@
                [dc-y-size Nonnegative-Real])
    [restore-drawing-params (-> Void)]
    [reset-drawing-params (->* [] [Boolean] Void)]
-   [set-pen (-> Plot-Color Nonnegative-Real Plot-Pen-Style Void)]
+   [set-pen (->* [Plot-Color Nonnegative-Real Plot-Pen-Style] [Pen-Cap-Style] Void)]
    [set-major-pen (->* [] [Plot-Pen-Style] Void)]
    [set-minor-pen (->* [] [Plot-Pen-Style] Void)]
    [set-brush (-> Plot-Color Plot-Brush-Style Void)]

@@ -145,6 +145,85 @@
             #:label label)]))
 
 ;; ===================================================================================================
+;; Rules are straight lines drawn with a square pen
+
+(: rule-render-proc (-> Real (U Real #f) (U Real #f)
+                        (U 'h 'v)
+                        Plot-Color
+                        Nonnegative-Real
+                        Plot-Pen-Style
+                        Nonnegative-Real
+                        (U String #f)
+                        2D-Render-Proc))
+(define ((rule-render-proc v v-min v-max h/v color width style alpha label) area)
+  (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
+  ;; This is the error that `get-bounds-rect` should raise
+  (unless (and x-min x-max y-min y-max)
+    (error 'plot "could not determine sensible plot bounds; got x ∈ ~a, y ∈ ~a"
+           (ivl->plot-label (ivl x-min x-max)) (ivl->plot-label (ivl y-min y-max))))
+
+  (send area put-alpha alpha)
+  (send area put-pen color width style 'butt)
+  (case h/v
+    [(h) (send area put-line (vector (or v-min x-min) v) (vector (or v-max x-max) v))]
+    [(v) (send area put-line (vector v (or v-min y-min)) (vector v (or v-max y-max)))])
+
+  (cond [label  (line-legend-entry label color width style)]
+        [else   empty]))
+
+(:: vrule
+    (->* [Real]
+         [(U Real #f) (U Real #f)
+          #:color Plot-Color
+          #:width Nonnegative-Real
+          #:style Plot-Pen-Style
+          #:alpha Nonnegative-Real
+          #:label (U String #f)]
+          renderer2d))
+(define (vrule x [y-min #f] [y-max #f]
+               #:color [color (line-color)]
+               #:width [width (line-width)]
+               #:style [style (line-style)]
+               #:alpha [alpha (line-alpha)]
+               #:label [label #f])
+  (define fail/pos (make-raise-argument-error 'vrule x y-min y-max))
+  (define fail/kw (make-raise-keyword-error 'vrule))
+  (cond
+    [(and y-min (not (rational? y-min)))  (fail/pos "rational?" 1)]
+    [(and y-max (not (rational? y-max)))  (fail/pos "rational?" 2)]
+    [(not (rational? width))  (fail/kw "rational?" '#:width width)]
+    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [else
+      (renderer2d #f #f default-ticks-fun
+                  (rule-render-proc x y-min y-max 'v color width style alpha label))]))
+
+(:: hrule
+    (->* [Real]
+         [(U Real #f) (U Real #f)
+          #:color Plot-Color
+          #:width Nonnegative-Real
+          #:style Plot-Pen-Style
+          #:alpha Nonnegative-Real
+          #:label (U String #f)]
+          renderer2d))
+(define (hrule y [x-min #f] [x-max #f]
+               #:color [color (line-color)]
+               #:width [width (line-width)]
+               #:style [style (line-style)]
+               #:alpha [alpha (line-alpha)]
+               #:label [label #f])
+  (define fail/pos (make-raise-argument-error 'hrule y x-min x-max))
+  (define fail/kw (make-raise-keyword-error 'hrule))
+  (cond
+    [(and x-min (not (rational? x-min)))  (fail/pos "rational?" 1)]
+    [(and x-max (not (rational? x-max)))  (fail/pos "rational?" 2)]
+    [(not (rational? width))  (fail/kw "rational?" '#:width width)]
+    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [else
+      (renderer2d #f #f default-ticks-fun
+                  (rule-render-proc y x-min x-max 'h color width style alpha label))]))
+
+;; ===================================================================================================
 ;; Function
 
 (: function-render-proc (-> Sampler Positive-Integer

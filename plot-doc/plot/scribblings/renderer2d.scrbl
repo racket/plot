@@ -276,6 +276,28 @@ For example, to plot an estimated density of the triangle distribution:
                                          #:label "Est. density")))]
 }
 
+@defproc[(hline [y real?]
+                [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+                [#:color color plot-color/c (line-color)]
+                [#:width width (>=/c 0) (line-width)]
+                [#:style style plot-pen-style/c (line-style)]
+                [#:label label (or/c string? #f) #f]
+                ) renderer2d?]{
+Draws a horizontal line at @italic{y}.
+By default, the line spans the entire plot area width.
+}
+
+@defproc[(vline [x real?]
+                [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+                [#:color color plot-color/c (line-color)]
+                [#:width width (>=/c 0) (line-width)]
+                [#:style style plot-pen-style/c (line-style)]
+                [#:label label (or/c string? #f) #f]
+                ) renderer2d?]{
+Draws a vertical line at @italic{x}.
+By default, the line spans the entire plot area height.
+}
+
 @section{2D Interval Renderers}
 
 These renderers each correspond with a line renderer, and graph the area between two lines.
