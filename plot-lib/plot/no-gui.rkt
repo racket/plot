@@ -47,6 +47,8 @@
  lines
  parametric
  polar
+ hrule
+ vrule
  function
  inverse
  density)

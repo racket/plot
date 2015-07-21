@@ -46,10 +46,10 @@
 (define (make-color% r g b)
   (make-color r g b))
 
-(: make-pen% (-> Byte Byte Byte Nonnegative-Real Pen-Style (Instance Pen%)))
+(: make-pen% (-> Byte Byte Byte Nonnegative-Real Pen-Style Pen-Cap-Style (Instance Pen%)))
 ;; Returns an immutable instance of pen%. Same reasoning as for make-color%.
-(define (make-pen% r g b w s)
-  (make-pen #:color (make-color% r g b) #:width w #:style s))
+(define (make-pen% r g b w s c)
+  (make-pen #:color (make-color% r g b) #:width w #:style s #:cap c))
 
 (: make-brush% (-> Byte Byte Byte Brush-Style (Instance Brush%)))
 ;; Returns an immutable instance of brush%. Same reasoning as for make-color%.
