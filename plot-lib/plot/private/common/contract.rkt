@@ -2,8 +2,7 @@
 
 (require racket/contract
          racket/draw
-         racket/class
-         unstable/contract)
+         racket/class)
 
 (provide
  (except-out
@@ -27,7 +26,7 @@
   [labels/c             (-> contract? contract?)])
  (rename-out [natural-number/c nat/c])
  font-family/c
- truth/c)
+ treeof)
 
 ;; ===================================================================================================
 ;; Plot-specific contracts
@@ -107,3 +106,7 @@
 
 (define (labels/c in-contract)
   (maybe-function/c in-contract (listof (or/c string? #f))))
+
+(define (treeof elem-contract)
+  (or/c elem-contract
+        (listof (recursive-contract (treeof elem-contract) #:flat))))

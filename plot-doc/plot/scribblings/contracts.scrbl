@@ -24,6 +24,10 @@ See @secref["renderer3d"] for functions that construct them.
 Returns @racket[#t] if @racket[value] is a @tech{nonrenderer}. See @secref["nonrenderer"] for functions that construct them.
 }
 
+@defproc[(treeof [elem-contract contract?]) contract?]{
+Identifies values that meet the contract @racket[elem-contract], lists of such values, lists of lists, and so on.
+}
+
 @section{Appearance Argument Contracts}
 
 @defthing[anchor/c contract? #:value (one-of/c 'top-left    'top    'top-right

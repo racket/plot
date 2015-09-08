@@ -3,8 +3,8 @@
 (require racket/contract
          racket/class
          racket/draw
-         unstable/contract
          (for-syntax racket/base "plot2d-evil-box.rkt")
+         "../../utils.rkt"
          "../common/contract.rkt"
          "../common/nonrenderer.rkt"
          "../plot2d/renderer.rkt"

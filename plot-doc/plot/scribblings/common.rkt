@@ -7,7 +7,7 @@
                     db
                     plot
                     plot/utils
-                    unstable/contract))
+                    (only-in racket/sequence sequence/c)))
 
 (provide (all-defined-out)
          (all-from-out scribble/eval)
@@ -16,8 +16,8 @@
                                   pict
                                   db
                                   plot
-                                  plot/utils
-                                  unstable/contract)))
+                                  plot/utils)
+                    sequence/c))
 
 (require (for-syntax racket/base
                      syntax/parse
