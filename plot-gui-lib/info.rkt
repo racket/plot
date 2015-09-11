@@ -4,7 +4,7 @@
 
 (define deps '("base"
                "plot-lib"
-               "gui-lib"
+               ["gui-lib" #:version "1.18"]
                "snip-lib"
                "typed-racket-lib"
                "typed-racket-more"

@@ -2,7 +2,7 @@
 
 ;; GUI helpers
 
-(require racket/gui/base racket/class unstable/gui/snip)
+(require racket/gui/base racket/class mrlib/snip-canvas)
 
 (provide (all-defined-out))
 
