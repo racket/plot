@@ -7,8 +7,7 @@
                ["gui-lib" #:version "1.18"]
                "snip-lib"
                "typed-racket-lib"
-               "typed-racket-more"
-               "unstable-lib"))
+               "typed-racket-more"))
 
 (define build-deps '())
 
