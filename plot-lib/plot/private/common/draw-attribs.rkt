@@ -145,12 +145,12 @@
 
 (: integer->gray-pen-color (-> Integer (List Real Real Real)))
 (define (integer->gray-pen-color i)
-  (define r (* 128 (expt (integer->gray-value i) 3/4)))
+  (define r (assert (* 128 (expt (integer->gray-value i) 3/4)) real?))
   (list r r r))
 
 (: integer->gray-brush-color (-> Integer (List Real Real Real)))
 (define (integer->gray-brush-color i)
-  (define r (+ 127 (* 128 (expt (max 0 (- 1 (integer->gray-value i))) 3/4))))
+  (define r (assert (+ 127 (* 128 (expt (max 0 (- 1 (integer->gray-value i))) 3/4))) real?))
   (list r r r))
 
 (: pen-colors (Vectorof (List Byte Byte Byte)))

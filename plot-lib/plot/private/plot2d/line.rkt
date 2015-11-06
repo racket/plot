@@ -303,7 +303,7 @@
        (define sd (stddev xs ws))
        (define h (max 1e-308
                       (* 1e-14 (apply max (map abs (filter rational? xs))))
-                      (* bw-adjust 1.06 sd (expt n -0.2))))
+                      (* bw-adjust 1.06 sd (assert (expt n -0.2) real?))))
        (define-values (f fx-min fx-max) (kde xs h ws))
        (let ([x-min  (if x-min x-min fx-min)]
              [x-max  (if x-max x-max fx-max)])
