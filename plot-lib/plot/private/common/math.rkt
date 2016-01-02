@@ -548,6 +548,27 @@
          [x  (if a (max x a) x)])
     x))
 
+;; Return a Real drawn randomly from the interval [(- val jitter) (+ val jitter)].
+;; If #:ivl is given, result will lie within the given interval.
+(: apply-jitter (->* [Real Nonnegative-Real] [#:ivl ivl] Real))
+(define (apply-jitter val jitter #:ivl [interval unknown-ivl])
+  (let ([offset (* (random) jitter)])
+    (if (zero? (random 2))
+        (let ([val- (- val offset)])
+          (max val- (or (ivl-min interval) val-)))
+        (let ([val+ (+ val offset)])
+          (min val+ (or (ivl-max interval) val+))))))
+
+;; Precondition: all vectors in the arguments are the same length
+(:: points-apply-jitters (->* [(Listof (Vectorof Real)) (Vectorof Nonnegative-Real)] [#:ivls (U (Vectorof ivl) #f)] Void))
+(define (points-apply-jitters vals jitters #:ivls [ivls #f])
+  (for ([v (in-list vals)])
+    (for ([i (in-range (vector-length jitters))])
+      (let ([v_i (vector-ref v i)]
+            [iv  (if ivls (vector-ref ivls i) unknown-ivl)]
+            [jt  (vector-ref jitters i)])
+        (vector-set! v i (apply-jitter v_i jt #:ivl iv))))))
+
 ;; ===================================================================================================
 ;; Rectangles
 

@@ -80,6 +80,7 @@
  ivl-translate
  bounds->intervals
  clamp-real
+ points-apply-jitters
  ;; Rectangles
  Rect
  rect-meet

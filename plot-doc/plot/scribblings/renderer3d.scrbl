@@ -28,6 +28,9 @@ See @secref["renderer2d-function-arguments"] for a detailed example.
           [#:sym sym point-sym/c (point-sym)]
           [#:color color plot-color/c (point-color)]
           [#:fill-color fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:x-jitter x-jitter (>=/c 0) (point-x-jitter)]
+          [#:y-jitter y-jitter (>=/c 0) (point-y-jitter)]
+          [#:z-jitter z-jitter (>=/c 0) (point-z-jitter)]
           [#:size size (>=/c 0) (point-size)]
           [#:line-width line-width (>=/c 0) (point-line-width)]
           [#:alpha alpha (real-in 0 1) (point-alpha)]
@@ -51,6 +54,10 @@ For example, a scatter plot of points sampled uniformly from the surface of a sp
                     
                     (plot3d (points3d (map vector xs ys zs) #:sym 'dot)
                             #:altitude 25)]
+
+When @(racket x-jitter), @(racket y-jitter), or @(racket z-jitter) is non-zero,
+ each point @(racket p) is translated to a random location inside a rectangle centered at @(racket p) with width @(racket x-jitter), height @(racket y-jitter), and depth @(racket z-jitter).
+The new points will lie within [@(racket x-min), @(racket x-max)] etc. if these bounds are non-@(racket #f).
 }
 
 @defproc[(vector-field3d
