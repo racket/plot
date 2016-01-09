@@ -39,6 +39,8 @@
           #:sym Point-Sym
           #:color Plot-Color
           #:fill-color (U Plot-Color 'auto)
+          #:x-jitter Nonnegative-Real
+          #:y-jitter Nonnegative-Real
           #:size Nonnegative-Real
           #:line-width Nonnegative-Real
           #:alpha Nonnegative-Real
@@ -50,6 +52,8 @@
                 #:sym [sym (point-sym)]
                 #:color [color (point-color)]
                 #:fill-color [fill-color 'auto]
+                #:x-jitter [x-jitter (point-x-jitter)]
+                #:y-jitter [y-jitter (point-y-jitter)]
                 #:size [size (point-size)]
                 #:line-width [line-width (point-line-width)]
                 #:alpha [alpha (point-alpha)]
@@ -67,16 +71,19 @@
             [vs  (filter vrational? vs)])
        (cond
          [(empty? vs)  (renderer2d #f #f #f #f)]
-         [else  (match-define (list (vector #{xs : (Listof Real)} #{ys : (Listof Real)}) ...) vs)
-                (let ([x-min  (if x-min x-min (apply min* xs))]
-                      [x-max  (if x-max x-max (apply max* xs))]
-                      [y-min  (if y-min y-min (apply min* ys))]
-                      [y-max  (if y-max y-max (apply max* ys))]
-                      [fill-color  (if (eq? fill-color 'auto) (->pen-color color) fill-color)])
-                  (renderer2d
-                   (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
-                   (points-render-fun vs sym color fill-color
-                                      size line-width alpha label)))]))]))
+         [else
+          (unless (= 0 x-jitter y-jitter)
+            (points-apply-jitters vs (vector x-jitter y-jitter) #:ivls (vector (ivl x-min x-max) (ivl y-min y-max))))
+          (match-define (list (vector #{xs : (Listof Real)} #{ys : (Listof Real)}) ...) vs)
+          (let ([x-min  (if x-min x-min (apply min* xs))]
+                [x-max  (if x-max x-max (apply max* xs))]
+                [y-min  (if y-min y-min (apply min* ys))]
+                [y-max  (if y-max y-max (apply max* ys))]
+                [fill-color  (if (eq? fill-color 'auto) (->pen-color color) fill-color)])
+            (renderer2d
+             (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+             (points-render-fun vs sym color fill-color
+                                size line-width alpha label)))]))]))
 
 ;; ===================================================================================================
 ;; Vector fields

@@ -39,6 +39,9 @@
           #:sym Point-Sym
           #:color Plot-Color
           #:fill-color (U Plot-Color 'auto)
+          #:x-jitter Nonnegative-Real
+          #:y-jitter Nonnegative-Real
+          #:z-jitter Nonnegative-Real
           #:size Nonnegative-Real
           #:line-width Nonnegative-Real
           #:alpha Nonnegative-Real
@@ -51,6 +54,9 @@
                   #:sym [sym (point-sym)]
                   #:color [color (point-color)]
                   #:fill-color [fill-color 'auto]
+                  #:x-jitter [x-jitter (point-x-jitter)]
+                  #:y-jitter [y-jitter (point-y-jitter)]
+                  #:z-jitter [z-jitter (point-z-jitter)]
                   #:size [size (point-size)]
                   #:line-width [line-width (point-line-width)]
                   #:alpha [alpha (point-alpha)]
@@ -70,6 +76,11 @@
             [vs  (filter vrational? vs)])
        (cond [(empty? vs)  (renderer3d #f #f #f #f)]
              [else
+              (unless (= 0 x-jitter y-jitter z-jitter)
+                (points-apply-jitters vs (vector x-jitter y-jitter z-jitter)
+                                      #:ivls (vector (ivl x-min x-max)
+                                                     (ivl y-min y-max)
+                                                     (ivl z-min z-max))))
               (match-define (list (vector #{xs : (Listof Real)}
                                           #{ys : (Listof Real)}
                                           #{zs : (Listof Real)})

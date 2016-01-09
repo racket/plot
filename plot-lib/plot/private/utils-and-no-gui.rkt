@@ -126,6 +126,9 @@
  point-sym
  point-color
  point-size
+ point-x-jitter
+ point-y-jitter
+ point-z-jitter
  point-line-width
  point-alpha
  vector-field-samples

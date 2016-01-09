@@ -52,6 +52,8 @@ Not every renderer-producing function has a @(racket #:label) argument; for exam
                  [#:sym sym point-sym/c (point-sym)]
                  [#:color color plot-color/c (point-color)]
                  [#:fill-color fill-color (or/c plot-color/c 'auto) 'auto]
+                 [#:x-jitter x-jitter (>=/c 0) (point-x-jitter)]
+                 [#:y-jitter y-jitter (>=/c 0) (point-y-jitter)]
                  [#:size size (>=/c 0) (point-size)]
                  [#:line-width line-width (>=/c 0) (point-line-width)]
                  [#:alpha alpha (real-in 0 1) (point-alpha)]
@@ -76,6 +78,33 @@ Readers of the first plot could only guess that the random points were generated
 
 The @(racket #:sym) argument may be any integer, a Unicode character or string, or a symbol in @(racket known-point-symbols).
 Use an integer when you need different points but don't care exactly what they are.
+
+When @(racket x-jitter) or @(racket y-jitter) is non-zero, all points are randomly translated from their original position.
+Specifically, each point @(racket p) is moved to a random location inside a rectangle centered at @(racket p) with width at most @(racket x-jitter) and height at most @(y-jitter).
+The new points will lie within [@(racket x-min), @(racket x-max)] and [@(racket y-min), @(racket y-max)] if these bounds are non-@(racket #f).
+
+@interaction[#:eval plot-eval
+                    (plot
+                      (points (for/list ([_i (in-range 999)])
+                                (list (* 10 (random)) 0))
+                              #:alpha 0.4
+                              #:y-jitter 1
+                              #:sym 'fullcircle1
+                              #:color "blue")
+                      #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5)]
+
+Randomly moving data points is almost always a bad idea, but jittering in a controlled manner can sometimes be useful.
+For example:
+@margin-note{More examples of jittering:
+             @hyperlink["http://kieranhealy.org/blog/archives/2015/02/03/another-look-at-the-california-vaccination-data/"]{Another Look at the California Vaccination Data}
+             and
+             @hyperlink["https://pavelfatin.com/typing-with-pleasure/"]{Typing with Pleasure}}
+
+@itemlist[
+  @item{To highlight the size of a dense (or @hyperlink["https://en.wiktionary.org/wiki/overplotting"]{overplotted}) sample.}
+  @item{To see the distribution of 1-dimensional data; as a substitute for box or violin plots.}
+  @item{To anonymize spatial data, showing i.e. an office's neighborhood but hiding its address.}
+]
 }
 
 @defproc[(vector-field

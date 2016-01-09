@@ -179,6 +179,9 @@
 
 (defparam point-sym Point-Sym 'circle)
 (defparam point-color Plot-Color 0)
+(defparam point-x-jitter Real 0)
+(defparam point-y-jitter Real 0)
+(defparam point-z-jitter Real 0)
 (defparam2 point-size Real Nonnegative-Real 6 (nonnegative-rational 'point-size))
 (defparam2 point-line-width Real Nonnegative-Real 1 (nonnegative-rational 'point-line-width))
 (defparam2 point-alpha Real Nonnegative-Real 1 (unit-ivl 'point-alpha))
