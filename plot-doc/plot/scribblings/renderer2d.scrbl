@@ -76,12 +76,16 @@ Still, it is often necessary to override these bounds, especially with randomize
                                           #:y-min 0 #:y-max 1))))]
 Readers of the first plot could only guess that the random points were generated in [0,1] × [0,1].
 
-The @(racket #:sym) argument may be any integer, a Unicode character or string, or a symbol in @(racket known-point-symbols).
+The @racket[#:sym] argument may be any integer, a Unicode character or string, or a symbol in
+@racket[known-point-symbols].
 Use an integer when you need different points but don't care exactly what they are.
 
-When @(racket x-jitter) or @(racket y-jitter) is non-zero, all points are randomly translated from their original position.
-Specifically, each point @(racket p) is moved to a random location inside a rectangle centered at @(racket p) with width at most @(racket x-jitter) and height at most @(y-jitter).
-The new points will lie within [@(racket x-min), @(racket x-max)] and [@(racket y-min), @(racket y-max)] if these bounds are non-@(racket #f).
+When @racket[x-jitter] or @racket[y-jitter] is non-zero, all points are randomly translated from their
+original position.
+Specifically, each point @racket[p] is moved to a random location inside a rectangle centered at
+@racket[p] with width at most @racket[x-jitter] and height at most @racket[y-jitter].
+The new points will lie within [@racket[x-min], @racket[x-max]] and [@racket[y-min], @racket[y-max]]
+if these bounds are non-@racket[#f].
 
 @interaction[#:eval plot-eval
                     (plot
@@ -93,12 +97,14 @@ The new points will lie within [@(racket x-min), @(racket x-max)] and [@(racket 
                               #:color "blue")
                       #:x-min -5 #:x-max 5 #:y-min -5 #:y-max 5)]
 
-Randomly moving data points is almost always a bad idea, but jittering in a controlled manner can sometimes be useful.
+Randomly moving data points is almost always a bad idea, but jittering in a controlled manner can
+sometimes be useful.
 For example:
 @margin-note{More examples of jittering:
-             @hyperlink["http://kieranhealy.org/blog/archives/2015/02/03/another-look-at-the-california-vaccination-data/"]{Another Look at the California Vaccination Data}
-             and
-             @hyperlink["https://pavelfatin.com/typing-with-pleasure/"]{Typing with Pleasure}}
+  @hyperlink["http://kieranhealy.org/blog/archives/2015/02/03/another-look-at-the-california-vaccination-data/"]
+            {Another Look at the California Vaccination Data}
+  and
+  @hyperlink["https://pavelfatin.com/typing-with-pleasure/"]{Typing with Pleasure}}
 
 @itemlist[
   @item{To highlight the size of a dense (or @hyperlink["https://en.wiktionary.org/wiki/overplotting"]{overplotted}) sample.}

@@ -55,12 +55,14 @@ For example, a scatter plot of points sampled uniformly from the surface of a sp
                     (plot3d (points3d (map vector xs ys zs) #:sym 'dot)
                             #:altitude 25)]
 
-When @(racket x-jitter), @(racket y-jitter), or @(racket z-jitter) is non-zero,
- each point @(racket p) is translated to a random location inside a box centered at @(racket p) with width @(racket x-jitter), height @(racket y-jitter), and depth @(racket z-jitter).
-The new points will lie within [@(racket x-min), @(racket x-max)] etc. if these bounds are non-@(racket #f).
+When @racket[x-jitter], @racket[y-jitter], or @racket[z-jitter] is non-zero,
+each point @racket[p] is translated to a random location inside a box centered at @racket[p] with
+width @racket[x-jitter], height @racket[y-jitter], and depth @racket[z-jitter].
+The new points will lie within [@racket[x-min], @racket[x-max]] etc. if these bounds are
+non-@racket[#f].
 
 Note that adding random noise to data, via jittering or otherwise, is usually a bad idea.
-See the documentation for @(racket points) for examples where jittering may be appropriate.
+See the documentation for @racket[points] for examples where jittering may be appropriate.
 }
 
 @defproc[(vector-field3d
