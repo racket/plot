@@ -85,6 +85,7 @@
     (->* [(-> Real Real) (Sequenceof Real)]
          [#:x-min (U Real #f) #:x-max (U Real #f)
           #:y-min (U Real #f) #:y-max (U Real #f)
+          #:samples Positive-Integer
           #:color Plot-Color
           #:style Plot-Brush-Style
           #:line-color Plot-Color
@@ -129,7 +130,9 @@
                                        [x2  (in-list (rest bin-bounds))])
               (define x-size (- x2 x1))
               (define ys (map f xs))
-              (/ (apply + ys) (length xs))))
+              (define num-xs (length xs))
+              ;; Some bins may not have samples, even if (< (length bin-bounds) samples)
+              (if (zero? num-xs) 0 (/ (apply + ys) (length xs)))))
           (rectangles (map (λ ([x-ivl : ivl] [h : Real]) (vector x-ivl (ivl 0 h)))
                            (bounds->intervals bin-bounds)
                            heights)

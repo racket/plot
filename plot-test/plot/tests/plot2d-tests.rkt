@@ -253,6 +253,11 @@
              (function f -4 4))))
 
 (time
+ ;; Intentionally using fewer samples than bins
+ (plot (list (area-histogram sqr (map (λ (x) (* (sqrt x) (sqrt 8))) (linear-seq 0 8 10)) #:samples 2)
+             (function sqr 0 8 #:samples 2))))
+
+(time
  (plot (list (area-histogram sqr (map (λ (x) (* (sqrt x) (sqrt 8))) (linear-seq 0 8 10)))
              (function sqr 0 8))))
 
