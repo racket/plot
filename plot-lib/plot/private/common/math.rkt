@@ -163,6 +163,9 @@
      (for/and ([a  (in-vector as)]
                [b  (in-vector bs)])
        (f a b))]
+    ;; The code below made unsafe vector references into the input vectors. This has
+    ;; been fixed by exchangingthe relevant instances of 'n' with the
+    ;; (presumably intended) 'i'.
     [(f as bs . vs)
      (define n (vector-length as))
      (for ([v  (in-list (cons bs vs))]
@@ -171,9 +174,9 @@
          (apply raise-argument-error 'vector-andmap (format "vector of length ~a" n) i f as bs vs)))
      (let loop ([i : Nonnegative-Fixnum  0])
        (cond [(< i n)
-              (and (apply f (vector-ref as n) (vector-ref bs n)
+              (and (apply f (vector-ref as i) (vector-ref bs i)
                           (map (plambda: (C) ([v : (Vectorof C)])
-                                 (vector-ref v n))
+                                 (vector-ref v i))
                                vs))
                    (loop (+ i 1)))]
              [else  #t]))]))
@@ -195,6 +198,7 @@
      (for/or ([a  (in-vector as)]
               [b  (in-vector bs)])
        (f a b))]
+       ;; As with vector-andmap, the following case has been slightly rewritten to avoid unsafe vector accesses.
     [(f as bs . vs)
      (define n (vector-length as))
      (for ([v  (in-list (cons bs vs))]
@@ -203,9 +207,9 @@
          (apply raise-argument-error 'vector-ormap (format "vector of length ~a" n) i f as bs vs)))
      (let loop ([i : Nonnegative-Fixnum  0])
        (cond [(< i n)
-              (or (apply f (vector-ref as n) (vector-ref bs n)
+              (or (apply f (vector-ref as i) (vector-ref bs i)
                          (map (plambda: (C) ([v : (Vectorof C)])
-                                (vector-ref v n))
+                                (vector-ref v i))
                               vs))
                   (loop (+ i 1)))]
              [else  #f]))]))
