@@ -150,7 +150,7 @@
    (All (A B C ...)
         (case-> (-> (-> A Boolean) (Vectorof A) Boolean)
                 (-> (-> A B Boolean) (Vectorof A) (Vectorof B) Boolean)
-                #;(-> (-> A B C ... C Boolean) (Vectorof A) (Vectorof B) (Vectorof C) ... C Boolean))))
+                (-> (-> A B C ... C Boolean) (Vectorof A) (Vectorof B) (Vectorof C) ... C Boolean))))
 (define vector-andmap
   (case-lambda
     [([f : (-> A Boolean)] [as : (Vectorof A)])
@@ -163,11 +163,10 @@
      (for/and ([a  (in-vector as)]
                [b  (in-vector bs)])
        (f a b))]
-       ;; The following case is dead code. There are no instances of vector-andmap that
-       ;; take more than two vectors as arguments. Moreover, the code below made unsafe
-       ;; vector references into the input vectors. This has been fixed by exchanging
-       ;; the relevant instances of 'n' with the (presumably intended) 'i'.
-    #;[(f as bs . vs)
+    ;; The code below made unsafe vector references into the input vectors. This has
+    ;; been fixed by exchangingthe relevant instances of 'n' with the
+    ;; (presumably intended) 'i'.
+    [(f as bs . vs)
      (define n (vector-length as))
      (for ([v  (in-list (cons bs vs))]
            [i  (in-naturals 2)])
@@ -186,7 +185,7 @@
    (All (A B C ...)
         (case-> (-> (-> A Boolean) (Vectorof A) Boolean)
                 (-> (-> A B Boolean) (Vectorof A) (Vectorof B) Boolean)
-                #;(-> (-> A B C ... C Boolean) (Vectorof A) (Vectorof B) (Vectorof C) ... C Boolean))))
+                (-> (-> A B C ... C Boolean) (Vectorof A) (Vectorof B) (Vectorof C) ... C Boolean))))
 (define vector-ormap
   (case-lambda
     [([f : (-> A Boolean)] [as : (Vectorof A)])
@@ -199,9 +198,8 @@
      (for/or ([a  (in-vector as)]
               [b  (in-vector bs)])
        (f a b))]
-       ;; As with vector-andmap, the following case is dead code for the same reasons.
-       ;; Again, it has been slightly rewritten to avoid unsafe vector accesses.
-    #;[(f as bs . vs)
+       ;; As with vector-andmap, the following case has been slightly rewritten to avoid unsafe vector accesses.
+    [(f as bs . vs)
      (define n (vector-length as))
      (for ([v  (in-list (cons bs vs))]
            [i  (in-naturals 2)])
