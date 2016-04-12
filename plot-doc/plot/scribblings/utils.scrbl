@@ -75,7 +75,6 @@ Because @racket[integer->superscript] is used by every number formatting functio
 @;{
 format-tick-labels
 }
-}
 
 @;====================================================================================================
 @section{Sampling}
