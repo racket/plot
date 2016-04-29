@@ -202,7 +202,7 @@ Used as default keyword arguments of @racket[points] and @racket[points3d].
 When any of @racket[x-jitter], @racket[y-jitter], or @racket[z-jitter] are non-zero,
  @racket[points] and @racket[points3d] will produce points randomly translated from their
  original position along the x, y, or z axis, respectively.
-For instance, if each parameter is set to 1, then @racket[points '(0 0)] will produce a random point
+For instance, if each parameter is set to 0.5, then @racket[points '(0 0)] will produce a random point
  in a square of area 1 centered at @racket['(0 0)].
 Likewise @racket[points3d] will make a random point within a unit cube centered at @racket['(0 0 0)].
 }

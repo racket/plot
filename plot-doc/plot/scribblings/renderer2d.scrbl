@@ -80,22 +80,26 @@ The @racket[#:sym] argument may be any integer, a Unicode character or string, o
 @racket[known-point-symbols].
 Use an integer when you need different points but don't care exactly what they are.
 
-When @racket[x-jitter] or @racket[y-jitter] is non-zero, all points are randomly translated from their
-original position.
-Specifically, each point @racket[p] is moved to a random location inside a rectangle centered at
-@racket[p] with width at most @racket[x-jitter] and height at most @racket[y-jitter].
-The new points will lie within [@racket[x-min], @racket[x-max]] and [@racket[y-min], @racket[y-max]]
+When @racket[x-jitter] is non-zero, all points are translated by a random amount
+at most @racket[x-jitter] from their original position along the x-axis.
+A non-zero @racket[y-jitter] similarly translates points along the y-axis.
+Jitter is added in both directions so total spread is twice the value given.
+To be precise, each point @racket[p] is moved to a random location inside a rectangle centered at
+@racket[p] with width at most twice @racket[x-jitter] and height at most twice @racket[y-jitter]
+subject to the constraint that new points lie within
+[@racket[x-min], @racket[x-max]] and [@racket[y-min], @racket[y-max]]
 if these bounds are non-@racket[#f].
 
 @interaction[#:eval plot-eval
                     (plot
-                      (points (for/list ([_i (in-range 999)])
-                                (list (* 10 (random)) 0))
+                      (points (for/list ([_i (in-range 1000)])
+                                (list 0 0))
                               #:alpha 0.4
+                              #:x-jitter 1
                               #:y-jitter 1
                               #:sym 'fullcircle1
                               #:color "blue")
-                      #:x-min 0 #:x-max 10 #:y-min -2 #:y-max 2)]
+                      #:x-min -2 #:x-max 2 #:y-min -2 #:y-max 2)]
 
 Randomly moving data points is almost always a bad idea, but jittering in a controlled manner can
 sometimes be useful.

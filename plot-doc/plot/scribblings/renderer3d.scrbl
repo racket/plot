@@ -56,10 +56,9 @@ For example, a scatter plot of points sampled uniformly from the surface of a sp
                             #:altitude 25)]
 
 When @racket[x-jitter], @racket[y-jitter], or @racket[z-jitter] is non-zero,
-each point @racket[p] is translated to a random location inside a box centered at @racket[p] with
-width @racket[x-jitter], height @racket[y-jitter], and depth @racket[z-jitter].
-The new points will lie within [@racket[x-min], @racket[x-max]] etc. if these bounds are
-non-@racket[#f].
+each point @racket[p] is translated along the matching axis by a random distance
+no greater than the given value. Jitter may be applied in either the positive or
+negative direction, so total spread along e.g. the x-axis is twice @racket[x-jitter].
 
 Note that adding random noise to data, via jittering or otherwise, is usually a bad idea.
 See the documentation for @racket[points] for examples where jittering may be appropriate.
