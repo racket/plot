@@ -280,7 +280,7 @@ For example, to plot an estimated density of the triangle distribution:
                                          #:label "Est. density")))]
 }
 
-@defproc[(hline [y real?]
+@defproc[(hrule [y real?]
                 [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
                 [#:color color plot-color/c (line-color)]
                 [#:width width (>=/c 0) (line-width)]
@@ -291,7 +291,7 @@ Draws a horizontal line at @italic{y}.
 By default, the line spans the entire plot area width.
 }
 
-@defproc[(vline [x real?]
+@defproc[(vrule [x real?]
                 [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
                 [#:color color plot-color/c (line-color)]
                 [#:width width (>=/c 0) (line-width)]
