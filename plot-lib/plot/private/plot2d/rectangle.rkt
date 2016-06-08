@@ -312,3 +312,13 @@
          #:color color #:style style #:line-color line-color #:line-width line-width
          #:line-style line-style #:alpha alpha #:label label
          #:add-ticks? add-ticks? #:far-ticks? far-ticks?)))))
+
+;; ===================================================================================================
+;; Conversion helpers
+
+(: hash->cat-vals (All (A) (-> (HashTable Any A) (Sequenceof (List Any A)))))
+(define (hash->cat-vals h)
+  (for/list : (Listof (List Any A))
+            ([(k v) (in-hash h)])
+    (list k v)))
+

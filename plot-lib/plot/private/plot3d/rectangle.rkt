@@ -305,3 +305,14 @@
          #:line-style line-style #:alpha alpha #:label label
          #:add-x-ticks? add-x-ticks? #:add-y-ticks? add-y-ticks?
          #:x-far-ticks? x-far-ticks? #:y-far-ticks? y-far-ticks?)))))
+
+;; ===================================================================================================
+;; Conversion helpers
+
+(: hash->cat2-vals (All (A) (-> (HashTable Any (HashTable Any A)) (Sequenceof (List Any Any A)))))
+(define (hash->cat2-vals h)
+  (for*/list : (Listof (List Any Any A))
+             ([(k1 k2v) (in-hash h)]
+              [(k2 v) (in-hash k2v)])
+    (list k1 k2 v)))
+

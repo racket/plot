@@ -57,6 +57,9 @@
  (plot3d (discrete-histogram3d cat-vals)))
 
 (time
+  (plot3d (discrete-histogram3d (hash->cat2-vals (hash 'A (hash 'B 3) 'C (hash 'B 4 'D 5))))))
+
+(time
  (plot3d (stacked-histogram3d '(#(a a (1 1 1)) #(a b (1.5 3)) #(b b ()) #(b a (1/2)))
                               #:labels '("Red" #f "Blue") #:alphas '(2/3))))
 
@@ -64,6 +67,9 @@
  (plot3d (stacked-histogram3d '(#(a a (1 1 1)) #(a b (1.5 3)) #(b b ()) #(b a (1/2)))
                               #:labels '("Red" #f "Blue") #:alphas '(2/3)
                               #:add-x-ticks? #f #:add-y-ticks? #f)))
+
+(time
+  (plot3d (stacked-histogram3d (hash->cat2-vals (hash 'A (make-hash '((B 3 3))) 'C (make-hash '((B 4) (D 5))))))))
 
 (time
  (plot3d (surface3d + 0 10 0 1)

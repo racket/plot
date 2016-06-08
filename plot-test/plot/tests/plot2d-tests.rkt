@@ -235,10 +235,16 @@
                              #:invert? #t #:add-ticks? #f))))
 
 (time
+ (plot (discrete-histogram (hash->cat-vals (hash 'A 1 'B 2 'C 0)))))
+
+(time
  (parameterize ([plot-x-ticks  (currency-ticks)])
    (plot (stacked-histogram (list (vector '(a . a) '(1 2 1)) (vector '(a . b) '(2 1 3))
                                   (vector '(b . b) '()) (vector '(b . a) '(4 4 2)))
                             #:invert? #t #:add-ticks? #f))))
+
+(time
+ (plot (stacked-histogram (hash->cat-vals (make-immutable-hash '((A 1 1 1) (B 2 0) (C 0 1 4)))))))
 
 (time
  (plot (rectangles
