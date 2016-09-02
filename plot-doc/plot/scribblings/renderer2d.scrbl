@@ -526,9 +526,9 @@ For example, the canonical saddle, with its gradient field superimposed:
           [#:label label (or/c string? #f) #f]
           ) renderer2d?]{
 Returns a renderer that draws rectangles.
-The rectanges are given as a list of vectors of intervals---each vector defines the bounds of a rectangle. For example,
-@interaction[#:eval plot-eval (plot (rectangles (list (vector (ivl -1 1) (ivl -1 1))
-                                                      (vector (ivl 1 2) (ivl 1 2)))))]
+The rectangles are given as a sequence of sequences of intervals---each inner sequence defines the bounds of a rectangle. For example,
+@interaction[#:eval plot-eval (plot (rectangles (list (vector (ivl -1 0) (ivl -1 1))
+                                                      (vector (ivl 0 2) (ivl 1 2)))))]
 }
 
 @defproc[(area-histogram
