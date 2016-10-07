@@ -498,11 +498,29 @@ Like scale suffixes, actual formats vary with geography, but currency formats ca
               @defthing[no-ticks ticks? #:value (ticks no-ticks-layout no-ticks-format)])]{
 The layout function, format function, and combined @racket[ticks] for no ticks whatsoever.
 @examples[#:eval plot-eval
-                 (parameterize ([plot-x-ticks  no-ticks]
-                                [plot-y-ticks  no-ticks]
-                                [plot-x-label  #f]
-                                [plot-y-label  #f])
-                   (plot (list (polar-axes) (polar (λ (θ) 1/3)))))]
+          (parameterize ([plot-x-ticks no-ticks]
+                         [plot-y-ticks no-ticks]
+                         [plot-x-label #f]
+                         [plot-y-label #f])
+            (list (plot (function /)
+                        #:x-min 0.01 #:x-max 1/4)))
+          (parameterize ([plot-x-ticks  no-ticks]
+                         [plot-y-ticks  no-ticks]
+                         [plot-x-label  #f]
+                         [plot-y-label  #f])
+            (plot (polar (λ (θ) 1/3))))
+          (parameterize ([plot-x-ticks no-ticks]
+                         [plot-y-ticks no-ticks]
+                         [plot-x-label #f]
+                         [plot-y-label #f])
+            (plot (function (λ (x) (abs (* 2 x))))
+                  #:x-min -10 #:x-max 10))
+          (parameterize ([plot-x-ticks no-ticks]
+                         [plot-y-ticks no-ticks]
+                         [plot-x-label #f]
+                         [plot-y-label #f])
+            (plot (inverse (λ (y) (* -3 (abs (sin y)))))
+                  #:y-min 0 #:y-max (* 2 pi)))]
 }
 
 @deftogether[(@defproc[(bit/byte-ticks-format [#:size size (or/c 'byte 'bit) 'byte]
