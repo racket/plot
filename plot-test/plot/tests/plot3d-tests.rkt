@@ -258,3 +258,6 @@
  (define (f x y) (* (sin x) (cos y)))
  (plot3d (list (contour-intervals3d f -3 3 -3 3)
                (point-label3d (list -1 1 (f -1 1))))))
+
+(time
+ (plot3d (vector-field3d (lambda (x y z) (list 1 1 0)) 0 10 0 10 0 10)))

@@ -140,9 +140,9 @@
                    (match scale
                      [(? real?)  (map (λ ([mag : Real]) (* scale mag)) mags)]
                      ['normalized  (make-list (length dxs) (min box-x-size box-y-size box-z-size))]
-                     ['auto  (define dx-max (apply max (map abs dxs)))
-                             (define dy-max (apply max (map abs dys)))
-                             (define dz-max (apply max (map abs dzs)))
+                     ['auto  (define dx-max (real->double-flonum (apply max (map abs dxs))))
+                             (define dy-max (real->double-flonum (apply max (map abs dys))))
+                             (define dz-max (real->double-flonum (apply max (map abs dzs))))
                              (define scale (min (/ box-x-size dx-max)
                                                 (/ box-y-size dy-max)
                                                 (/ box-z-size dz-max)))
