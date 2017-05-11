@@ -491,3 +491,14 @@
                (function f 1 14 #:color 4)
                (point-label (vector 0 1) "y → 1 as x → 0" #:anchor 'bottom-right))
          #:y-max 1.2)))
+
+(time ;; check `hrule` and `vrule` arguments
+  (plot
+    (list (hrule -1)
+          (hrule 0 0)
+          (hrule 1 0 1 #:color 1 #:width 3 #:style 'long-dash #:alpha 0.6 #:label "H")
+          (vrule -1)
+          (vrule 0 0)
+          (vrule 1 0 1 #:color 2 #:width 3 #:style 'long-dash #:alpha 0.6 #:label "V"))
+    #:x-min -2 #:x-max 2
+    #:y-min -2 #:y-max 2))

@@ -285,6 +285,7 @@ For example, to plot an estimated density of the triangle distribution:
                 [#:color color plot-color/c (line-color)]
                 [#:width width (>=/c 0) (line-width)]
                 [#:style style plot-pen-style/c (line-style)]
+                [#:alpha alpha (real-in 0 1) (line-alpha)]
                 [#:label label (or/c string? #f) #f]
                 ) renderer2d?]{
 Draws a horizontal line at @italic{y}.
@@ -296,6 +297,7 @@ By default, the line spans the entire plot area width.
                 [#:color color plot-color/c (line-color)]
                 [#:width width (>=/c 0) (line-width)]
                 [#:style style plot-pen-style/c (line-style)]
+                [#:alpha alpha (real-in 0 1) (line-alpha)]
                 [#:label label (or/c string? #f) #f]
                 ) renderer2d?]{
 Draws a vertical line at @italic{x}.
