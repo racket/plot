@@ -52,7 +52,7 @@
       [(18)  (values 'full5star size)]
       [(19)  (values 'square size)]
       [(20 circle1)  (values 'circle (* 3/6 size))]
-      [(21 cirlce2)  (values 'circle (* 4/6 size))]
+      [(21 circle2)  (values 'circle (* 4/6 size))]
       [(22 circle3)  (values 'circle (* 5/6 size))]
       [(23 circle4)  (values 'circle size)]
       [(24 circle5)  (values 'circle (* 8/6 size))]
