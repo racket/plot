@@ -1,8 +1,9 @@
-#lang typed/racket/base
+#lang racket/base
 
 (require (for-syntax racket/base
                      racket/list
-                     syntax/parse))
+                     syntax/parse)
+         typed/racket/base)
 
 (provide (all-defined-out))
 
