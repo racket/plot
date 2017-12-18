@@ -1,28 +1,22 @@
-#lang s-exp typed-racket/base-env/extra-env-lang
+#lang typed/racket/base
 
-(require typed/racket/base
+(require typed/racket/unsafe
          typed/racket/draw
          typed/racket/class
-         (only-in "untyped-utils.rkt"
-                  new-post-script-dc%
-                  new-pdf-dc%
-                  new-svg-dc%
-                  dc)  ; uncontracted wrapper for `dc` in `pict` module
-         "evil-types.rkt"  ; for Pict and pict?
-         (for-syntax (submod "evil-types.rkt" #%type-decl)))
+         "evil-types.rkt")
 
 (provide Pict pict? dc
          new-post-script-dc%
          new-pdf-dc%
          new-svg-dc%)
 
-(type-environment
+(unsafe-require/typed "untyped-utils.rkt"
  [dc
-  (parse-type #'(-> (-> (Instance DC<%>) Real Real Any) Real Real Pict))]
+  (-> (-> (Instance DC<%>) Real Real Any) Real Real Pict)]
  [new-post-script-dc%
-  (parse-type #'(-> Positive-Integer Positive-Integer (U Path-String Output-Port) (Instance DC<%>)))]
+  (-> Positive-Integer Positive-Integer (U Path-String Output-Port) (Instance DC<%>))]
  [new-pdf-dc%
-  (parse-type #'(-> Positive-Integer Positive-Integer (U Path-String Output-Port) (Instance DC<%>)))]
+  (-> Positive-Integer Positive-Integer (U Path-String Output-Port) (Instance DC<%>))]
  [new-svg-dc%
-  (parse-type #'(-> Positive-Integer Positive-Integer (U Path-String Output-Port) (Instance DC<%>)))]
+  (-> Positive-Integer Positive-Integer (U Path-String Output-Port) (Instance DC<%>))]
  )
