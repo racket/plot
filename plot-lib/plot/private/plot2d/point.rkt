@@ -249,3 +249,83 @@
                 (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
                             (error-bars-render-fun xs ys hs
                                                    color line-width line-style width alpha)))]))]))
+
+;; ===================================================================================================
+;; Candlesticks
+
+(: candlesticks-render-fun (-> (Listof Real) (Listof Real) (Listof Real) (Listof Real) (Listof Real)
+                               Plot-Color Plot-Color Nonnegative-Real Plot-Pen-Style
+                               Nonnegative-Real Nonnegative-Real
+                               2D-Render-Proc))
+(define ((candlesticks-render-fun xs opens highs lows closes up-color down-color line-width line-style width alpha) area)
+  (define clip-rect (send area get-clip-rect))
+  (define radius (* 1/2 width))
+  
+  (send area put-alpha alpha)
+  (send area put-pen up-color line-width line-style)
+  (for ([x  (in-list xs)] [open  (in-list opens)] [high  (in-list highs)] [low  (in-list lows)] [close  (in-list closes)])
+    ;(when (rect-contains? clip-rect (vector x (/ (+ high low) 2)))
+      (define v1 (vector x open))
+      (define v2 (vector x high))
+      (define v3 (vector x low))
+      (define v4 (vector x close))
+      (define r1 (vector (ivl (- x radius) (+ x radius)) (ivl open close)))
+      (cond [(> open close) (send area put-pen down-color line-width line-style)
+                            (send area put-line v2 v1)
+                            (send area put-line v4 v3)
+                            (send area put-brush down-color 'solid)
+                            (send area put-rect r1)]
+            [else (send area put-pen up-color line-width line-style)
+                  (send area put-line v2 v4)
+                  (send area put-line v1 v3)
+                  (send area put-brush up-color 'solid)
+                  (send area put-rect r1)]));)
+  empty)
+
+(:: candlesticks
+    (->* [(Sequenceof (Sequenceof Real))]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:y-min (U Real #f) #:y-max (U Real #f)
+          #:up-color Plot-Color
+          #:down-color Plot-Color
+          #:line-width Nonnegative-Real
+          #:line-style Plot-Pen-Style
+          #:width Nonnegative-Real
+          #:alpha Nonnegative-Real]
+         renderer2d))
+(define (candlesticks candles
+                      #:x-min [x-min #f] #:x-max [x-max #f]
+                      #:y-min [y-min #f] #:y-max [y-max #f]
+                      #:up-color [up-color candlestick-up-color]
+                      #:down-color [down-color candlestick-down-color]
+                      #:line-width [line-width (candlestick-line-width)]
+                      #:line-style [line-style (candlestick-line-style)]
+                      #:width [width (candlestick-width)]
+                      #:alpha [alpha (candlestick-alpha)])
+  (define fail/kw (make-raise-keyword-error 'candlesticks))
+  (cond
+    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
+    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
+    [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
+    [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [(not (rational? line-width))  (fail/kw "rational?" '#:line-width line-width)]
+    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [else
+     (let* ([candles  (sequence->listof-vector 'candlesticks candles 5)]
+            [candles  (filter vrational? candles)])
+       (cond [(empty? candles)  (renderer2d #f #f #f #f)]
+             [else
+              (match-define (list (vector #{xs : (Listof Real)}
+                                          #{opens : (Listof Real)}
+                                          #{highs : (Listof Real)}
+                                          #{lows : (Listof Real)}
+                                          #{closes : (Listof Real)})
+                                  ...)
+                candles)
+              (let ([x-min  (if x-min x-min (apply min* xs))]
+                    [x-max  (if x-max x-max (apply max* xs))]
+                    [y-min  (if y-min y-min (apply min* lows))]
+                    [y-max  (if y-max y-max (apply max* highs))])
+                (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+                            (candlesticks-render-fun xs opens highs lows closes
+                                                     up-color down-color line-width line-style width alpha)))]))]))
