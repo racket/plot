@@ -250,6 +250,22 @@ The default pen color, pen width, pen style, scaling factor, and opacity used by
 The default width, pen color/width/style, and opacity used by @racket[error-bars].
 }
 
+@section{Candlesticks}
+
+@deftogether[((defparam candlestick-width width (>=/c 0) #:value 6)
+              (defparam candlestick-up-color color plot-color/c #:value 2)
+              (defparam candlestick-down-color color plot-color/c #:value 1)
+              (defparam candlestick-line-width pen-width (>=/c 0) #:value 1)
+              (defparam candlestick-line-style pen-style plot-pen-style/c #:value 'solid)
+              (defparam candlestick-alpha alpha (real-in 0 1) #:value 2/3))]{
+The default width, pen color/width/style, and opacity used by @racket[candlesticks]. Both the up (a candle whose 
+open value is lower than its close value) color and the down (a candle whose open value is higher than its close 
+value) color can be specified independently. The width parameter will be important to specify if your x-axis is 
+in units like days, weeks, or months. Because dates are actually represented as seconds from an epoch, your 
+width should take that into consideration. For example, a width of 86400 may be useful for x-axis values in days 
+as there are 86400 seconds in a day. This candle will be exactly one day in width.
+}
+
 @section{Contours and Contour Intervals}
 
 @deftogether[(

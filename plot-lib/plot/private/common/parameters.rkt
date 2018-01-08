@@ -205,6 +205,15 @@
 (defparam error-bar-line-style Plot-Pen-Style 'solid)
 (defparam2 error-bar-alpha Real Nonnegative-Real 2/3 (unit-ivl 'error-bar-alpha))
 
+;; Candlesticks
+
+(defparam2 candlestick-width Real Nonnegative-Real 6 (nonnegative-rational 'candlestick-width))
+(defparam candlestick-up-color Plot-Color 2)
+(defparam candlestick-down-color Plot-Color 1)
+(defparam2 candlestick-line-width Real Nonnegative-Real 1 (nonnegative-rational 'candlestick-line-width))
+(defparam candlestick-line-style Plot-Pen-Style 'solid)
+(defparam2 candlestick-alpha Real Nonnegative-Real 2/3 (unit-ivl 'candlestick-alpha))
+
 ;; Contours
 
 (:: default-contour-colors (-> (Listof Real) (Listof Plot-Color)))

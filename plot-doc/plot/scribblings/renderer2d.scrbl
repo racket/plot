@@ -160,6 +160,27 @@ The first and second element in each vector in @(racket bars) comprise the coord
                                                   (vector 6 36 10)))))]
 }
 
+@defproc[(candlesticks
+          [candles (sequence/c (sequence/c #:min-count 5 real?))]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:up-color up-color plot-color/c (candlestick-up-color)]
+          [#:down-color down-color plot-color/c (candlestick-down-color)]
+          [#:line-width line-width (>=/c 0) (candlestick-line-width)]
+          [#:line-style line-style plot-pen-style/c (candlestick-line-style)]
+          [#:width width (>=/c 0) (candlestick-width)]
+          [#:alpha alpha (real-in 0 1) (candlestick-alpha)]
+          ) renderer2d?]{
+Returns a renderer that draws candlesticks. This is most common when plotting historical prices for financial 
+instruments. The first element in each vector of @(racket candles) comprises the x-axis coordinate; the second, third, 
+fourth, and fifth elements in each vector comprise the open, high, low, and close, respectively, of the y-axis coordinates.
+@interaction[#:eval plot-eval
+                    (plot (list (function sqr 1 7)
+                                (candlesticks (list (vector 2 4 12 4 8)
+                                                  (vector 4 16 20 8 12)
+                                                  (vector 6 24 36 10 24)))))]
+}
+
 @section{2D Line Renderers}
 
 @defproc[(function [f (real? . -> . real?)]
