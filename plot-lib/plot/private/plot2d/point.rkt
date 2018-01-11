@@ -264,7 +264,6 @@
   (send area put-alpha alpha)
   (send area put-pen up-color line-width line-style)
   (for ([x  (in-list xs)] [open  (in-list opens)] [high  (in-list highs)] [low  (in-list lows)] [close  (in-list closes)])
-    ;(when (rect-contains? clip-rect (vector x (/ (+ high low) 2)))
       (define v1 (vector x open))
       (define v2 (vector x high))
       (define v3 (vector x low))
@@ -279,7 +278,7 @@
                   (send area put-line v2 v4)
                   (send area put-line v1 v3)
                   (send area put-brush up-color 'solid)
-                  (send area put-rect r1)]));)
+                  (send area put-rect r1)]))
   empty)
 
 (:: candlesticks
@@ -296,8 +295,8 @@
 (define (candlesticks candles
                       #:x-min [x-min #f] #:x-max [x-max #f]
                       #:y-min [y-min #f] #:y-max [y-max #f]
-                      #:up-color [up-color candlestick-up-color]
-                      #:down-color [down-color candlestick-down-color]
+                      #:up-color [up-color (candlestick-up-color)]
+                      #:down-color [down-color (candlestick-down-color)]
                       #:line-width [line-width (candlestick-line-width)]
                       #:line-style [line-style (candlestick-line-style)]
                       #:width [width (candlestick-width)]
@@ -322,8 +321,8 @@
                                           #{closes : (Listof Real)})
                                   ...)
                 candles)
-              (let ([x-min  (if x-min x-min (apply min* xs))]
-                    [x-max  (if x-max x-max (apply max* xs))]
+              (let ([x-min  (if x-min x-min (- (apply min* xs) width))]
+                    [x-max  (if x-max x-max (+ (apply max* xs) width))]
                     [y-min  (if y-min y-min (apply min* lows))]
                     [y-max  (if y-max y-max (apply max* highs))])
                 (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun

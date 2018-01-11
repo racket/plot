@@ -40,7 +40,8 @@
 (provide
  points
  vector-field
- error-bars)
+ error-bars
+ candlesticks)
 
 (require "private/plot2d/line.rkt")
 (provide

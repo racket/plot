@@ -143,6 +143,12 @@
  error-bar-line-width
  error-bar-line-style
  error-bar-alpha
+ candlestick-width
+ candlestick-up-color
+ candlestick-down-color
+ candlestick-line-width
+ candlestick-line-style
+ candlestick-alpha
  contour-samples
  contour-levels
  contour-colors
