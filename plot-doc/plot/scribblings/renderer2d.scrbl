@@ -175,10 +175,9 @@ Returns a renderer that draws candlesticks. This is most common when plotting hi
 instruments. The first element in each vector of @(racket candles) comprises the x-axis coordinate; the second, third, 
 fourth, and fifth elements in each vector comprise the open, high, low, and close, respectively, of the y-axis coordinates.
 @interaction[#:eval plot-eval
-                    (plot (list (function sqr 1 7)
-                                (candlesticks (list (vector 2 4 12 4 8)
-                                                  (vector 4 16 20 8 12)
-                                                  (vector 6 24 36 10 24)))))]
+                    (plot (list (candlesticks (list (vector 2 4 12 4 8)
+                                                    (vector 4 16 20 8 12)
+                                                    (vector 6 24 36 10 24)))))]
 }
 
 @section{2D Line Renderers}

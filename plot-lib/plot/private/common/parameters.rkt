@@ -207,7 +207,7 @@
 
 ;; Candlesticks
 
-(defparam2 candlestick-width Real Nonnegative-Real 6 (nonnegative-rational 'candlestick-width))
+(defparam2 candlestick-width Real Nonnegative-Real 1 (nonnegative-rational 'candlestick-width))
 (defparam candlestick-up-color Plot-Color 2)
 (defparam candlestick-down-color Plot-Color 1)
 (defparam2 candlestick-line-width Real Nonnegative-Real 1 (nonnegative-rational 'candlestick-line-width))
