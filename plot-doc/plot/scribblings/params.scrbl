@@ -252,7 +252,7 @@ The default width, pen color/width/style, and opacity used by @racket[error-bars
 
 @section{Candlesticks}
 
-@deftogether[((defparam candlestick-width width (>=/c 0) #:value 6)
+@deftogether[((defparam candlestick-width width (>=/c 0) #:value 1)
               (defparam candlestick-up-color color plot-color/c #:value 2)
               (defparam candlestick-down-color color plot-color/c #:value 1)
               (defparam candlestick-line-width pen-width (>=/c 0) #:value 1)
