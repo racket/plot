@@ -12,11 +12,12 @@
          plot/private/no-gui/plot3d
          plot/private/no-gui/plot3d-utils
          plot/private/no-gui/utils
-         "lazy-snip-typed.rkt")
+         "lazy-snip-typed.rkt"
+         typed/racket/unsafe)
 
-(provide plot3d-snip
-         plot3d-frame
-         plot3d)
+(unsafe-provide plot3d-snip
+                plot3d-frame
+                plot3d)
 
 ;; ===================================================================================================
 ;; Plot to a snip
