@@ -120,6 +120,11 @@ The contract for the @(racket #:sym) arguments in @(racket points) and @(racket 
 A list containing the symbols that are valid @(racket points) symbols.
 }
 
+@defthing[plot-file-format/c contract? #:value (or/c 'auto 'png 'jpeg 'xmb 'xpm 'bmp 'ps 'pdf 'svg)]{
+  A contract for an argument that describes an image file format.
+}
+
+
 @section{Appearance Argument List Contracts}
 
 @defproc[(maybe-function/c [in-contract contract?] [out-contract contract?])

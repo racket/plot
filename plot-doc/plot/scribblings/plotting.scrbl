@@ -30,7 +30,7 @@ Each 3D plotting procedure behaves the same way as its corresponding 2D procedur
                [#:y-label y-label (or/c string? #f) (plot-y-label)]
                [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
                [#:out-file out-file (or/c path-string? output-port? #f) #f]
-               [#:out-kind out-kind (one-of/c 'auto 'png 'jpeg 'xmb 'xpm 'bmp 'ps 'pdf 'svg) 'auto]
+               [#:out-kind out-kind plot-file-format/c 'auto]
                ) (or/c (is-a?/c snip%) void?)]{
 Plots a 2D renderer or list of renderers (or more generally, a tree of renderers), as returned by @(racket points), @(racket function), @(racket contours), @(racket discrete-histogram), and others.
 
@@ -76,7 +76,7 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
                  [#:z-label z-label (or/c string? #f) (plot-z-label)]
                  [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
                  [#:out-file out-file (or/c path-string? output-port? #f) #f]
-                 [#:out-kind out-kind (one-of/c 'auto 'png 'jpeg 'xmb 'xpm 'bmp 'ps 'pdf 'svg) 'auto]
+                 [#:out-kind out-kind plot-file-format/c 'auto]
                  ) (or/c (is-a?/c snip%) void?)]{
 Plots a 3D renderer or list of renderers (or more generally, a tree of renderers), as returned by @(racket points3d), @(racket parametric3d), @(racket surface3d), @(racket isosurface3d), and others.
 
@@ -119,12 +119,12 @@ for more details.
 
 @defproc[(plot-file [renderer-tree (treeof (or/c renderer2d? nonrenderer?))]
                     [output (or/c path-string? output-port?)]
-                    [kind (one-of/c 'auto 'png 'jpeg 'xmb 'xpm 'bmp 'ps 'pdf 'svg) 'auto]
+                    [kind plot-file-format/c 'auto]
                     [#:<plot-keyword> <plot-keyword> <plot-keyword-contract>] ...)
          void?]
 @defproc[(plot3d-file [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
                       [output (or/c path-string? output-port?)]
-                      [kind (one-of/c 'auto 'png 'jpeg 'xmb 'xpm 'bmp 'ps 'pdf 'svg) 'auto]
+                      [kind plot-file-format/c 'auto]
                       [#:<plot3d-keyword> <plot3d-keyword> <plot3d-keyword-contract>] ...)
          void?]
 @defproc[(plot-pict [<plot-argument> <plot-argument-contract>] ...)

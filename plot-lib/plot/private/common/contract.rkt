@@ -50,6 +50,9 @@
                                            'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch
                                            'horizontal-hatch 'vertical-hatch  'cross-hatch)))
 
+(define plot-file-format/c
+  (or/c 'auto 'png 'jpeg 'xmb 'xpm 'bmp 'ps 'pdf 'svg))
+
 (module typed-defs typed/racket/base
   (require "type-doc.rkt")
   
