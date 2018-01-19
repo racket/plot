@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require typed/racket/unsafe
          typed/racket/draw
@@ -10,7 +10,7 @@
          new-pdf-dc%
          new-svg-dc%)
 
-(unsafe-require/typed "untyped-utils.rkt"
+(#|unsafe-require/typed|# require/typed "untyped-utils.rkt"
  [dc
   (-> (-> (Instance DC<%>) Real Real Any) Real Real Pict)]
  [new-post-script-dc%

@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 ;; Data structure that represents a tick, and functions that produce ticks.
 

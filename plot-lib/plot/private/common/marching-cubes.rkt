@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require (for-syntax racket/base racket/syntax racket/match racket/list)
          racket/list racket/match racket/unsafe/ops

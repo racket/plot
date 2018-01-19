@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require (only-in typed/mred/mred Snip% Frame%)
          typed/racket/draw typed/racket/class racket/match
@@ -11,7 +11,8 @@
          plot/private/plot2d/plot-area
          plot/private/no-gui/plot2d
          plot/private/no-gui/plot2d-utils
-         "lazy-snip-typed.rkt")
+         "lazy-snip-untyped.rkt" ;; "lazy-snip-typed.rkt"
+         )
 
 (provide plot-snip
          plot-frame

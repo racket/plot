@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require "no-gui.rkt"
          "private/no-gui/plot-pict.rkt")

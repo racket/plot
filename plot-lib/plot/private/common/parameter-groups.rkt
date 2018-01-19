@@ -62,7 +62,7 @@
      plot-axes))
   )
 
-(module typed-defs typed/racket/base
+(module typed-defs typed/racket/base/no-check
   (require typed/racket/draw
            (submod ".." untyped-defs)
            "type-doc.rkt"

@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require racket/match typed/racket/class racket/list racket/sequence
          plot/utils

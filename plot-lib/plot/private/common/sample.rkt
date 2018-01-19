@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 ;; Functions that sample from functions, and functions that create memoized samplers.
 

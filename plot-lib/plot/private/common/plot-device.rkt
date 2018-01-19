@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 ;; Instances of this class know how to draw points, polygons, rectangles, lines, text, a bunch of
 ;; different "glyphs" (used for point symbols and ticks), and legends on their underlying device

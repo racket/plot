@@ -50,7 +50,7 @@
                                            'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch
                                            'horizontal-hatch 'vertical-hatch  'cross-hatch)))
 
-(module typed-defs typed/racket/base
+(module typed-defs typed/racket/base/no-check
   (require "type-doc.rkt")
   
   (provide (all-defined-out))

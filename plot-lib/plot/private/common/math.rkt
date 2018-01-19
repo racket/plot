@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require racket/match racket/list racket/vector math/base math/flonum
          "type-doc.rkt")

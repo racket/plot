@@ -11,10 +11,6 @@ The Plot library provides a flexible interface for producing nearly any kind of 
 It includes many common kinds of plots already, such as scatter plots, line plots, contour plots, histograms, and 3D surfaces and isosurfaces.
 Thanks to Racket's excellent multiple-backend drawing library, Plot can render plots as interactive snips in DrRacket, as picts in slideshows, as PNG, PDF, PS and SVG files, or on any device context.
 
-@bold{Plot is a Typed Racket library}, but it can be used in untyped Racket programs with @bold{little to no performance loss}.
-The old typed interface module @racketmodname[plot/typed] is still available for old Typed Racket programs.
-New Typed Racket programs should use @racketmodname[plot].
-
 For plotting without a GUI, see @racketmodname[plot/no-gui].
 For plotting in REPL-like environments outside of DrRacket, including Scribble manuals, see @racketmodname[plot/pict] and @racketmodname[plot/bitmap].
 

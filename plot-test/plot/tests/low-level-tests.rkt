@@ -1,6 +1,6 @@
 #lang racket
 
-(module typed-tests typed/racket
+(module typed-tests typed/racket/no-check
   (require typed/rackunit
            (except-in racket/date find-seconds)
            plot

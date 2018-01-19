@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require (only-in typed/mred/mred Snip% Frame%)
          typed/racket/draw typed/racket/class racket/match racket/list
@@ -12,12 +12,12 @@
          plot/private/no-gui/plot3d
          plot/private/no-gui/plot3d-utils
          plot/private/no-gui/utils
-         "lazy-snip-typed.rkt"
-         typed/racket/unsafe)
+         "lazy-snip-untyped.rkt" ;; "lazy-snip-typed.rkt"
+         )
 
-(unsafe-provide plot3d-snip
-                plot3d-frame
-                plot3d)
+(provide plot3d-snip
+         plot3d-frame
+         plot3d)
 
 ;; ===================================================================================================
 ;; Plot to a snip

@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang typed/racket/base/no-check
 
 (require "private/utils-and-no-gui.rkt")
 (provide (all-from-out "private/utils-and-no-gui.rkt"))
