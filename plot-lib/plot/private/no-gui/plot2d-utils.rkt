@@ -13,14 +13,16 @@
 
 (provide (all-defined-out))
 
-(: get-renderer-list (-> (Treeof (U renderer2d nonrenderer)) (Listof renderer2d)))
+(: get-renderer-list (-> Any (Listof renderer2d)))
 (define (get-renderer-list renderer-tree)
   (cond [(list? renderer-tree)  (append* (map get-renderer-list renderer-tree))]
         [(nonrenderer? renderer-tree)
          (match-define (nonrenderer bounds-rect bounds-fun ticks-fun) renderer-tree)
          (list (renderer2d bounds-rect bounds-fun ticks-fun #f))]
+        [(renderer2d? renderer-tree)
+         (list renderer-tree)]
         [else
-         (list renderer-tree)]))
+         (raise-argument-error 'get-renderer-list "(or/c list? nonrenderer? renderer2d?)" renderer-tree)]))
 
 (: get-bounds-rect (-> (Listof renderer2d) (U #f Real) (U #f Real) (U #f Real) (U #f Real) Rect))
 (define (get-bounds-rect renderer-list x-min x-max y-min y-max)

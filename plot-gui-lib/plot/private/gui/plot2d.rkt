@@ -11,11 +11,12 @@
          plot/private/plot2d/plot-area
          plot/private/no-gui/plot2d
          plot/private/no-gui/plot2d-utils
-         "lazy-snip-typed.rkt")
+         "lazy-snip-typed.rkt"
+         typed/racket/unsafe)
 
-(provide plot-snip
-         plot-frame
-         plot)
+(unsafe-provide plot-snip
+                plot-frame
+                plot)
 
 ;; ===================================================================================================
 ;; Plot to a snip
