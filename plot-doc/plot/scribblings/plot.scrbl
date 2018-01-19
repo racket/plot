@@ -36,8 +36,6 @@ For plotting in REPL-like environments outside of DrRacket, including Scribble m
 
 @include-section["porting.scrbl"]
 
-@include-section["typed-compat.scrbl"]
-
 @include-section["compat.scrbl"]
 
 @close-plot-eval[]
