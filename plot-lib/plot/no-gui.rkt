@@ -23,12 +23,20 @@
 ;; 2D exports
 
 (require (rename-in "private/no-gui/plot2d.rkt"
-                    [plot/dc  typed-plot/dc])
+                    [plot/dc     typed-plot/dc]
+                    [plot-bitmap typed-plot-bitmap]
+                    [plot-pict   typed-plot-pict])
          "private/no-gui/plot2d-untyped.rkt")
 
 (define-typed/untyped-identifier plot/dc
   typed-plot/dc
   untyped-plot/dc)
+(define-typed/untyped-identifier plot-bitmap
+  typed-plot-bitmap
+  untyped-plot-file)
+(define-typed/untyped-identifier plot-pict
+  typed-plot-pict
+  untyped-plot-pict)
 
 (provide
  plot/dc

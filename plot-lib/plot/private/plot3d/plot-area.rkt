@@ -17,11 +17,13 @@
          "bsp-trees.rkt"
          "bsp.rkt")
 
-(provide (all-defined-out)
+(provide plot3d-subdivisions
          plot3d-back-layer
          plot3d-area-layer
          plot3d-front-layer
-         )
+         3D-Plot-Area%
+         3d-plot-area%
+         (struct-out render-tasks))
 
 (define plot3d-back-layer 2)
 (define plot3d-area-layer 1)

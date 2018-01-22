@@ -9,7 +9,7 @@
          "clip.rkt"
          "plot-area.rkt")
 
-(provide (all-defined-out))
+(provide (except-out (all-defined-out) draw-polar-axis-lines draw-polar-axis-ticks))
 
 ;; ===================================================================================================
 ;; X and Y axes

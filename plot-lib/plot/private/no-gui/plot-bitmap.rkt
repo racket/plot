@@ -8,9 +8,10 @@
          "../plot2d/renderer.rkt"
          "../plot3d/renderer.rkt"
          "plot2d.rkt"
-         "plot3d.rkt")
+         "plot3d.rkt"
+         typed/racket/unsafe)
 
-(provide (all-defined-out))
+(unsafe-provide plot plot3d)
 
 (:: plot
     (->* [(Treeof (U renderer2d nonrenderer))]

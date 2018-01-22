@@ -9,9 +9,11 @@
          "../common/ticks.rkt"
          "../plot2d/plot-area.rkt"
          "../plot2d/renderer.rkt"
-         "utils.rkt")
+         "utils.rkt"
+         typed/racket/unsafe)
 
-(provide (all-defined-out))
+(provide get-renderer-list get-bounds-rect get-ticks)
+(unsafe-provide plot-area)
 
 (: get-renderer-list (-> Any (Listof renderer2d)))
 (define (get-renderer-list renderer-tree)

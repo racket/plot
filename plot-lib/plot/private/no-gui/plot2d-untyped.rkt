@@ -3,7 +3,7 @@
 (require racket/contract
          racket/class
          racket/draw
-         (for-syntax racket/base "plot2d-evil-box.rkt")
+         pict
          "../../utils.rkt"
          "../common/contract.rkt"
          "../common/nonrenderer.rkt"
@@ -27,7 +27,30 @@
          #:x-label (or/c string? #f)
          #:y-label (or/c string? #f)
          #:legend-anchor anchor/c]
-        void?)]))
+        void?)]
+   [untyped-plot-bitmap
+    (->* [(treeof (or/c renderer2d? nonrenderer?))]
+         [#:x-min (or/c real? #f)
+          #:x-max (or/c real? #f)
+          #:y-min (or/c real? #f)
+          #:y-max (or/c real? #f)
+          #:title (or/c string? #f)
+          #:x-label (or/c string? #f)
+          #:y-label (or/c string? #f)
+          #:legend-anchor anchor/c]
+         (is-a?/c bitmap%))]
+    [untyped-plot-pict
+     (->* [(treeof (or/c renderer2d? nonrenderer?))]
+          [#:x-min (or/c real? #f)
+           #:x-max (or/c real? #f)
+           #:y-min (or/c real? #f)
+           #:y-max (or/c real? #f)
+           #:title (or/c string? #f)
+           #:x-label (or/c string? #f)
+           #:y-label (or/c string? #f)
+           #:legend-anchor anchor/c]
+          pict?)]))
 
-(define-syntax untyped-plot/dc
-  (make-rename-transformer (unbox plot/dc-box)))
+(define untyped-plot/dc plot/dc)
+(define untyped-plot-pict plot-pict)
+(define untyped-plot-bitmap plot-bitmap)
