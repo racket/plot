@@ -18,11 +18,22 @@
 
 (struct draw-command (animating? plot-bounds-rect width height) #:transparent)
 
+(define default-overlay-pen
+  (send the-pen-list find-or-create-pen "black" 1 'solid))
+(define default-overlay-brush
+  (send the-brush-list find-or-create-brush "black" 'transparent))
+
+(struct mark-overlay (position radius pen brush label loffset lfont lcolor lbackground) #:transparent)
+(struct vrule-overlay (x pen) #:transparent)
+(struct hrule-overlay (y pen) #:transparent)
+(struct xrule-overlay (position pen) #:transparent)
+(struct general-overlay (position offset draw-fn width height) #:transparent)
+
 (define 2d-plot-snip%
   (class plot-snip%
     (init init-bm saved-plot-parameters)
-    (init-field make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height)
-    
+    (init-field make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height)
+
     (inherit set-bitmap get-bitmap
              get-saved-plot-parameters
              refresh
@@ -39,17 +50,23 @@
     (set-message-center)
     
     (define/override (copy)
-      (make-object this%
-        (get-bitmap) (get-saved-plot-parameters)
-        make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height))
-    
+      (define c
+        (make-object this%
+                     (get-bitmap) (get-saved-plot-parameters)
+                     make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height))
+      (when hover-callback
+        (send c set-hover-callback hover-callback))
+      c)
+
     (define left-click-x 0)
     (define left-click-y 0)
     (define left-drag-x 0)
     (define left-drag-y 0)
     
     (define plot-bounds-rects empty)
-    
+
+    (define hover-callback #f)
+
     (define (get-new-area-bounds-rect)
       (rect-meet area-bounds-rect
                  (rect-inexact->exact
@@ -87,7 +104,7 @@
              (set! plot-bounds-rects (rest plot-bounds-rects))
              (set! show-zoom-message? #f)
              (update-plot)]))
-    
+
     (define (start-update-thread animating?)
       (send this start-update-thread
             (λ () (make-worker-thread
@@ -96,10 +113,11 @@
                       (make-bm animating? plot-bounds-rect width height)])))
             (λ (animating?) (draw-command animating? plot-bounds-rect width height))
             (λ (rth)
-              (define-values (new-bm new-area-bounds-rect new-area-bounds->plot-bounds)
-                (worker-thread-try-get rth (λ () (values #f #f #f))))
+              (define-values (new-bm new-area new-area-bounds-rect new-area-bounds->plot-bounds)
+                (worker-thread-try-get rth (λ () (values #f #f #f #f))))
               (cond [(is-a? new-bm bitmap%)
                      (set! area-bounds-rect new-area-bounds-rect)
+                     (set! area new-area)
                      (set! area-bounds->plot-bounds new-area-bounds->plot-bounds)
                      (set-bitmap new-bm)
                      (set-message-center)
@@ -110,8 +128,8 @@
     (define (update-plot)
       (start-update-thread #f)
       (set-update #t))
-    
-    (define/override (on-event dc x y editorx editory evt)
+
+    (define (zoom-or-unzoom-mouse-event-handler dc x y editorx editory evt)
       (define evt-type (send evt get-event-type))
       (define mouse-x (- (send evt get-x) x))
       (define mouse-y (- (send evt get-y) y))
@@ -136,15 +154,157 @@
                             [(and (not (send evt get-left-down))
                                   (<= 0 mouse-x (send (get-bitmap) get-width))
                                   (<= 0 mouse-y (send (get-bitmap) get-height)))
-                             (set-click-message)])])
+                             (set-click-message)])]))
+
+    (define mouse-event-handler zoom-or-unzoom-mouse-event-handler)
+
+    (define (hover-info-mouse-event-handler dc x y editorx editory evt)
+      (define evt-type (send evt get-event-type))
+      (define mouse-x (- (send evt get-x) x))
+      (define mouse-y (- (send evt get-y) y))
+      (case evt-type
+        [(leave)
+         (hover-callback this #f #f)]
+        [(motion)
+         (when area
+           (if (rect-contains? area-bounds-rect (vector mouse-x mouse-y))
+               (match-let (((vector px py) (send area dc->plot (vector mouse-x mouse-y))))
+                 (hover-callback this px py))
+               (hover-callback this #f #f)))]))
+
+    (define/public (set-hover-callback callback)
+      (set! hover-callback callback)
+      (set! mouse-event-handler
+            (if hover-callback
+                hover-info-mouse-event-handler
+                zoom-or-unzoom-mouse-event-handler)))
+
+    (define the-overlays '())
+
+    (define/public (clear-overlays)
+      (set! the-overlays '()))
+
+    (define/public (add-mark-overlay x y #:radius (r 10) #:pen (pen #f) #:brush (brush #f)
+                                    #:label (label #f)
+                                    #:label-offset (offset 10)
+                                    #:label-font (font #f)
+                                    #:label-fg-color (fg-color #f)
+                                    #:label-bg-color (bg-color #f))
+      (set! the-overlays (cons (mark-overlay (vector x y) r pen brush label offset font fg-color bg-color) the-overlays)))
+
+    (define/public (add-vrule-overlay x #:pen (pen #f))
+      (set! the-overlays (cons (vrule-overlay x pen) the-overlays)))
+
+    (define/public (add-hrule-overlay y #:pen (pen #f))
+      (set! the-overlays (cons (hrule-overlay y pen) the-overlays)))
+
+    (define/public (add-xrule-overlay x y #:pen (pen #f))
+      (set! the-overlays (cons (xrule-overlay (vector x y) pen) the-overlays)))
+
+    (define/public (add-general-overlay x y draw-fn width height #:offset (offset 10))
+      (set! the-overlays (cons (general-overlay (vector x y) offset draw-fn width height) the-overlays)))
+
+    (define/public (refresh-overlays)
+      (refresh))
+
+    (define (draw-overlays dc x y)
+      (define old-pen (send dc get-pen))
+      (define old-brush (send dc get-brush))
+      (define old-font (send dc get-font))
+      (define old-smoothing (send dc get-smoothing))
+      (define old-text-mode (send dc get-text-mode))
+      (define old-text-fg (send dc get-text-foreground))
+      (define old-text-bg (send dc get-text-background))
+      (match-define (vector (ivl area-x-min area-x-max) (ivl area-y-min area-y-max)) area-bounds-rect)
+      (define-values (scale-x scale-y) (send dc get-scale))
+      (define-values (origin-x origin-y) (send dc get-origin))
+      (send dc set-origin
+            (+ origin-x (* scale-x x))
+            (+ origin-y (* scale-y y)))
+      (for ((o (in-list the-overlays)))
+        (cond
+          ((mark-overlay? o)
+           (match-define (mark-overlay position radius pen brush label loffset lfont lcolor lbackground) o)
+           (match-define (vector mx my) (send area plot->dc position))
+           ;; A zero or negative radius indicates that the dot itself will not
+           ;; be drawn (the label might still be drawn though)
+           (when (> radius 0)
+             (let ((dx (- mx (/ radius 2)))
+                   (dy (- my (/ radius 2))))
+               (send dc set-pen (or pen default-overlay-pen))
+               (send dc set-brush (or brush default-overlay-brush))
+               (send dc draw-ellipse dx dy radius radius)))
+           (when label
+             (let ((font (or lfont
+                             (send the-font-list find-or-create-font
+                                (real->font-size (plot-font-size))
+                                (plot-font-face)
+                                (plot-font-family)
+                                'normal
+                                'normal))))
+               (send dc set-font font)
+               (send dc set-smoothing 'smoothed)
+               (send dc set-text-foreground (or lcolor old-text-fg))
+               (if lbackground
+                   (begin
+                     (send dc set-text-background lbackground)
+                     (send dc set-text-mode 'solid))
+                   (send dc set-text-mode 'transparent))
+               (define-values (w h a d) (send dc get-text-extent label font #t))
+               (define text-x (if (> (+ mx loffset w) area-x-max)
+                                  (- mx loffset w)
+                                  (+ mx loffset)))
+               (define text-y (if (< (- my loffset h) area-y-min)
+                                  (+ my loffset)
+                                  (- my loffset h)))
+               (send dc draw-text label text-x text-y))))
+          ((general-overlay? o)
+           (match-define (general-overlay position offset draw-fn width height) o)
+           (match-define (vector mx my) (send area plot->dc position))
+           (define actual-x (if (> (+ mx offset width) area-x-max)
+                              (- mx offset width)
+                              (+ mx offset)))
+           (define actual-y (if (< (- my offset height) area-y-min)
+                                (+ my offset)
+                                (- my offset height)))
+           (draw-fn dc actual-x actual-y))
+          ((hrule-overlay? o)
+           (match-define (hrule-overlay y pen) o)
+           (match-define (vector mx my) (send area plot->dc (vector 0 y)))
+           (send dc set-pen (or pen default-overlay-pen))
+           (send dc draw-line area-x-min my area-x-max my))
+          ((vrule-overlay? o)
+           (match-define (vrule-overlay x pen) o)
+           (match-define (vector mx my) (send area plot->dc (vector x 0)))
+           (send dc set-pen (or pen default-overlay-pen))
+           (send dc draw-line mx area-y-min mx area-y-max))
+          ((xrule-overlay? o)
+           (match-define (xrule-overlay position pen) o)
+           (match-define (vector mx my) (send area plot->dc position))
+           (send dc set-pen (or pen default-overlay-pen))
+           (send dc draw-line area-x-min my area-x-max my)
+           (send dc draw-line mx area-y-min mx area-y-max))
+          (#t
+           (printf "draw-overlays: unknown overlay ~a~%" o))))
+      (send dc set-origin origin-x origin-y)
+      (send dc set-pen old-pen)
+      (send dc set-brush old-brush)
+      (send dc set-font old-font)
+      (send dc set-smoothing old-smoothing)
+      (send dc set-text-mode old-text-mode)
+      (send dc set-text-foreground old-text-fg)
+      (send dc set-text-background old-text-bg))
+
+    (define/override (on-event dc x y editorx editory evt)
+      (apply mouse-event-handler dc x y editorx editory evt '())
       (super on-event dc x y editorx editory evt))
-    
+
     (define (draw-selection dc dc-x-min dc-y-min rect)
       (with-handlers ([exn?  (λ (e) (printf "draw-selection: ~v~n" e))])
       (when (and (rect-rational? rect) (not (rect-zero-area? rect)))
         (define width (send (get-bitmap) get-width))
         (define height (send (get-bitmap) get-height))
-        
+
         (define-values (scale-x scale-y) (send dc get-scale))
         (define-values (origin-x origin-y) (send dc get-origin))
         (define smoothing (send dc get-smoothing))
@@ -230,8 +390,9 @@
       (super draw dc x y left top right bottom dx dy draw-caret)
       (when dragging?
         (parameterize/group ([plot-parameters  (get-saved-plot-parameters)])
-          (draw-selection dc x y (get-new-area-bounds-rect)))))
-    
+                            (draw-selection dc x y (get-new-area-bounds-rect))))
+      (draw-overlays dc x y))
+
     (define/override (resize w h)
       (when (not (and (= w width) (= h height)))
         (set! width w)
@@ -245,7 +406,7 @@
 
 (define (make-2d-plot-snip
          init-bm saved-plot-parameters
-         make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height)
+         make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height)
   (make-object 2d-plot-snip%
     init-bm saved-plot-parameters
-    make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height))
+    make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height))
