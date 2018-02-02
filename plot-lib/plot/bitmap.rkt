@@ -1,4 +1,4 @@
-#lang typed/racket/base
+#lang racket/base
 
 (require typed/untyped-utils
          "no-gui.rkt"
