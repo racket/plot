@@ -54,8 +54,8 @@
         (make-object this%
                      (get-bitmap) (get-saved-plot-parameters)
                      make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height))
-      (when hover-callback
-        (send c set-hover-callback hover-callback))
+      (when mouse-event-callback
+        (send c set-mouse-callback mouse-event-callback))
       c)
 
     (define left-click-x 0)
@@ -65,7 +65,7 @@
     
     (define plot-bounds-rects empty)
 
-    (define hover-callback #f)
+    (define mouse-event-callback #f)
 
     (define (get-new-area-bounds-rect)
       (rect-meet area-bounds-rect
@@ -164,18 +164,18 @@
       (define mouse-y (- (send evt get-y) y))
       (case evt-type
         [(leave)
-         (hover-callback this #f #f)]
+         (mouse-event-callback this evt #f #f)]
         [(motion)
          (when area
            (if (rect-contains? area-bounds-rect (vector mouse-x mouse-y))
                (match-let (((vector px py) (send area dc->plot (vector mouse-x mouse-y))))
-                 (hover-callback this px py))
-               (hover-callback this #f #f)))]))
+                 (mouse-event-callback this evt px py))
+               (mouse-event-callback this evt #f #f)))]))
 
-    (define/public (set-hover-callback callback)
-      (set! hover-callback callback)
+    (define/public (set-mouse-callback callback)
+      (set! mouse-event-callback callback)
       (set! mouse-event-handler
-            (if hover-callback
+            (if mouse-event-callback
                 hover-info-mouse-event-handler
                 zoom-or-unzoom-mouse-event-handler)))
 
@@ -221,7 +221,9 @@
       (send dc set-origin
             (+ origin-x (* scale-x x))
             (+ origin-y (* scale-y y)))
-      (for ((o (in-list the-overlays)))
+      ;; reverse the overlay list, so they are drawn in the order they were
+      ;; added.
+      (for ((o (in-list (reverse the-overlays))))
         (cond
           ((mark-overlay? o)
            (match-define (mark-overlay position radius pen brush label loffset lfont lcolor lbackground) o)
