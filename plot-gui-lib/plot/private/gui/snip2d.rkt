@@ -20,14 +20,21 @@
 
 (define default-overlay-pen
   (send the-pen-list find-or-create-pen "black" 1 'solid))
+(define transparent-overlay-pen
+  (send the-pen-list find-or-create-pen "black" 1 'transparent))
 (define default-overlay-brush
   (send the-brush-list find-or-create-brush "black" 'transparent))
+(define highlight-overlay-brush
+  (send the-brush-list find-or-create-brush "black" 'hilite))
 
 (struct mark-overlay (position radius pen brush label loffset lfont lcolor lbackground) #:transparent)
 (struct vrule-overlay (x pen) #:transparent)
 (struct hrule-overlay (y pen) #:transparent)
 (struct xrule-overlay (position pen) #:transparent)
 (struct general-overlay (position offset draw-fn width height) #:transparent)
+(struct vrange-overlay (position-min position-max brush) #:transparent)
+(struct hrange-overlay (position-min position-max brush) #:transparent)
+(struct rect-overlay (position-min position-max brush) #:transparent)
 
 (define 2d-plot-snip%
   (class plot-snip%
@@ -204,6 +211,15 @@
     (define/public (add-general-overlay x y draw-fn width height #:offset (offset 10))
       (set! the-overlays (cons (general-overlay (vector x y) offset draw-fn width height) the-overlays)))
 
+    (define/public (add-vrange-overlay xmin xmax #:brush (brush #f))
+      (set! the-overlays (cons (vrange-overlay (vector xmin 0) (vector xmax 0) brush) the-overlays)))
+
+    (define/public (add-hrange-overlay ymin ymax #:brush (brush #f))
+      (set! the-overlays (cons (hrange-overlay (vector 0 ymin) (vector 0 ymax) brush) the-overlays)))
+
+    (define/public (add-rect-overlay xmin xmax ymin ymax #:brush (brush #f))
+      (set! the-overlays (cons (rect-overlay (vector xmin ymin) (vector xmax ymax) brush) the-overlays)))
+
     (define/public (refresh-overlays)
       (refresh))
 
@@ -286,6 +302,30 @@
            (send dc set-pen (or pen default-overlay-pen))
            (send dc draw-line area-x-min my area-x-max my)
            (send dc draw-line mx area-y-min mx area-y-max))
+          ((vrange-overlay? o)
+           (match-define (vrange-overlay position-min position-max brush) o)
+           (match-define (vector mxmin _1) (send area plot->dc position-min))
+           (match-define (vector mxmax _2) (send area plot->dc position-max))
+           (send dc set-pen transparent-overlay-pen)
+           (send dc set-brush (or brush highlight-overlay-brush))
+           (send dc draw-rectangle (min mxmin mxmax) area-y-min
+                 (abs (- mxmax mxmin)) (- area-y-max area-y-min)))
+          ((hrange-overlay? o)
+           (match-define (hrange-overlay position-min position-max brush) o)
+           (match-define (vector _1 mymin) (send area plot->dc position-min))
+           (match-define (vector _2 mymax) (send area plot->dc position-max))
+           (send dc set-pen transparent-overlay-pen)
+           (send dc set-brush (or brush highlight-overlay-brush))
+           (send dc draw-rectangle area-x-min (min mymin mymax)
+                 (- area-x-max area-x-min) (abs (- mymax mymin))))
+          ((rect-overlay? o)
+           (match-define (rect-overlay position-min position-max brush) o)
+           (match-define (vector mxmin mymin) (send area plot->dc position-min))
+           (match-define (vector mxmax mymax) (send area plot->dc position-max))
+           (send dc set-pen transparent-overlay-pen)
+           (send dc set-brush (or brush highlight-overlay-brush))
+           (send dc draw-rectangle (min mxmin mxmax) (min mymin mymax)
+                 (abs (- mxmax mxmin)) (abs (- mymax mymin))))
           (#t
            (printf "draw-overlays: unknown overlay ~a~%" o))))
       (send dc set-origin origin-x origin-y)
