@@ -14,9 +14,15 @@
          "../plot3d/plot-area.rkt"
          "../plot3d/renderer.rkt"
          "plot3d-utils.rkt"
-         "evil.rkt")
+         "evil.rkt"
+         typed/racket/unsafe)
 
-(provide (all-defined-out))
+
+
+(unsafe-provide plot3d/dc
+                plot3d-bitmap
+                plot3d-pict
+                plot3d-file)
 
 ;; ===================================================================================================
 ;; Plot to a given device context

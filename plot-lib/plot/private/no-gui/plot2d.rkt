@@ -14,9 +14,13 @@
          "../plot2d/plot-area.rkt"
          "../plot2d/renderer.rkt"
          "plot2d-utils.rkt"
-         "evil.rkt")
+         "evil.rkt"
+         typed/racket/unsafe)
 
-(provide (all-defined-out))
+(unsafe-provide plot/dc
+                plot-bitmap
+                plot-pict
+                plot-file)
 
 ;; ===================================================================================================
 ;; Plot to a given device context
@@ -63,12 +67,6 @@
        (define area (make-object 2d-plot-area%
                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks dc x y width height))
        (plot-area area renderer-list))]))
-
-(require (for-syntax racket/base
-                     "plot2d-evil-box.rkt"))
-
-(begin-for-syntax
-  (set-box! plot/dc-box #'plot/dc))
 
 ;; ===================================================================================================
 ;; Plot to a bitmap
