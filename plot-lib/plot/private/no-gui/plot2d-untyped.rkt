@@ -35,6 +35,8 @@
           #:y-min (or/c real? #f)
           #:y-max (or/c real? #f)
           #:title (or/c string? #f)
+          #:height (or/c real? #f)
+          #:width (or/c real? #f)
           #:x-label (or/c string? #f)
           #:y-label (or/c string? #f)
           #:legend-anchor anchor/c]
@@ -47,6 +49,8 @@
            #:y-max (or/c real? #f)
            #:title (or/c string? #f)
            #:x-label (or/c string? #f)
+           #:height (or/c real? #f)
+           #:width (or/c real? #f)
            #:y-label (or/c string? #f)
            #:legend-anchor anchor/c]
           pict?)]))

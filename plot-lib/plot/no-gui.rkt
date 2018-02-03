@@ -33,7 +33,7 @@
   untyped-plot/dc)
 (define-typed/untyped-identifier plot-bitmap
   typed-plot-bitmap
-  untyped-plot-file)
+  untyped-plot-bitmap)
 (define-typed/untyped-identifier plot-pict
   typed-plot-pict
   untyped-plot-pict)

@@ -33,7 +33,7 @@
            #:out-kind symbol?]
           (is-a?/c bitmap%))]
     [untyped-plot3d
-     (->* [(treeof (or/c renderer2d? nonrenderer?))]
+     (->* [(treeof (or/c renderer3d? nonrenderer?))]
           [#:x-min (or/c real? #f)
            #:x-max (or/c real? #f)
            #:y-min (or/c real? #f)
