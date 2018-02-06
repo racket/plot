@@ -8,6 +8,9 @@
          plot/private/common/parameter-groups
          plot/private/common/parameter-group
          plot/private/common/draw-attribs
+         plot/private/plot2d/plot-area
+         plot/private/no-gui/plot2d
+         plot/private/no-gui/plot2d-utils
          "worker-thread.rkt"
          "snip.rkt")
 
@@ -187,9 +190,14 @@
                 zoom-or-unzoom-mouse-event-handler)))
 
     (define the-overlays '())
+    (define the-overlays/renderers '())
 
     (define/public (clear-overlays)
-      (set! the-overlays '()))
+      (set! the-overlays '())
+      (set! the-overlays/renderers '()))
+
+    (define/public (set-overlay-renderers renderers)
+      (set! the-overlays/renderers renderers))
 
     (define/public (add-mark-overlay x y #:radius (r 10) #:pen (pen #f) #:brush (brush #f)
                                     #:label (label #f)
@@ -222,6 +230,26 @@
 
     (define/public (refresh-overlays)
       (refresh))
+
+    (define (draw-overlays/renderers dc x y)
+      (unless (null? the-overlays/renderers)
+        (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) plot-bounds-rect)
+        (match-define (vector dc-x-min dc-y-min) (send area plot->dc (vector x-min y-min)))
+        (match-define (vector dc-x-max dc-y-max) (send area plot->dc (vector x-max y-max)))
+        (define-values (scale-x scale-y) (send dc get-scale))
+        (define-values (origin-x origin-y) (send dc get-origin))
+        (send dc set-origin
+              (+ origin-x (* scale-x x))
+              (+ origin-y (* scale-y y)))
+        (parameterize ([plot-decorations? #f]
+                       [plot-background-alpha 0])
+          (define oarea (make-object 2d-plot-area% plot-bounds-rect '() '() '() '() dc
+                                     (min dc-x-min dc-x-max)
+                                     (min dc-y-min dc-y-max)
+                                     (abs (- dc-x-max dc-x-min))
+                                     (abs (- dc-y-max dc-y-min))))
+          (plot-area oarea the-overlays/renderers))
+        (send dc set-origin origin-x origin-y)))
 
     (define (draw-overlays dc x y)
       (define old-pen (send dc get-pen))
@@ -433,7 +461,8 @@
       (when dragging?
         (parameterize/group ([plot-parameters  (get-saved-plot-parameters)])
                             (draw-selection dc x y (get-new-area-bounds-rect))))
-      (draw-overlays dc x y))
+      ;; (draw-overlays dc x y)
+      (draw-overlays/renderers dc x y))
 
     (define/override (resize w h)
       (when (not (and (= w width) (= h height)))
