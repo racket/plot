@@ -197,7 +197,8 @@
       (set! the-overlays/renderers '()))
 
     (define/public (set-overlay-renderers renderers)
-      (set! the-overlays/renderers renderers))
+      (set! the-overlays/renderers renderers)
+      (refresh))
 
     (define/public (add-mark-overlay x y #:radius (r 10) #:pen (pen #f) #:brush (brush #f)
                                     #:label (label #f)
@@ -461,7 +462,7 @@
       (when dragging?
         (parameterize/group ([plot-parameters  (get-saved-plot-parameters)])
                             (draw-selection dc x y (get-new-area-bounds-rect))))
-      ;; (draw-overlays dc x y)
+      (draw-overlays dc x y)
       (draw-overlays/renderers dc x y))
 
     (define/override (resize w h)
