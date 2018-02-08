@@ -527,6 +527,7 @@
                      [else  (set-brush brush-color 'transparent)
                             real-sym]))
              (case line-sym
+               [(none)    void]
                ; circles
                [(circle)  (make-draw-circle-glyph r)]
                ; squares

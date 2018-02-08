@@ -60,7 +60,7 @@
         'circle7           'circle8          'bullet
         'fullcircle1       'fullcircle2      'fullcircle3
         'fullcircle4       'fullcircle5      'fullcircle6
-        'fullcircle7       'fullcircle8)))
+        'fullcircle7       'fullcircle8      'none)))
 
 (deftype (List-Generator A B) (U (Listof B) (-> A (Listof B))))
 

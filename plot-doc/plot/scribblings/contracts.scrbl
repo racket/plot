@@ -102,7 +102,7 @@ The contract for the @(racket #:sym) arguments in @(racket points) and @(racket 
         'circle7           'circle8          'bullet
         'fullcircle1       'fullcircle2      'fullcircle3
         'fullcircle4       'fullcircle5      'fullcircle6
-        'fullcircle7       'fullcircle8)]{
+        'fullcircle7       'fullcircle8      'none)]{
 A list containing the symbols that are valid @(racket points) symbols.
 }
 
