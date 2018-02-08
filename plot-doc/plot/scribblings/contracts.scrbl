@@ -32,9 +32,24 @@ Identifies values that meet the contract @racket[elem-contract], lists of such v
 
 @defthing[anchor/c contract? #:value (one-of/c 'top-left    'top    'top-right
                                                'left        'center 'right
-                                               'bottom-left 'bottom 'bottom-right)]{
+                                               'bottom-left 'bottom 'bottom-right
+                                               'auto)]{
 The contract for @(racket anchor) arguments and parameters, such as @(racket plot-legend-anchor).
-}
+
+The @racket['auto] anchor will place labels so they are visible on the plot
+area.  This anchor type is useful for @(racket point-label) and @(racket
+function-label) renderers where the labeled point might be at the edge of the
+plot area and the user does not wish to calculate the exact anchor for the
+label.
+
+The @racket['auto] anchor will choose one of the @racket['bottom-left],
+@racket['bottom-right], @racket['top-left] or @racket['top-right] placements,
+in that order, and will use the first one that would result in the label being
+completely visible.
+
+The @racket['auto] anchor is only valid for placement of text labels, for all
+other use cases, the @racket['auto] anchor is always the same as
+@racket['bottom-left].}
 
 @defthing[color/c contract? #:value (or/c (list/c real? real? real?)
                                           string? symbol?

@@ -13,7 +13,8 @@
 (deftype Anchor
   (U 'top-left    'top    'top-right
      'left        'center 'right
-     'bottom-left 'bottom 'bottom-right))
+     'bottom-left 'bottom 'bottom-right
+     'auto))
 
 (deftype Color
   (U (List Real Real Real)
