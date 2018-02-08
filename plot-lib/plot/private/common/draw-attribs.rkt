@@ -21,7 +21,8 @@
   (case a
     [(top-left)  'bottom-right] [(top)  'bottom] [(top-right)  'bottom-left] [(right)  'left]
     [(bottom-right)  'top-left] [(bottom)  'top] [(bottom-left)  'top-right] [(left)  'right]
-    [(center)  'center]))
+    [(center)  'center]
+    [(auto) 'auto]))
 
 ;; ===================================================================================================
 ;; Draw paramter normalization

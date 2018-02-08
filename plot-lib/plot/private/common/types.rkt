@@ -13,7 +13,8 @@
 (deftype Anchor
   (U 'top-left    'top    'top-right
      'left        'center 'right
-     'bottom-left 'bottom 'bottom-right))
+     'bottom-left 'bottom 'bottom-right
+     'auto))
 
 (deftype Color
   (U (List Real Real Real)
@@ -60,7 +61,7 @@
         'circle7           'circle8          'bullet
         'fullcircle1       'fullcircle2      'fullcircle3
         'fullcircle4       'fullcircle5      'fullcircle6
-        'fullcircle7       'fullcircle8)))
+        'fullcircle7       'fullcircle8      'none)))
 
 (deftype (List-Generator A B) (U (Listof B) (-> A (Listof B))))
 
