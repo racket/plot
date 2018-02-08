@@ -16,33 +16,10 @@
 
 (define sin45 (/ 1.0 (sqrt 2.0)))
 
-(: draw-text/anchor (->* [(Instance DC<%>) String Real Real]
-                         [Anchor Real Real]
-                         Void))
-(define (draw-text/anchor dc str x y [anchor 'top-left] [angle 0] [dist 0])
-  (define-values (width height _1 _2) (send dc get-text-extent str #f #t 0))
-  (let ([dist  (case anchor
-                 [(top-left bottom-left top-right bottom-right)  (* sin45 dist)]
-                 [else  dist])])
-    (define dx (case anchor
-                 [(top-left left bottom-left)     (- dist)]
-                 [(top center bottom)             (* 1/2 width)]
-                 [(top-right right bottom-right)  (+ width dist)]
-                 [else  (raise-type-error 'draw-text/anchor "anchor/c" anchor)]))
-    (define dy (case anchor
-                 [(top-left top top-right)           (- dist)]
-                 [(left center right)                (* 1/2 height)]
-                 [(bottom-left bottom bottom-right)  (+ height dist)]))
-    (define rdx (+ (* (sin angle) dy) (* (cos angle) dx)))
-    (define rdy (- (* (cos angle) dy) (* (sin angle) dx)))
-    
-    (send dc draw-text str (- x rdx) (- y rdy) #t 0 angle)))
-
-(: get-text-corners/anchor (->* [(Instance DC<%>) String Real Real]
-                                [Anchor Real Real]
-                                (Listof (Vector Real Real))))
-(define (get-text-corners/anchor dc str x y [anchor 'top-left] [angle 0] [dist 0])
-  (define-values (width height _1 _2) (send dc get-text-extent str #f #t 0))
+(: get-box-corners/anchor (->* [Real Real Real Real]
+                               [Anchor Real Real]
+                               (Listof (Vector Real Real))))
+(define (get-box-corners/anchor x y width height [anchor 'top-left] [angle 0] [dist 0])
   (let ([dist  (case anchor
                  [(top-left bottom-left top-right bottom-right)  (* sin45 dist)]
                  [else  dist])])
@@ -61,6 +38,78 @@
       (define rdx (+ (* (sin angle) dy) (* (cos angle) dx)))
       (define rdy (- (* (cos angle) dy) (* (sin angle) dx)))
       (vector (+ x rdx) (+ y rdy)))))
+
+(: resolve-auto-anchor (-> (Instance DC<%>) String Real Real Real Real Anchor))
+(define (resolve-auto-anchor dc str x y angle dist)
+  (define region (send dc get-clipping-region))
+  (define-values (width height _1 _2) (send dc get-text-extent str #f #t 0))
+  (if region
+      (let loop ([anchors '(bottom-left bottom-right top-left top-right)]
+                 [best : Anchor 'bottom-left]
+                 [best-score -1])
+        (if (null? anchors)
+            best
+            (let* ((anchor (car anchors))
+                   (corners (get-box-corners/anchor x y width height anchor angle dist))
+                   (center (let ((center-sum (foldl
+                                              (lambda ([corner : (Vector Real Real)] [sum : (Vector Real Real)])
+                                                (match-define (vector x y) corner)
+                                                (match-define (vector sx sy) sum)
+                                                (vector (+ x sx) (+ y sy)))
+                                              (cast (vector 0 0) (Vector Real Real))
+                                              corners)))
+                             (match-define (vector x y) center-sum)
+                             (define ncorners (length corners))
+                             (vector (/ x ncorners) (/ y ncorners))))
+                   (candidates (cons center corners))
+                   (score (foldl
+                           (lambda ([corner : (Vector Real Real)] [score : Integer])
+                             (match-define (vector x y) corner)
+                             (+ (if (send region in-region? x y) 1 0) score))
+                           0
+                           candidates)))
+              (cond
+                ;; All candidate points are visible, don't bother checking
+                ;; other anchor locations
+                ((= score (length candidates)) anchor)
+                ((> score best-score) (loop (cdr anchors) anchor score))
+                (#t (loop (cdr anchors) best best-score))))))
+      'bottom-left))
+
+(: draw-text/anchor (->* [(Instance DC<%>) String Real Real]
+                         [Anchor Real Real]
+                         Void))
+(define (draw-text/anchor dc str x y [anchor 'top-left] [angle 0] [dist 0])
+  (define-values (width height _1 _2) (send dc get-text-extent str #f #t 0))
+  (define nanchor (if (eq? anchor 'auto)
+                      (resolve-auto-anchor dc str x y angle dist)
+                      anchor))
+  (let ([dist  (case nanchor
+                 [(top-left bottom-left top-right bottom-right)  (* sin45 dist)]
+                 [else  dist])])
+    (define dx (case nanchor
+                 [(top-left left bottom-left auto)     (- dist)]
+                 [(top center bottom)             (* 1/2 width)]
+                 [(top-right right bottom-right)  (+ width dist)]
+                 [else  (raise-type-error 'draw-text/anchor "anchor/c" anchor)]))
+    (define dy (case nanchor
+                 [(top-left top top-right auto)      (- dist)]
+                 [(left center right)                (* 1/2 height)]
+                 [(bottom-left bottom bottom-right)  (+ height dist)]))
+    (define rdx (+ (* (sin angle) dy) (* (cos angle) dx)))
+    (define rdy (- (* (cos angle) dy) (* (sin angle) dx)))
+    
+    (send dc draw-text str (- x rdx) (- y rdy) #t 0 angle)))
+
+(: get-text-corners/anchor (->* [(Instance DC<%>) String Real Real]
+                                [Anchor Real Real]
+                                (Listof (Vector Real Real))))
+(define (get-text-corners/anchor dc str x y [anchor 'top-left] [angle 0] [dist 0])
+  (define-values (width height _1 _2) (send dc get-text-extent str #f #t 0))
+  (define nanchor (if (eq? anchor 'auto)
+                      (resolve-auto-anchor dc str x y angle dist)
+                      anchor))
+  (get-box-corners/anchor x y width height nanchor angle dist))
 
 ;; ===================================================================================================
 ;; Subdividing nonlinearly transformed shapes

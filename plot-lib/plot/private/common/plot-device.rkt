@@ -609,7 +609,7 @@
         (cond
           [(and x-min x-max)
            (case (plot-legend-anchor)
-             [(top-left left bottom-left)     x-min]
+             [(top-left left bottom-left auto)     x-min]
              [(top-right right bottom-right)  (- x-max legend-x-size)]
              [(center bottom top)             (- (* 1/2 (+ x-min x-max))
                                                  (* 1/2 legend-x-size))])]
@@ -620,7 +620,7 @@
         (cond
           [(and y-min y-max)
            (case (plot-legend-anchor)
-             [(top-left top top-right)           y-min]
+             [(top-left top top-right auto)      y-min]
              [(bottom-left bottom bottom-right)  (- y-max legend-y-size)]
              [(center left right)                (- (* 1/2 (+ y-min y-max))
                                                     (* 1/2 legend-y-size))])]
