@@ -2,7 +2,7 @@
 
 ;; Renderers for plot decorations: axes, grids, labeled points, etc.
 
-(require typed/racket/class typed/racket/draw racket/match racket/math racket/list
+(require typed/racket/class typed/racket/draw racket/match racket/math racket/list typed/pict
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt"
@@ -288,6 +288,24 @@
   
   empty)
 
+(: pict-render-proc (-> pict (Vectorof Real)
+                        Anchor
+                        Plot-Color Plot-Color Nonnegative-Real Nonnegative-Real Point-Sym
+                        Nonnegative-Real
+                        2D-Render-Proc))
+(define ((pict-render-proc pict v anchor
+                           point-color point-fill-color point-size point-line-width point-sym
+                           alpha)
+         area)
+  (send area put-alpha alpha)
+  ; pict
+  (send area put-pict pict v anchor (* 1/2 point-size))
+  ; point
+  (send area put-pen point-color point-line-width 'solid)
+  (send area put-brush point-fill-color 'solid)
+  (send area put-glyphs (list v) point-sym point-size)
+  empty)
+
 (:: point-label
     (->* [(Sequenceof Real)]
          [(U String #f)
@@ -335,6 +353,40 @@
                     point-size point-line-width point-sym
                     alpha)))]))
 
+(:: point-pict
+    (->* [(Sequenceof Real) pict]
+         [#:anchor Anchor
+          #:point-color Plot-Color
+          #:point-fill-color (U Plot-Color 'auto)
+          #:point-size Nonnegative-Real
+          #:point-line-width Nonnegative-Real
+          #:point-sym Point-Sym
+          #:alpha Nonnegative-Real]
+         renderer2d))
+(define (point-pict v pict
+                    #:anchor [anchor (label-anchor)]
+                    #:point-color [point-color (point-color)]
+                    #:point-fill-color [point-fill-color 'auto]
+                    #:point-size [point-size (label-point-size)]
+                    #:point-line-width [point-line-width (point-line-width)]
+                    #:point-sym [point-sym 'fullcircle]
+                    #:alpha [alpha (label-alpha)])
+  (define fail/kw (make-raise-keyword-error 'point-pict))
+  (cond
+    [(not (rational? point-size))  (fail/kw "rational?" '#:point-size point-size)]
+    [(not (rational? point-line-width))  (fail/kw "rational?" '#:point-line-width point-line-width)]
+    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [else 
+     (let ([v (sequence-head-vector 'point-pict v 2)])
+       (match-define (vector x y) v)
+       (renderer2d (vector (ivl x x) (ivl y y)) #f #f
+                   (pict-render-proc pict v anchor
+                                     point-color (cond [(eq? point-fill-color 'auto)  (->pen-color point-color)]
+                                                       [else  point-fill-color])
+                                     point-size point-line-width point-sym
+                                     alpha)))]))
+
+
 (:: parametric-label
     (->* [(-> Real (Sequenceof Real)) Real]
          [(U String #f)
@@ -376,6 +428,37 @@
       #:point-line-width point-line-width #:point-sym point-sym
       #:alpha alpha)]))
 
+(:: parametric-pict
+    (->* [(-> Real (Sequenceof Real)) Real pict]
+         [#:anchor Anchor
+          #:point-color Plot-Color
+          #:point-fill-color (U Plot-Color 'auto)
+          #:point-size Nonnegative-Real
+          #:point-line-width Nonnegative-Real
+          #:point-sym Point-Sym
+          #:alpha Nonnegative-Real]
+         renderer2d))
+(define (parametric-pict
+         f t pict
+         #:anchor [anchor (label-anchor)]
+         #:point-color [point-color (point-color)]
+         #:point-fill-color [point-fill-color 'auto]
+         #:point-size [point-size (label-point-size)]
+         #:point-line-width [point-line-width (point-line-width)]
+         #:point-sym [point-sym 'fullcircle]
+         #:alpha [alpha (label-alpha)])
+  (cond
+    [(not (rational? t))  (raise-argument-error 'parametric-pict "rational?" 1 f t)]
+    [else
+     (point-pict
+      (sequence-head-vector 'parametric-pict (f t) 2) 
+      pict
+      #:anchor anchor
+      #:point-color point-color #:point-fill-color point-fill-color #:point-size point-size
+      #:point-line-width point-line-width #:point-sym point-sym
+      #:alpha alpha)]))
+
+
 (:: polar-label
     (->* [(-> Real Real) Real]
          [(U String #f)
@@ -412,6 +495,35 @@
      (point-label
       (polar->cartesian θ (f θ)) label
       #:color color #:size size #:face face #:family family #:anchor anchor #:angle angle
+      #:point-color point-color #:point-fill-color point-fill-color #:point-size point-size
+      #:point-line-width point-line-width #:point-sym point-sym
+      #:alpha alpha)]))
+
+(:: polar-pict
+    (->* [(-> Real Real) Real pict]
+         [#:anchor Anchor
+          #:point-color Plot-Color
+          #:point-fill-color (U Plot-Color 'auto)
+          #:point-size Nonnegative-Real
+          #:point-line-width Nonnegative-Real
+          #:point-sym Point-Sym
+          #:alpha Nonnegative-Real]
+         renderer2d))
+(define (polar-pict
+         f θ pict
+         #:anchor [anchor (label-anchor)]
+         #:point-color [point-color (point-color)]
+         #:point-fill-color [point-fill-color 'auto]
+         #:point-size [point-size (label-point-size)]
+         #:point-line-width [point-line-width (point-line-width)]
+         #:point-sym [point-sym 'fullcircle]
+         #:alpha [alpha (label-alpha)])
+  (cond
+    [(not (rational? θ))  (raise-argument-error 'polar-pict "rational?" 1 f θ)]
+    [else
+     (point-pict
+      (polar->cartesian θ (f θ)) pict
+      #:anchor anchor
       #:point-color point-color #:point-fill-color point-fill-color #:point-size point-size
       #:point-line-width point-line-width #:point-sym point-sym
       #:alpha alpha)]))
@@ -456,6 +568,35 @@
       #:point-line-width point-line-width #:point-sym point-sym
       #:alpha alpha)]))
 
+(:: function-pict
+    (->* [(-> Real Real) Real pict]
+         [#:anchor Anchor
+          #:point-color Plot-Color
+          #:point-fill-color (U Plot-Color 'auto)
+          #:point-size Nonnegative-Real
+          #:point-line-width Nonnegative-Real
+          #:point-sym Point-Sym
+          #:alpha Nonnegative-Real]
+         renderer2d))
+(define (function-pict
+         f x pict
+         #:anchor [anchor (label-anchor)]
+         #:point-color [point-color (point-color)]
+         #:point-fill-color [point-fill-color 'auto]
+         #:point-size [point-size (label-point-size)]
+         #:point-line-width [point-line-width (point-line-width)]
+         #:point-sym [point-sym 'fullcircle]
+         #:alpha [alpha (label-alpha)])
+  (cond
+    [(not (rational? x))  (raise-argument-error 'function-pict "rational" 1 f x)]
+    [else
+     (point-pict
+      (vector x (f x)) pict
+      #:anchor anchor
+      #:point-color point-color #:point-fill-color point-fill-color #:point-size point-size
+      #:point-line-width point-line-width #:point-sym point-sym
+      #:alpha alpha)]))
+
 (:: inverse-label
     (->* [(-> Real Real) Real]
          [(U String #f)
@@ -492,6 +633,35 @@
      (point-label
       (vector (f y) y) label
       #:color color #:size size #:face face #:family family #:anchor anchor #:angle angle
+      #:point-color point-color #:point-fill-color point-fill-color #:point-size point-size
+      #:point-line-width point-line-width #:point-sym point-sym
+      #:alpha alpha)]))
+
+(:: inverse-pict
+    (->* [(-> Real Real) Real pict]
+         [#:anchor Anchor
+          #:point-color Plot-Color
+          #:point-fill-color (U Plot-Color 'auto)
+          #:point-size Nonnegative-Real
+          #:point-line-width Nonnegative-Real
+          #:point-sym Point-Sym
+          #:alpha Nonnegative-Real]
+         renderer2d))
+(define (inverse-pict
+         f y pict
+         #:anchor [anchor (label-anchor)]
+         #:point-color [point-color (point-color)]
+         #:point-fill-color [point-fill-color 'auto]
+         #:point-size [point-size (label-point-size)]
+         #:point-line-width [point-line-width (point-line-width)]
+         #:point-sym [point-sym 'fullcircle]
+         #:alpha [alpha (label-alpha)])
+  (cond
+    [(not (rational? y))  (raise-argument-error 'inverse-pict "rational?" 1 f y)]
+    [else
+     (point-pict
+      (vector (f y) y) pict
+      #:anchor anchor
       #:point-color point-color #:point-fill-color point-fill-color #:point-size point-size
       #:point-line-width point-line-width #:point-sym point-sym
       #:alpha alpha)]))

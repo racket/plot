@@ -93,10 +93,15 @@
  y-tick-lines
  tick-grid
  point-label
+ point-pict
  parametric-label
+ parametric-pict
  polar-label
+ polar-pict
  function-label
- inverse-label)
+ function-pict
+ inverse-label
+ inverse-pict)
 
 ;; ===================================================================================================
 ;; 3D exports

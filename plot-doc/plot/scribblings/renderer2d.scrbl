@@ -738,6 +738,27 @@ If @(racket label) is @(racket #f), the point is labeled with its position.
 The remaining labeled-point functions are defined in terms of this one.
 }
 
+@defproc[(point-pict
+          [v (sequence/c real?)]
+          [pict pict?]
+          [#:anchor anchor anchor/c (label-anchor)]
+          [#:point-color point-color plot-color/c (point-color)]
+          [#:point-fill-color point-fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:point-size point-size (>=/c 0) (label-point-size)]
+          [#:point-line-width point-line-width (>=/c 0) (point-line-width)]
+          [#:point-sym point-sym point-sym/c 'fullcircle]
+          [#:alpha alpha (real-in 0 1) (label-alpha)]
+          ) renderer2d?]{
+Returns a renderer that draws a point with a pict as the label.
+
+@interaction[#:eval plot-eval
+                    (require pict)
+                    (plot (list (function sqr 0 2)
+                                (point-pict (vector 1 1) (standard-fish 40 15))))]
+
+The remaining labeled-pict functions are defined in terms of this one.
+}
+
 @defproc[(function-label
           [f  (real? . -> . real?)] [x real?] [label (or/c string? #f) #f]
           [#:color color plot-color/c (plot-foreground)]
@@ -761,6 +782,19 @@ Returns a renderer that draws a labeled point on a function's graph.
                                                 #:anchor 'right)))]
 }
 
+@defproc[(function-pict
+          [f  (real? . -> . real?)] [x real?] [pict pict?]
+          [#:anchor anchor anchor/c (label-anchor)]
+          [#:point-color point-color plot-color/c (point-color)]
+          [#:point-fill-color point-fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:point-size point-size (>=/c 0) (label-point-size)]
+          [#:point-line-width point-line-width (>=/c 0) (point-line-width)]
+          [#:point-sym point-sym point-sym/c 'fullcircle]
+          [#:alpha alpha (real-in 0 1) (label-alpha)]
+          ) renderer2d?]{
+Returns a renderer that draws a point with a pict as the label on a function's graph.
+}
+
 @defproc[(inverse-label
           [f  (real? . -> . real?)] [y real?] [label (or/c string? #f) #f]
           [#:color color plot-color/c (plot-foreground)]
@@ -778,6 +812,20 @@ Returns a renderer that draws a labeled point on a function's graph.
           ) renderer2d?]{
 Returns a renderer that draws a labeled point on a function's inverted graph.
 }
+
+@defproc[(inverse-pict
+          [f  (real? . -> . real?)] [y real?] [pict pict?]
+          [#:anchor anchor anchor/c (label-anchor)]
+          [#:point-color point-color plot-color/c (point-color)]
+          [#:point-fill-color point-fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:point-size point-size (>=/c 0) (label-point-size)]
+          [#:point-line-width point-line-width (>=/c 0) (point-line-width)]
+          [#:point-sym point-sym point-sym/c 'fullcircle]
+          [#:alpha alpha (real-in 0 1) (label-alpha)]
+          ) renderer2d?]{
+Returns a renderer that draws a point with a pict as the label on a function's inverted graph.
+}
+
 
 @defproc[(parametric-label
           [f (real? . -> . (sequence/c real?))] [t real?] [label (or/c string? #f) #f]
@@ -797,6 +845,19 @@ Returns a renderer that draws a labeled point on a function's inverted graph.
 Returns a renderer that draws a labeled point on a parametric function's graph.
 }
 
+@defproc[(parametric-pict
+          [f (real? . -> . (sequence/c real?))] [t real?] [pict pict?]
+          [#:anchor anchor anchor/c (label-anchor)]
+          [#:point-color point-color plot-color/c (point-color)]
+          [#:point-fill-color point-fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:point-size point-size (>=/c 0) (label-point-size)]
+          [#:point-line-width point-line-width (>=/c 0) (point-line-width)]
+          [#:point-sym point-sym point-sym/c 'fullcircle]
+          [#:alpha alpha (real-in 0 1) (label-alpha)]
+          ) renderer2d?]{
+Returns a renderer that draws a point with a pict as the label on a parametric function's graph.
+}
+
 
 @defproc[(polar-label
           [f (real? . -> . real?)] [θ real?] [label (or/c string? #f) #f]
@@ -814,4 +875,18 @@ Returns a renderer that draws a labeled point on a parametric function's graph.
           [#:alpha alpha (real-in 0 1) (label-alpha)]
           ) renderer2d?]{
 Returns a renderer that draws a labeled point on a polar function's graph.
+}
+
+
+@defproc[(polar-pict
+          [f (real? . -> . real?)] [θ real?] [pict pict?]
+          [#:anchor anchor anchor/c (label-anchor)]
+          [#:point-color point-color plot-color/c (point-color)]
+          [#:point-fill-color point-fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:point-size point-size (>=/c 0) (label-point-size)]
+          [#:point-line-width point-line-width (>=/c 0) (point-line-width)]
+          [#:point-sym point-sym point-sym/c 'fullcircle]
+          [#:alpha alpha (real-in 0 1) (label-alpha)]
+          ) renderer2d?]{
+Returns a renderer that draws a point with a pict as the label on a polar function's graph.
 }

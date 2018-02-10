@@ -1,6 +1,6 @@
 #lang typed/racket/base
 
-(require typed/racket/class typed/racket/draw racket/match racket/math racket/list racket/flonum
+(require typed/racket/class typed/racket/draw racket/match racket/math racket/list racket/flonum typed/pict
          (only-in math/flonum fl)
          "../common/type-doc.rkt"
          "../common/types.rkt"
@@ -65,6 +65,7 @@
          [put-glyphs (-> (Listof (Vectorof Real)) Point-Sym Nonnegative-Real Void)]
          [put-arrow (-> (Vectorof Real) (Vectorof Real) Void)]
          [put-tick (-> (Vectorof Real) Real Real Void)]
+         [put-pict (->* [pict (Vectorof Real)] [Anchor Real] Void)]
          ))
 
 (: 2d-plot-area% 2D-Plot-Area%)
@@ -761,4 +762,9 @@
       (let ([v  (exact-vector2d v)])
         (when (and v (in-bounds? v))
           (send pd draw-tick (plot->dc v) r angle))))
+
+    (define/public (put-pict pict v [anchor 'top-left] [dist 0])
+      (let ([v  (exact-vector2d v)])
+        (when (and v (in-bounds? v))
+          (send pd draw-pict pict (plot->dc v) anchor dist))))
     ))
