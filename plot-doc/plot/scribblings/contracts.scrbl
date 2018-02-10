@@ -37,10 +37,9 @@ Identifies values that meet the contract @racket[elem-contract], lists of such v
 The contract for @(racket anchor) arguments and parameters, such as @(racket plot-legend-anchor).
 
 The @racket['auto] anchor will place labels so they are visible on the plot
-area.  This anchor type is useful for @(racket point-label) and @(racket
-function-label) renderers where the labeled point might be at the edge of the
-plot area and the user does not wish to calculate the exact anchor for the
-label.
+area.  This anchor type is useful for @(racket point-label) and similar
+renderers where the labeled point might be at the edge of the plot area and
+the user does not wish to calculate the exact anchor for the label.
 
 The @racket['auto] anchor will choose one of the @racket['bottom-left],
 @racket['bottom-right], @racket['top-left] or @racket['top-right] placements,

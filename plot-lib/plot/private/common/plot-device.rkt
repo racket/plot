@@ -576,6 +576,11 @@
         (for ([v  (in-list vs)])
           (draw-glyph v))))
 
+    (define/public (draw-pict pict v [anchor 'top-left] [dist 0])
+      (when (vrational? v)
+        (match-define (vector x y) v)
+        (draw-pict/anchor dc pict x y anchor dist)))
+
     ;; ===============================================================================================
     ;; Legend
 

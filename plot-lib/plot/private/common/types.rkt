@@ -3,8 +3,10 @@
 (require (for-syntax racket/base)
          typed/racket/draw
          typed/racket/class
+         typed/pict
          "type-doc.rkt"
          "math.rkt")
+
 
 (provide (all-defined-out))
 
@@ -127,4 +129,5 @@
    [draw-tick (-> (Vectorof Real) Real Real Void)]
    [draw-arrow-glyph (-> (Vectorof Real) Real Real Void)]
    [draw-glyphs (-> (Listof (Vectorof Real)) Point-Sym Nonnegative-Real Void)]
+   [draw-pict (->* [pict (Vectorof Real)] (Anchor Real) Void)]
    [draw-legend (-> (Listof legend-entry) Rect Void)]))
