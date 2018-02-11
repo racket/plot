@@ -1,6 +1,6 @@
 #lang racket
 
-(require rackunit plot plot/utils math/flonum)
+(require rackunit plot plot/utils math/flonum pict)
 
 ;(plot-new-window? #t)
 
@@ -502,3 +502,40 @@
           (vrule 1 0 1 #:color 2 #:width 3 #:style 'long-dash #:alpha 0.6 #:label "V"))
     #:x-min -2 #:x-max 2
     #:y-min -2 #:y-max 2))
+
+(printf "This plot should contain~n- 4 labels, all within the plot bounds~n- points near the top and bottom labels~n- no points near the left and right labels~n")
+(plot
+ ;; Add labels on the edges of the plot area.  Each label will be positioned
+ ;; so it is inside the plot area
+ (list (point-label (vector 0 10) #:anchor 'auto)
+       (point-label (vector 0 -10) #:anchor 'auto)
+       ;; Side labels have no corresponding point
+       (point-label (vector 10 0) #:anchor 'auto #:point-sym 'none)
+       (point-label (vector -10 0) #:anchor 'auto #:point-sym 'none))
+ #:x-min -10 #:x-max 10
+ #:y-min -10 #:y-max 10)
+
+(printf "This plot should contain points and functions labeled with standard fish~n")
+(let ()
+  (define blue-fish (standard-fish 40 15 #:color "lightblue"))
+  (define red-fish (standard-fish 40 15 #:color "salmon"))
+  (define (f t) (vector (cos t) (sin t)))
+  (plot
+   (list (point-pict (vector 0 -10) blue-fish #:anchor 'auto #:point-size 15)
+         (parametric f 0 (* 2 pi))
+         (parametric-pict f (/ pi 2) red-fish #:anchor 'bottom )
+         (function sin)
+         (function-pict sin -5 red-fish #:anchor 'left)
+         (polar-pict (lambda (a) (* 8 (sin a))) (/ pi 4) red-fish)
+         (inverse-pict asin 1 red-fish))
+   #:x-min -10 #:x-max 10
+   #:y-min -10 #:y-max 10))
+
+(printf "This plot should contain rectangles that extend to the edge of the plot~n")
+(plot (rectangles (list (vector (ivl 2 3) (ivl -inf.0 +inf.0))
+                        (vector (ivl -inf.0 +inf.0) (ivl 2 3))
+                        (vector (ivl 5 6) (ivl 0 +inf.0)))
+                  #:line-style 'transparent
+                  #:alpha 0.5)
+      #:x-min -10 #:x-max 10
+      #:y-min -10 #:y-max 10)
