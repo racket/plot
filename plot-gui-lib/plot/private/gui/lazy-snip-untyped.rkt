@@ -13,10 +13,10 @@
 
 (define (-make-2d-plot-snip
          init-bm saved-plot-parameters
-         make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height)
+         make-bm plot-bounds-rect area width height)
   (make-2d-plot-snip
    init-bm saved-plot-parameters
-   make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height))
+   make-bm plot-bounds-rect area width height))
 
 (define (-make-3d-plot-snip
          init-bm saved-plot-parameters
