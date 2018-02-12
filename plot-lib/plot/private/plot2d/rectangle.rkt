@@ -18,11 +18,14 @@
                               2D-Render-Proc))
 (define ((rectangles-render-proc rects color style line-color line-width line-style alpha label)
          area)
+  (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
   (send area put-pen line-color line-width line-style)
   (send area put-brush color style)
   (send area put-alpha alpha)
   (for ([rect  (in-list rects)])
-    (send area put-rect rect))
+    (match-define (vector (ivl vx-min vx-max) (ivl vy-min vy-max)) rect)
+    (send area put-rect (vector (ivl (or vx-min x-min) (or vx-max x-max))
+                                (ivl (or vy-min y-min) (or vy-max y-max)))))
   
   (cond [label  (rectangle-legend-entry label color style line-color line-width line-style)]
         [else  empty]))
@@ -59,24 +62,9 @@
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (let ([rects  (sequence->listof-vector 'rectangles rects 2)])
-       (match-define (list (vector (ivl #{x1s : (Listof (U Real #f))}
-                                        #{x2s : (Listof (U Real #f))})
-                                   (ivl #{y1s : (Listof (U Real #f))}
-                                        #{y2s : (Listof (U Real #f))}))
-                           ...)
-         rects)
-       (define rxs (filter rational? (append x1s x2s)))
-       (define rys (filter rational? (append y1s y2s)))
-       (cond
-         [(or (empty? rxs) (empty? rys))  (renderer2d #f #f #f #f)]
-         [else
-          (let ([x-min  (if x-min x-min (apply min* rxs))]
-                [x-max  (if x-max x-max (apply max* rxs))]
-                [y-min  (if y-min y-min (apply min* rys))]
-                [y-max  (if y-max y-max (apply max* rys))])
-            (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
-                        (rectangles-render-proc rects color style line-color line-width line-style
-                                                alpha label)))]))]))
+       (renderer2d #f #f default-ticks-fun
+                   (rectangles-render-proc rects color style line-color line-width line-style
+                                           alpha label)))]))
 
 ;; ===================================================================================================
 ;; Real histograms (or histograms on the real line)
