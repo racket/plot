@@ -550,9 +550,9 @@ For example, the canonical saddle, with its gradient field superimposed:
 Returns a renderer that draws rectangles.
 
 The rectangles are given as a sequence of sequences of intervals---each inner
-sequence defines the bounds of a rectangle.  Any of the bounds can be #f, in
-which case the rectangle extents to the edge of the plot area in the
-respective direction.
+sequence defines the bounds of a rectangle.  Any of the bounds can be
+@racket[-inf.0] or @racket[+inf.0], in which case the rectangle extents to the
+edge of the plot area in the respective direction.
 
 For example,
 @interaction[#:eval plot-eval (plot (rectangles (list (vector (ivl -1 0) (ivl -1 1))
