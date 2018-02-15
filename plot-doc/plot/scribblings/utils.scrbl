@@ -370,7 +370,7 @@ Returns @racket[#t] if every element of @racket[v] is @racket[rational?].
 @;----------------------------------------------------------------------------------------------------
 @subsection[#:tag "math.intervals"]{Intervals and Interval Functions}
 
-@defstruct[ivl ([min (or/c real? #f)] [max (or/c real? #f)])]{
+@defstruct[ivl ([min real?] [max real?])]{
 Represents a closed interval.
 
 An interval with two real-valued endpoints always contains the endpoints in order:
