@@ -149,7 +149,6 @@
     (define mouse-event-handler zoom-or-unzoom-mouse-event-handler)
 
     (define (user-mouse-event-handler dc x y editorx editory evt)
-      (define evt-type (send evt get-event-type))
       (define mouse-x (- (send evt get-x) x))
       (define mouse-y (- (send evt get-y) y))
       (when area
@@ -214,19 +213,25 @@
           (define-values (origin-x origin-y) (send dc get-origin))
           (send dc set-origin (+ origin-x (* scale-x x)) (+ origin-y (* scale-y y)))
 
-          (parameterize ([plot-decorations? #f]
-                         [plot-background-alpha 0])
-            ;; The new overlay area has to be constructed inside the
-            ;; parameterize call, as it picks up the value of the
-            ;; plot-decorations? parameter.
-            (define overlay-area
-              (make-object 2d-plot-area%
-                           (vector (ivl ox-min ox-max) (ivl oy-min oy-max))
-                           '() '() '() '()
-                           dc
-                           dc-x-min dc-y-min
-                           (- dc-x-max dc-x-min) (- dc-y-max dc-y-min)))
-            (plot-area overlay-area the-overlay-renderers))
+          ;; Use the same plot parameters as the main plot -- this ensures
+          ;; that any axis transforms (e.g. logarithmic, stretch, etc) are
+          ;; applied to the overlays as well.  We than omit the decorations
+          ;; and specify a transparent background so the main plot underneath
+          ;; is visible.
+          (parameterize/group ([plot-parameters  (get-saved-plot-parameters)])
+            (parameterize ([plot-decorations? #f]
+                           [plot-background-alpha 0])
+              ;; The new overlay area has to be constructed inside the
+              ;; parameterize call, as it picks up the value of the
+              ;; plot-decorations? parameter.
+              (define overlay-area
+                (make-object 2d-plot-area%
+                             (vector (ivl ox-min ox-max) (ivl oy-min oy-max))
+                             '() '() '() '()
+                             dc
+                             dc-x-min dc-y-min
+                             (- dc-x-max dc-x-min) (- dc-y-max dc-y-min)))
+              (plot-area overlay-area the-overlay-renderers)))
 
           (send dc set-origin origin-x origin-y))))
 
