@@ -18,11 +18,17 @@
                               2D-Render-Proc))
 (define ((rectangles-render-proc rects color style line-color line-width line-style alpha label)
          area)
+  (match-define (vector (ivl bx-min bx-max) (ivl by-min by-max)) (send area get-bounds-rect))
   (send area put-pen line-color line-width line-style)
   (send area put-brush color style)
   (send area put-alpha alpha)
   (for ([rect  (in-list rects)])
-    (send area put-rect rect))
+    (match-define (vector (ivl vx-min vx-max) (ivl vy-min vy-max)) rect)
+    (define x-min (if (or (eqv? vx-min -inf.0) (eqv? vx-min -inf.f)) bx-min vx-min))
+    (define x-max (if (or (eqv? vx-max +inf.0) (eqv? vx-max +inf.f)) bx-max vx-max))
+    (define y-min (if (or (eqv? vy-min -inf.0) (eqv? vy-min -inf.f)) by-min vy-min))
+    (define y-max (if (or (eqv? vy-max +inf.0) (eqv? vy-max +inf.f)) by-max vy-max))
+    (send area put-rect (vector (ivl x-min x-max) (ivl y-min y-max))))
   
   (cond [label  (rectangle-legend-entry label color style line-color line-width line-style)]
         [else  empty]))
@@ -65,8 +71,10 @@
                                         #{y2s : (Listof (U Real #f))}))
                            ...)
          rects)
-       (define rxs (filter rational? (append x1s x2s)))
-       (define rys (filter rational? (append y1s y2s)))
+       (define (valid? num)
+         (and (real? num) (not (eqv? num +nan.0)) (not (eqv? num +nan.f))))
+       (define rxs (filter valid? (append x1s x2s)))
+       (define rys (filter valid? (append y1s y2s)))
        (cond
          [(or (empty? rxs) (empty? rys))  (renderer2d #f #f #f #f)]
          [else
@@ -74,7 +82,17 @@
                 [x-max  (if x-max x-max (apply max* rxs))]
                 [y-min  (if y-min y-min (apply min* rys))]
                 [y-max  (if y-max y-max (apply max* rys))])
-            (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+            ;; Only provide bounds if all rectangle dimensions are finite.
+            ;; Infinite limits mean "extend to the edge of the plot".
+            ;;
+            ;; We cannot simply discard infinite limits, as these bounds will
+            ;; be used for clipping the rectangles and this might result in
+            ;; rectangles that don't extend all the way to the edge.
+            (define bounds
+              (and (rational? x-min) (rational? x-max)
+                   (rational? y-min) (rational? y-max)
+                   (vector (ivl x-min x-max) (ivl y-min y-max))))
+            (renderer2d bounds #f default-ticks-fun
                         (rectangles-render-proc rects color style line-color line-width line-style
                                                 alpha label)))]))]))
 
