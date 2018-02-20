@@ -895,7 +895,7 @@ Returns a renderer that draws a point with a pict as the label on a polar functi
 
 An plot object returned by @racket[plot-snip] can be set up to provide
 interactive overlays, such as displaying the current value of the plot
-function at he mouse cursor.  Two methods are available on the returned
+function at the mouse cursor.  Two methods are available on the returned
 @racket[snip%] object for this purpose.
 
 @defclass[2d-plot-snip% snip% ()]{
@@ -917,7 +917,7 @@ is disabled.  This can be restored by calling
 
 }
 
-@defmethod[(set-overlay-renderers [renderers (or/c #f (treeof renderer2d?))]) any/c]{
+@defmethod[(set-overlay-renderers [renderers (or/c (treeof renderer2d?) #f)]) any/c]{
 
 Set a list of renderers (or more generally, a tree of renderers) to be drawn
 on top of the existing plot.  This can be any combination of 2D renderers, but
@@ -944,7 +944,7 @@ snip returned by @racket[plot-snip].  When invoked, the mouse callback will
 add a @racket[vrule] at the current X position and a @racket[point-label] at
 the current value of the plotted function.
 
-@examples[#:eval plot-eval
+@racketblock[
 (require plot)
 (define snip (plot-snip (function sin) #:x-min -5 #:x-max 5))
 (define (mouse-callback snip event x y)
@@ -962,12 +962,8 @@ Here are a few hints for adding common interactive elements to racket plots:
 horizontal and vertical lines that track the mouse position}
 
 @item{The @(racket rectangles) renderer can be used to highlight a region on
-the plot.  You can also specify @racket[-inf.0] and @racket[+inf.0] as limits
-for one of the dimensions, to extend the rectangle all the way to the edge of
-the plot in that direction.  You will need to specify a non zero value for the
-@racket[#:alpha] parameter, so the rectangle is transparent and the plot
-underneath it is visible. For example, to highlight a vertical region between
-@racket[xmin] and @racket[xmax], you can use:
+the plot.  For example, to highlight a vertical region between @racket[xmin]
+and @racket[xmax], you can use:
 
 @racket[
 (rectangles (list (vector (ivl xmin xmax) (ivl -inf.0 +inf.0)))
