@@ -23,7 +23,7 @@
 (define 2d-plot-snip%
   (class plot-snip%
     (init init-bm saved-plot-parameters)
-    (init-field make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height)
+    (init-field make-bm plot-bounds-rect area width height)
 
     (inherit set-bitmap get-bitmap
              get-saved-plot-parameters
@@ -35,7 +35,7 @@
     (super-make-object init-bm saved-plot-parameters)
     
     (define (set-message-center)
-      (match-define (vector x-mid y-mid) (rect-center area-bounds-rect))
+      (match-define (vector x-mid y-mid) (rect-center (send area get-area-bounds-rect)))
       (send this set-message-center x-mid y-mid))
     
     (set-message-center)
@@ -44,7 +44,7 @@
       (define c
         (make-object this%
                      (get-bitmap) (get-saved-plot-parameters)
-                     make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height))
+                     make-bm plot-bounds-rect area width height))
       (when mouse-event-callback
         (send c set-mouse-event-callback mouse-event-callback))
       c)
@@ -53,11 +53,23 @@
     (define left-click-y 0)
     (define left-drag-x 0)
     (define left-drag-y 0)
-    
+
     (define plot-bounds-rects empty)
+
+    (define (area-bounds->plot-bounds rect)
+      (match-define (vector (ivl area-x-min area-x-max) (ivl area-y-min area-y-max)) rect)
+      (match-define (vector x-min y-min) (send area dc->plot (vector area-x-min area-y-min)))
+      (match-define (vector x-max y-max) (send area dc->plot (vector area-x-max area-y-max)))
+      (vector (ivl x-min x-max) (ivl y-min y-max)))
+
+    (define (plot-bounds->area-bounds rect)
+      (match-define (vector (ivl plot-x-min plot-x-max) (ivl plot-y-min plot-y-max)) rect)
+      (match-define (vector x-min y-min) (send area plot->dc (vector plot-x-min plot-y-min)))
+      (match-define (vector x-max y-max) (send area plot->dc (vector plot-x-max plot-y-max)))
+      (vector (ivl x-min x-max) (ivl y-min y-max)))
     
     (define (get-new-area-bounds-rect)
-      (rect-meet area-bounds-rect
+      (rect-meet (send area get-area-bounds-rect)
                  (rect-inexact->exact
                   (vector (ivl left-click-x left-drag-x) (ivl left-click-y left-drag-y)))))
     
@@ -102,12 +114,10 @@
                       (make-bm animating? plot-bounds-rect width height)])))
             (λ (animating?) (draw-command animating? plot-bounds-rect width height))
             (λ (rth)
-              (define-values (new-bm new-area new-area-bounds-rect new-area-bounds->plot-bounds)
-                (worker-thread-try-get rth (λ () (values #f #f #f #f))))
+              (define-values (new-bm new-area)
+                (worker-thread-try-get rth (λ () (values #f #f))))
               (cond [(is-a? new-bm bitmap%)
-                     (set! area-bounds-rect new-area-bounds-rect)
                      (set! area new-area)
-                     (set! area-bounds->plot-bounds new-area-bounds->plot-bounds)
                      (set-bitmap new-bm)
                      (set-message-center)
                      #t]
@@ -151,11 +161,10 @@
     (define (user-mouse-event-handler dc x y editorx editory evt)
       (define mouse-x (- (send evt get-x) x))
       (define mouse-y (- (send evt get-y) y))
-      (when area
-        (if (rect-contains? area-bounds-rect (vector mouse-x mouse-y))
-            (match-let (((vector px py) (send area dc->plot (vector mouse-x mouse-y))))
-              (mouse-event-callback this evt px py))
-            (mouse-event-callback this evt #f #f))))
+      (if (rect-contains? (send area get-area-bounds-rect) (vector mouse-x mouse-y))
+          (match-let (((vector px py) (send area dc->plot (vector mouse-x mouse-y))))
+            (mouse-event-callback this evt px py))
+          (mouse-event-callback this evt #f #f)))
 
     (define/public (set-mouse-event-callback callback)
       (set! mouse-event-callback callback)
@@ -196,9 +205,8 @@
         ;; over" at the edge.  This is adjusted using the `add1`, `sub1` calls
         ;; below.
 
-        (match-define (vector (ivl cx-min cx-max) (ivl cy-min cy-max)) plot-bounds-rect)
-        (match-define (vector cleft ctop) (send area plot->dc (vector cx-min cy-max)))
-        (match-define (vector cright cbottom) (send area plot->dc (vector cx-max cy-min)))
+        (match-define (vector (ivl cleft cright) (ivl ctop cbottom))
+          (plot-bounds->area-bounds plot-bounds-rect))
 
         (define dc-x-min (max cleft (add1 (- left x))))
         (define dc-x-max (min cright (sub1 (- right x))))
@@ -206,8 +214,8 @@
         (define dc-y-max (min cbottom (sub1 (- bottom y))))
 
         (when (and (> dc-x-max dc-x-min) (> dc-y-max dc-y-min))
-          (match-define (vector ox-min oy-min) (send area dc->plot (vector dc-x-min dc-y-max)))
-          (match-define (vector ox-max oy-max) (send area dc->plot (vector dc-x-max dc-y-min)))
+          (define overlay-plot-bounds
+            (area-bounds->plot-bounds (vector (ivl dc-x-min dc-x-max) (ivl dc-y-min dc-y-max))))
 
           (define-values (scale-x scale-y) (send dc get-scale))
           (define-values (origin-x origin-y) (send dc get-origin))
@@ -226,7 +234,7 @@
               ;; plot-decorations? parameter.
               (define overlay-area
                 (make-object 2d-plot-area%
-                             (vector (ivl ox-min ox-max) (ivl oy-min oy-max))
+                             overlay-plot-bounds
                              '() '() '() '()
                              dc
                              dc-x-min dc-y-min
@@ -346,7 +354,7 @@
 
 (define (make-2d-plot-snip
          init-bm saved-plot-parameters
-         make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height)
+         make-bm plot-bounds-rect area width height)
   (make-object 2d-plot-snip%
     init-bm saved-plot-parameters
-    make-bm plot-bounds-rect area-bounds-rect area area-bounds->plot-bounds width height))
+    make-bm plot-bounds-rect area width height))
