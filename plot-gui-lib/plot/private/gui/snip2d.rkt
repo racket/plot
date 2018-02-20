@@ -182,7 +182,7 @@
       (refresh))
 
     (define (draw-overlay-renderers dc x y left top right bottom)
-      (when (list? the-overlay-renderers)
+      (when the-overlay-renderers
         ;; Implementation notes:
         ;;
         ;; * the `plot-area` routine used to draw plots, expects the origin of
