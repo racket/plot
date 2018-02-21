@@ -94,7 +94,7 @@ The @(racket #:az) and @(racket #:alt) keyword arguments are backward-compatible
 }
 
 @defproc[(plot-snip [<plot-argument> <plot-argument-contract>] ...)
-         (is-a?/c snip%)]
+         (is-a?/c 2d-plot-snip+c%)]
 @defproc[(plot3d-snip [<plot-argument> <plot-argument-contract>] ...)
          (is-a?/c snip%)]
 @defproc[(plot-frame [<plot-argument> <plot-argument-contract>] ...)

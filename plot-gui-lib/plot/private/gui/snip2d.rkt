@@ -15,7 +15,9 @@
          "worker-thread.rkt"
          "snip.rkt")
 
-(provide make-2d-plot-snip)
+(provide make-2d-plot-snip
+         plot-mouse-event-callback/c
+         2d-plot-snip+c%)
 
 (define update-delay 16)
 (define show-zoom-message? #t)

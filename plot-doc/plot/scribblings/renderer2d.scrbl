@@ -898,7 +898,7 @@ interactive overlays, such as displaying the current value of the plot
 function at the mouse cursor.  Two methods are available on the returned
 @racket[snip%] object for this purpose.
 
-@defclass[2d-plot-snip% snip% ()]{
+@defclass[2d-plot-snip+c% snip% ()]{
 
 An instance of this class is returned by @racket[plot-snip].
 
@@ -949,7 +949,9 @@ the current value of the plotted function.
 (define snip (plot-snip (function sin) #:x-min -5 #:x-max 5))
 (define (mouse-callback snip event x y)
    (if (and x y)
-       (send snip set-overlay-renderers (list (vrule x) (point-label (x (sin x)))))
+       (send snip set-overlay-renderers
+             (list (vrule x)
+                   (point-label (vector x (sin x)))))
        (send snip set-overlay-renderers #f)))
 (send snip set-mouse-event-callback mouse-callback)
 snip]
