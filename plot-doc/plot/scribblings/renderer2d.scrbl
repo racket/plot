@@ -893,56 +893,19 @@ Returns a renderer that draws a point with a pict as the label on a polar functi
 
 @section[#:tag "2d-plot-snip-interactive-overlays"]{Interactive Overlays for 2D plots}
 
-An plot object returned by @racket[plot-snip] can be set up to provide
-interactive overlays, such as displaying the current value of the plot
-function at the mouse cursor.  Two methods are available on the returned
-@racket[snip%] object for this purpose.
+@declare-exporting[plot/snip]
+@defmodule*/no-declare[(plot/snip)]
 
-@defclass[2d-plot-snip+c% snip% ()]{
+A plot @racket[snip%] object returned by @racket[plot-snip] can be set up to
+provide interactive overlays.  This feature can be used, for example, to show
+the current value of the plot function at the mouse cursor.
 
-An instance of this class is returned by @racket[plot-snip].
-
-@defmethod[(set-mouse-event-callback [callback (or/c plot-mouse-event-callback/c #f)]) any/c]{
-
-Set a callback function to be invoked with mouse events from the snip.  The
-callback is invoked with the actual snip object, the @racket[mouse-event%] and
-the X, Y position of the mouse in plot coordinates -- these are in the same
-coordinate system used by the renderers in the plot.  The X, Y values are
-@racket[#f] when the mouse is outside the plot area (for example, when the
-mouse is over the axis area).
-
-When a callback is installed, the default zoom functionality of the plot snips
-is disabled.  This can be restored by calling
-@racket[set-mouse-event-callback] with a @racket[#f] argument.
-
-}
-
-@defmethod[(set-overlay-renderers [renderers (or/c (treeof renderer2d?) #f)]) any/c]{
-
-Set a list of renderers (or more generally, a tree of renderers) to be drawn
-on top of the existing plot.  This can be any combination of 2D renderers, but
-it will not be able to modify the axes or the dimensions of the plot area.
-Only one set of overlay renderers can be installed, calling this method a
-second time will replace the previous overlays.  Specifying @racket[#f] as the
-renderers will cause overlays to be disabled.
-
-}
-}
-
-@defthing[plot-mouse-event-callback/c contract? #:value (-> (is-a?/c snip%)
-                                                       (is-a?/c mouse-event%)
-                                                       (or/c real? #f)
-                                                       (or/c real? #f) any/c)]{
-A contract for callback functions passed to @racket[set-mouse-event-callback].
-}
-
-
-For example, if you evaluate the code below in DrRacket, the resulting plot
-will show a vertical line tracking the mouse and the current plot position is
-shown on a label.  This is achieved by adding a mouse callback to the plot
-snip returned by @racket[plot-snip].  When invoked, the mouse callback will
-add a @racket[vrule] at the current X position and a @racket[point-label] at
-the current value of the plotted function.
+If the code below is evaluated in DrRacket, the resulting plot will show a
+vertical line tracking the mouse and the current plot position is shown on a
+label.  This is achieved by adding a mouse callback to the plot snip returned
+by @racket[plot-snip].  When the mouse callback is invoked, it will add a
+@racket[vrule] at the current X position and a @racket[point-label] at the
+current value of the plotted function.
 
 @racketblock[
 (require plot)
@@ -984,3 +947,42 @@ graphics element.}
 @item{A @(racket points) renderer can be used to mark specific locations on
 the plot, without specifying a label for them}
 ]
+
+@defclass[2d-plot-snip+c% snip% ()]{
+
+An instance of this class is returned by @racket[plot-snip].
+
+@defmethod[(set-mouse-event-callback [callback (or/c plot-mouse-event-callback/c #f)]) any/c]{
+
+Set a callback function to be invoked with mouse events from the snip.  The
+callback is invoked with the actual snip object, the @racket[mouse-event%] and
+the X, Y position of the mouse in plot coordinates -- these are in the same
+coordinate system used by the renderers in the plot.  The X, Y values are
+@racket[#f] when the mouse is outside the plot area (for example, when the
+mouse is over the axis area).
+
+When a callback is installed, the default zoom functionality of the plot snips
+is disabled.  This can be restored by calling
+@racket[set-mouse-event-callback] with a @racket[#f] argument.
+
+}
+
+@defmethod[(set-overlay-renderers [renderers (or/c (treeof renderer2d?) #f)]) any/c]{
+
+Set a list of renderers (or more generally, a tree of renderers) to be drawn
+on top of the existing plot.  This can be any combination of 2D renderers, but
+it will not be able to modify the axes or the dimensions of the plot area.
+Only one set of overlay renderers can be installed, calling this method a
+second time will replace the previous overlays.  Specifying @racket[#f] as the
+renderers will cause overlays to be disabled.
+
+}
+}
+
+@defthing[plot-mouse-event-callback/c contract? #:value (-> (is-a?/c snip%)
+                                                       (is-a?/c mouse-event%)
+                                                       (or/c real? #f)
+                                                       (or/c real? #f) any/c)]{
+A contract for callback functions passed to @racket[set-mouse-event-callback].
+}
+
