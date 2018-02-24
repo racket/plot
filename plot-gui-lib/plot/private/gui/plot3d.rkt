@@ -151,14 +151,15 @@
     [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
     [(and z-min (not (rational? z-min)))  (fail/kw "#f or rational" '#:z-min z-min)]
     [(and z-max (not (rational? z-max)))  (fail/kw "#f or rational" '#:z-max z-max)])
-  
-  (define snip
+
+  (: make-snip (-> Positive-Integer Positive-Integer (Instance Snip%)))
+  (define (make-snip width height)
     (plot3d-snip
      renderer-tree
      #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
      #:width width #:height height #:angle angle #:altitude altitude #:title title
      #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
-  (make-snip-frame snip width height (if title (format "Plot: ~a" title) "Plot")))
+  (make-snip-frame make-snip width height (if title (format "Plot: ~a" title) "Plot")))
 
 ;; ===================================================================================================
 ;; Plot to a frame or a snip, depending on the value of plot-new-window?

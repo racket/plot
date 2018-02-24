@@ -16,9 +16,8 @@
     
     (super-new)))
 
-(define (make-snip-frame snip width height label)
-  (define (make-snip w h) snip)
-  
+(define (make-snip-frame make-snip width height label)
+
   (define frame
     (new snip-frame% [label label] [width (+ 20 width)] [height (+ 20 height)]))
   
