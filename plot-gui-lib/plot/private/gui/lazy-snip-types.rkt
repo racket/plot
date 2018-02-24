@@ -28,7 +28,7 @@
       (Instance Snip%)))
 
 (define-type Make-Snip-Frame
-  (-> (Instance Snip%)
+  (-> (-> Positive-Integer Positive-Integer (Instance Snip%))
       Positive-Real
       Positive-Real
       String
