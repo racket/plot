@@ -15,9 +15,18 @@
          "worker-thread.rkt"
          "snip.rkt")
 
-(provide make-2d-plot-snip
-         plot-mouse-event-callback/c
-         2d-plot-snip+c%)
+(define plot-mouse-event-callback/c
+  (-> (is-a?/c snip%) (is-a?/c mouse-event%) (or/c real? #f) (or/c real? #f) any/c))
+(define 2d-plot-snip+c%
+  (class/c
+   (set-mouse-event-callback (->m (or/c plot-mouse-event-callback/c #f) any/c))
+   (set-overlay-renderers (->m (or/c (treeof renderer2d?) #f) any/c))))
+
+(provide
+ (contract-out
+  (make-2d-plot-snip (unconstrained-domain-> (instanceof/c 2d-plot-snip+c%))))
+ 2d-plot-snip%
+ plot-mouse-event-callback/c)
 
 (define update-delay 16)
 (define show-zoom-message? #t)
@@ -356,18 +365,9 @@
       (super resize w h))
     ))
 
-(define plot-mouse-event-callback/c (-> (is-a?/c snip%) (is-a?/c mouse-event%)
-                                        (or/c real? #f) (or/c real? #f) any/c))
-
-(define/contract 2d-plot-snip+c%
-  (class/c
-   (set-mouse-event-callback (->m (or/c plot-mouse-event-callback/c #f) any/c))
-   (set-overlay-renderers (->m (or/c (treeof renderer2d?) #f) any/c)))
-  2d-plot-snip%)
-
 (define (make-2d-plot-snip
          init-bm saved-plot-parameters
          make-bm plot-bounds-rect area width height)
-  (make-object 2d-plot-snip+c%
+  (make-object 2d-plot-snip%
     init-bm saved-plot-parameters
     make-bm plot-bounds-rect area width height))

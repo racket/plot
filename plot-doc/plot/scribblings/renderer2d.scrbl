@@ -948,7 +948,7 @@ graphics element.}
 the plot, without specifying a label for them}
 ]
 
-@defclass[2d-plot-snip+c% snip% ()]{
+@defclass[2d-plot-snip% snip% ()]{
 
 An instance of this class is returned by @racket[plot-snip].
 

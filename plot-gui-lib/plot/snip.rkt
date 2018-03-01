@@ -4,4 +4,4 @@
 
 (provide
  plot-mouse-event-callback/c
- 2d-plot-snip+c%)
+ 2d-plot-snip%)
