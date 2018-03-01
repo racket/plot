@@ -83,6 +83,8 @@
 (defparam plot-y-far-axis? Boolean #t)
 (defparam plot-z-far-axis? Boolean #t)
 
+(defparam collapse-ticks? Boolean #t)
+
 (defparam2 plot-x-tick-label-angle angle Real Real 0 (rational 'plot-x-tick-label-angle))
 (defparam2 plot-y-tick-label-angle angle Real Real 0 (rational 'plot-y-tick-label-angle))
 (defparam2 plot-x-far-tick-label-angle angle Real Real 0 (rational 'plot-x-far-tick-label-angle))
