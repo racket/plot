@@ -17,15 +17,15 @@
 
 (define plot-mouse-event-callback/c
   (-> (is-a?/c snip%) (is-a?/c mouse-event%) (or/c real? #f) (or/c real? #f) any/c))
-(define 2d-plot-snip+c%
+(define 2d-plot-snip%/c
   (class/c
    (set-mouse-event-callback (->m (or/c plot-mouse-event-callback/c #f) any/c))
    (set-overlay-renderers (->m (or/c (treeof renderer2d?) #f) any/c))))
 
 (provide
  (contract-out
-  (make-2d-plot-snip (unconstrained-domain-> (instanceof/c 2d-plot-snip+c%))))
- 2d-plot-snip%
+  [make-2d-plot-snip (unconstrained-domain-> (instanceof/c 2d-plot-snip%/c))]
+  [2d-plot-snip% 2d-plot-snip%/c])
  plot-mouse-event-callback/c)
 
 (define update-delay 16)
