@@ -57,7 +57,7 @@
        (define bounds-rect (get-bounds-rect renderer-list x-min x-max y-min y-max))
        
        (: make-bm (-> Boolean Rect Positive-Integer Positive-Integer
-                      (Values (Instance Bitmap%) Rect (-> Rect Rect))))
+                      (Values (Instance Bitmap%) (U #f (Instance 2D-Plot-Area%)))))
        (define (make-bm anim? bounds-rect width height)
          (: area (U #f (Instance 2D-Plot-Area%)))
          (define area #f)
@@ -78,27 +78,11 @@
                                   
                                   (plot-area new-area renderer-list))
                                 width height)))
-         
-         (: area-bounds->plot-bounds (-> Rect Rect))
-         (define (area-bounds->plot-bounds rect)
-           (let ([area  (assert area values)])
-             (match-define (vector (ivl area-x-min area-x-max) (ivl area-y-min area-y-max)) rect)
-             (let ([area-x-min  (assert area-x-min values)]
-                   [area-x-max  (assert area-x-max values)]
-                   [area-y-min  (assert area-y-min values)]
-                   [area-y-max  (assert area-y-max values)])
-               (match-define (vector x-min y-min) (send area dc->plot (vector area-x-min area-y-min)))
-               (match-define (vector x-max y-max) (send area dc->plot (vector area-x-max area-y-max)))
-               (vector (ivl x-min x-max) (ivl y-min y-max)))))
-         
-         (values bm (send (assert area values) get-area-bounds-rect) area-bounds->plot-bounds))
+         (values bm area))
        
-       (define-values (bm area-bounds-rect area-bounds->plot-bounds)
-         (make-bm #f bounds-rect width height))
+       (define-values (bm area) (make-bm #f bounds-rect width height))
        
-       (make-2d-plot-snip
-        bm saved-plot-parameters
-        make-bm bounds-rect area-bounds-rect area-bounds->plot-bounds width height))]))
+       (make-2d-plot-snip bm saved-plot-parameters make-bm bounds-rect area width height))]))
 
 ;; ===================================================================================================
 ;; Plot to a frame

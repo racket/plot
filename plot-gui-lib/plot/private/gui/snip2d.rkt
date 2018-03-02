@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require racket/gui/base racket/class racket/match racket/list racket/math
+(require racket/gui/base racket/class racket/contract racket/match racket/list racket/math
          plot/private/common/math
          plot/private/common/format
          plot/private/common/ticks
@@ -8,10 +8,25 @@
          plot/private/common/parameter-groups
          plot/private/common/parameter-group
          plot/private/common/draw-attribs
+         plot/private/plot2d/plot-area
+         plot/private/plot2d/renderer
+         plot/private/no-gui/plot2d-utils
+         plot/private/common/contract
          "worker-thread.rkt"
          "snip.rkt")
 
-(provide 2d-plot-snip% make-2d-plot-snip)
+(define plot-mouse-event-callback/c
+  (-> (is-a?/c snip%) (is-a?/c mouse-event%) (or/c real? #f) (or/c real? #f) any/c))
+(define 2d-plot-snip%/c
+  (class/c
+   (set-mouse-event-callback (->m (or/c plot-mouse-event-callback/c #f) any/c))
+   (set-overlay-renderers (->m (or/c (treeof renderer2d?) #f) any/c))))
+
+(provide
+ (contract-out
+  [make-2d-plot-snip (unconstrained-domain-> (instanceof/c 2d-plot-snip%/c))]
+  [2d-plot-snip% 2d-plot-snip%/c])
+ plot-mouse-event-callback/c)
 
 (define update-delay 16)
 (define show-zoom-message? #t)
@@ -21,8 +36,8 @@
 (define 2d-plot-snip%
   (class plot-snip%
     (init init-bm saved-plot-parameters)
-    (init-field make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height)
-    
+    (init-field make-bm plot-bounds-rect area width height)
+
     (inherit set-bitmap get-bitmap
              get-saved-plot-parameters
              refresh
@@ -33,25 +48,41 @@
     (super-make-object init-bm saved-plot-parameters)
     
     (define (set-message-center)
-      (match-define (vector x-mid y-mid) (rect-center area-bounds-rect))
+      (match-define (vector x-mid y-mid) (rect-center (send area get-area-bounds-rect)))
       (send this set-message-center x-mid y-mid))
     
     (set-message-center)
     
     (define/override (copy)
-      (make-object this%
-        (get-bitmap) (get-saved-plot-parameters)
-        make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height))
-    
+      (define c
+        (make-object this%
+                     (get-bitmap) (get-saved-plot-parameters)
+                     make-bm plot-bounds-rect area width height))
+      (when mouse-event-callback
+        (send c set-mouse-event-callback mouse-event-callback))
+      c)
+
     (define left-click-x 0)
     (define left-click-y 0)
     (define left-drag-x 0)
     (define left-drag-y 0)
-    
+
     (define plot-bounds-rects empty)
+
+    (define (area-bounds->plot-bounds rect)
+      (match-define (vector (ivl area-x-min area-x-max) (ivl area-y-min area-y-max)) rect)
+      (match-define (vector x-min y-min) (send area dc->plot (vector area-x-min area-y-min)))
+      (match-define (vector x-max y-max) (send area dc->plot (vector area-x-max area-y-max)))
+      (vector (ivl x-min x-max) (ivl y-min y-max)))
+
+    (define (plot-bounds->area-bounds rect)
+      (match-define (vector (ivl plot-x-min plot-x-max) (ivl plot-y-min plot-y-max)) rect)
+      (match-define (vector x-min y-min) (send area plot->dc (vector plot-x-min plot-y-min)))
+      (match-define (vector x-max y-max) (send area plot->dc (vector plot-x-max plot-y-max)))
+      (vector (ivl x-min x-max) (ivl y-min y-max)))
     
     (define (get-new-area-bounds-rect)
-      (rect-meet area-bounds-rect
+      (rect-meet (send area get-area-bounds-rect)
                  (rect-inexact->exact
                   (vector (ivl left-click-x left-drag-x) (ivl left-click-y left-drag-y)))))
     
@@ -96,11 +127,10 @@
                       (make-bm animating? plot-bounds-rect width height)])))
             (λ (animating?) (draw-command animating? plot-bounds-rect width height))
             (λ (rth)
-              (define-values (new-bm new-area-bounds-rect new-area-bounds->plot-bounds)
-                (worker-thread-try-get rth (λ () (values #f #f #f))))
+              (define-values (new-bm new-area)
+                (worker-thread-try-get rth (λ () (values #f #f))))
               (cond [(is-a? new-bm bitmap%)
-                     (set! area-bounds-rect new-area-bounds-rect)
-                     (set! area-bounds->plot-bounds new-area-bounds->plot-bounds)
+                     (set! area new-area)
                      (set-bitmap new-bm)
                      (set-message-center)
                      #t]
@@ -110,8 +140,8 @@
     (define (update-plot)
       (start-update-thread #f)
       (set-update #t))
-    
-    (define/override (on-event dc x y editorx editory evt)
+
+    (define (zoom-or-unzoom-mouse-event-handler dc x y editorx editory evt)
       (define evt-type (send evt get-event-type))
       (define mouse-x (- (send evt get-x) x))
       (define mouse-y (- (send evt get-y) y))
@@ -136,7 +166,98 @@
                             [(and (not (send evt get-left-down))
                                   (<= 0 mouse-x (send (get-bitmap) get-width))
                                   (<= 0 mouse-y (send (get-bitmap) get-height)))
-                             (set-click-message)])])
+                             (set-click-message)])]))
+
+    (define mouse-event-callback #f)
+    (define mouse-event-handler zoom-or-unzoom-mouse-event-handler)
+
+    (define (user-mouse-event-handler dc x y editorx editory evt)
+      (define mouse-x (- (send evt get-x) x))
+      (define mouse-y (- (send evt get-y) y))
+      (if (rect-contains? (send area get-area-bounds-rect) (vector mouse-x mouse-y))
+          (match-let (((vector px py) (send area dc->plot (vector mouse-x mouse-y))))
+            (mouse-event-callback this evt px py))
+          (mouse-event-callback this evt #f #f)))
+
+    (define/public (set-mouse-event-callback callback)
+      (set! mouse-event-callback callback)
+      (set! mouse-event-handler
+            (if mouse-event-callback
+                user-mouse-event-handler
+                zoom-or-unzoom-mouse-event-handler)))
+
+    (define the-overlay-renderers #f)
+
+    (define/public (set-overlay-renderers renderers)
+      (set! the-overlay-renderers renderers)
+      (refresh))
+
+    (define (draw-overlay-renderers dc x y left top right bottom)
+      (when the-overlay-renderers
+        ;; Implementation notes:
+        ;;
+        ;; * the `plot-area` routine used to draw plots, expects the origin of
+        ;; the DC to be set to the origin or (0, 0) of the plot, see
+        ;; `set-origin` call.
+        ;;
+        ;; * Since the DC origin has been adjusted to start at X, Y, the LEFT,
+        ;; TOP, RIGHT and BOTTOM values have to be adjusted accordingly.
+        ;;
+        ;; * plot Y axis grows upwards (lower values are at the bottom, higher
+        ;; values are at the top), draw context Y axis grows downwards (lower
+        ;; values are at the top, higher values are at the bottom).  This
+        ;; results in some non-obvious `plot->dc` and `dc->plot` calls.
+        ;;
+        ;; * The area bounded by LEFT, TOP, RIGHT and BOTTOM might cover an
+        ;; area outside the plot area (e.g. where axis are drawn).  We need to
+        ;; intersect the current plot bounds with this area to obtain the
+        ;; final overlay redraw area.
+        ;;
+        ;; * If the redraw area is at the edge of the visible part of the plot
+        ;; snip, we seem to have an off-by-one error and pixels are "left
+        ;; over" at the edge.  This is adjusted using the `add1`, `sub1` calls
+        ;; below.
+
+        (match-define (vector (ivl cleft cright) (ivl ctop cbottom))
+          (plot-bounds->area-bounds plot-bounds-rect))
+
+        (define dc-x-min (max cleft (add1 (- left x))))
+        (define dc-x-max (min cright (sub1 (- right x))))
+        (define dc-y-min (max ctop (add1 (- top y))))
+        (define dc-y-max (min cbottom (sub1 (- bottom y))))
+
+        (when (and (> dc-x-max dc-x-min) (> dc-y-max dc-y-min))
+          (define overlay-plot-bounds
+            (area-bounds->plot-bounds (vector (ivl dc-x-min dc-x-max) (ivl dc-y-min dc-y-max))))
+
+          (define-values (scale-x scale-y) (send dc get-scale))
+          (define-values (origin-x origin-y) (send dc get-origin))
+          (send dc set-origin (+ origin-x (* scale-x x)) (+ origin-y (* scale-y y)))
+
+          ;; Use the same plot parameters as the main plot -- this ensures
+          ;; that any axis transforms (e.g. logarithmic, stretch, etc) are
+          ;; applied to the overlays as well.  We than omit the decorations
+          ;; and specify a transparent background so the main plot underneath
+          ;; is visible.
+          (parameterize/group ([plot-parameters  (get-saved-plot-parameters)])
+            (parameterize ([plot-decorations? #f]
+                           [plot-background-alpha 0])
+              ;; The new overlay area has to be constructed inside the
+              ;; parameterize call, as it picks up the value of the
+              ;; plot-decorations? parameter.
+              (define overlay-area
+                (make-object 2d-plot-area%
+                             overlay-plot-bounds
+                             '() '() '() '()
+                             dc
+                             dc-x-min dc-y-min
+                             (- dc-x-max dc-x-min) (- dc-y-max dc-y-min)))
+              (plot-area overlay-area the-overlay-renderers)))
+
+          (send dc set-origin origin-x origin-y))))
+
+    (define/override (on-event dc x y editorx editory evt)
+      (apply mouse-event-handler dc x y editorx editory evt '())
       (super on-event dc x y editorx editory evt))
     
     (define (draw-selection dc dc-x-min dc-y-min rect)
@@ -230,8 +351,9 @@
       (super draw dc x y left top right bottom dx dy draw-caret)
       (when dragging?
         (parameterize/group ([plot-parameters  (get-saved-plot-parameters)])
-          (draw-selection dc x y (get-new-area-bounds-rect)))))
-    
+          (draw-selection dc x y (get-new-area-bounds-rect))))
+      (draw-overlay-renderers dc x y left top right bottom))
+
     (define/override (resize w h)
       (when (not (and (= w width) (= h height)))
         (set! width w)
@@ -245,7 +367,7 @@
 
 (define (make-2d-plot-snip
          init-bm saved-plot-parameters
-         make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height)
+         make-bm plot-bounds-rect area width height)
   (make-object 2d-plot-snip%
     init-bm saved-plot-parameters
-    make-bm plot-bounds-rect area-bounds-rect area-bounds->plot-bounds width height))
+    make-bm plot-bounds-rect area width height))

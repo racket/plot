@@ -7,6 +7,7 @@
                     db
                     plot
                     plot/utils
+                    plot/snip
                     (only-in racket/sequence sequence/c)))
 
 (provide (all-defined-out)
@@ -16,6 +17,7 @@
                                   pict
                                   db
                                   plot
+                                  plot/snip
                                   plot/utils)
                     sequence/c))
 

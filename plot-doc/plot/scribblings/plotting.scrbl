@@ -94,7 +94,7 @@ The @(racket #:az) and @(racket #:alt) keyword arguments are backward-compatible
 }
 
 @defproc[(plot-snip [<plot-argument> <plot-argument-contract>] ...)
-         (is-a?/c snip%)]
+         (is-a?/c 2d-plot-snip%)]
 @defproc[(plot3d-snip [<plot-argument> <plot-argument-contract>] ...)
          (is-a?/c snip%)]
 @defproc[(plot-frame [<plot-argument> <plot-argument-contract>] ...)
@@ -107,6 +107,10 @@ These procedures accept the same arguments as @(racket plot) and @(racket plot3d
 Use @(racket plot-frame) and @(racket plot3d-frame) to create a @(racket frame%) regardless of the value of @(racket plot-new-window?). The frame is initially hidden.
 
 Use @(racket plot-snip) and @(racket plot3d-snip) to create an interactive @(racket snip%) regardless of the value of @(racket plot-new-window?).
+
+@racket[snip%] objects returned by @(racket plot-snip) can be used to
+construct interactive plots.  See @secref["2d-plot-snip-interactive-overlays"]
+for more details.
 }
 
 @section{Non-GUI Plotting Procedures}
