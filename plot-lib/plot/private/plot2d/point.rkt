@@ -145,6 +145,28 @@
                        [else   empty])])]
     [else  empty]))
 
+(: arrows-render-fun
+   (-> (Sequenceof (Vector (Vectorof Real) (Vectorof Real)))
+        (U Real 'auto 'normalized)
+       Plot-Color Nonnegative-Real Plot-Pen-Style
+       Nonnegative-Real
+       (U String #f)
+       2D-Render-Proc))
+(define ((arrows-render-fun vs scale color line-width line-style alpha label) area)
+  (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
+  
+  (cond
+    [(and x-min x-max y-min y-max)  
+                 (send area put-alpha alpha)
+                 (send area put-pen color line-width line-style)
+                 (for ([x      (in-list vs)])
+                   (send area put-arrow
+                         (vector-ref x 0)
+                         (vector-ref x 1)
+                         ))
+                 (cond [label  (arrow-legend-entry label color line-width line-style)]
+                       [else   empty])])]
+    [else  empty]))
 (:: vector-field
     (->* [(U (-> Real Real (Sequenceof Real))
              (-> (Vector Real Real) (Sequenceof Real)))]
