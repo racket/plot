@@ -196,7 +196,9 @@
 (defparam vector-field-scale (U Real 'auto 'normalized) 'auto)
 (defparam2 vector-field-alpha Real Nonnegative-Real 1 (unit-ivl 'vector-field-alpha))
 (defparam vector-field3d-samples Positive-Integer 9)
-
+;;arrow
+(defparam arrow-head-size-scale Nonnegative 1)
+(defparam arrow-head-angle-scale Nonnegative 1)
 ;; Error bars
 
 (defparam2 error-bar-width Real Nonnegative-Real 6 (nonnegative-rational 'error-bar-width))
