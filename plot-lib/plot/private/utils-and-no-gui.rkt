@@ -58,6 +58,7 @@
  plot-x-far-axis?
  plot-y-far-axis?
  plot-z-far-axis?
+ collapse-ticks?
  plot-x-tick-label-anchor
  plot-y-tick-label-anchor
  plot-x-far-tick-label-anchor

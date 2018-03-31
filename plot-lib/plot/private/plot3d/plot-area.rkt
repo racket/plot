@@ -470,33 +470,39 @@
     (: y-ticks (Listof tick))
     (: z-ticks (Listof tick))
     (define x-ticks
-      (collapse-ticks (filter (λ ([t : tick]) (<= x-min (pre-tick-value t) x-max))
-                              (map tick-inexact->exact rx-ticks))
-                      (x-ticks-near? x-axis-y)))
+      (let ([exact-ticks-within-bounds (filter (λ ([t : tick]) (<= x-min (pre-tick-value t) x-max))
+                                               (map tick-inexact->exact rx-ticks))])
+        (if (collapse-ticks?) (collapse-ticks exact-ticks-within-bounds (x-ticks-near? x-axis-y))
+            exact-ticks-within-bounds)))
     (define y-ticks
-      (collapse-ticks (filter (λ ([t : tick]) (<= y-min (pre-tick-value t) y-max))
-                              (map tick-inexact->exact ry-ticks))
-                      (y-ticks-near? y-axis-x)))
+      (let ([exact-ticks-within-bounds (filter (λ ([t : tick]) (<= y-min (pre-tick-value t) y-max))
+                                               (map tick-inexact->exact ry-ticks))])
+        (if (collapse-ticks?) (collapse-ticks exact-ticks-within-bounds (y-ticks-near? y-axis-x))
+            exact-ticks-within-bounds)))
     (define z-ticks
-      (collapse-ticks (filter (λ ([t : tick]) (<= z-min (pre-tick-value t) z-max))
-                              (map tick-inexact->exact rz-ticks))
-                      (z-ticks-near? z-axis-x z-axis-y)))
+      (let ([exact-ticks-within-bounds (filter (λ ([t : tick]) (<= z-min (pre-tick-value t) z-max))
+                                               (map tick-inexact->exact rz-ticks))])
+        (if (collapse-ticks?) (collapse-ticks exact-ticks-within-bounds (z-ticks-near? z-axis-x z-axis-y))
+            exact-ticks-within-bounds)))
     
     (: x-far-ticks (Listof tick))
     (: y-far-ticks (Listof tick))
     (: z-far-ticks (Listof tick))
     (define x-far-ticks
-      (collapse-ticks (filter (λ ([t : tick]) (<= x-min (pre-tick-value t) x-max))
-                              (map tick-inexact->exact rx-far-ticks))
-                      (x-ticks-near? x-far-axis-y)))
+      (let ([exact-ticks-within-bounds (filter (λ ([t : tick]) (<= x-min (pre-tick-value t) x-max))
+                                               (map tick-inexact->exact rx-far-ticks))])
+        (if (collapse-ticks?) (collapse-ticks exact-ticks-within-bounds (x-ticks-near? x-far-axis-y))
+            exact-ticks-within-bounds)))
     (define y-far-ticks
-      (collapse-ticks (filter (λ ([t : tick]) (<= y-min (pre-tick-value t) y-max))
-                              (map tick-inexact->exact ry-far-ticks))
-                      (y-ticks-near? y-far-axis-x)))
+      (let ([exact-ticks-within-bounds (filter (λ ([t : tick]) (<= y-min (pre-tick-value t) y-max))
+                                               (map tick-inexact->exact ry-far-ticks))])
+        (if (collapse-ticks?) (collapse-ticks exact-ticks-within-bounds (y-ticks-near? y-far-axis-x))
+            exact-ticks-within-bounds)))
     (define z-far-ticks
-      (collapse-ticks (filter (λ ([t : tick]) (<= z-min (pre-tick-value t) z-max))
-                              (map tick-inexact->exact rz-far-ticks))
-                      (z-ticks-near? z-far-axis-x z-far-axis-y)))
+      (let ([exact-ticks-within-bounds (filter (λ ([t : tick]) (<= z-min (pre-tick-value t) z-max))
+                                               (map tick-inexact->exact rz-far-ticks))])
+        (if (collapse-ticks?) (collapse-ticks exact-ticks-within-bounds (z-ticks-near? z-far-axis-x z-far-axis-y))
+            exact-ticks-within-bounds)))
     
     ;; ===============================================================================================
     ;; Tick and label parameters, and fixpoint margin computation
