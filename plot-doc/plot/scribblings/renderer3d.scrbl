@@ -423,3 +423,18 @@ Returns a renderer that draws a labeled point.
 If @(racket label) is @(racket #f), the point is labeled with its position.
 Analogous to @racket[point-label].
 }
+
+@subsection{3D Rectangle Inputs}
+
+@defproc[(hash->cat2-vals [hash2 (hash/c any/c (hash/c any/c any/c))])
+         (sequence/c (list any/c any/c any/c))]{
+  Convert a (nested) @tech{hash table} to the format expected by
+   @racket[discrete-histogram3d] or @racket[stacked-histogram3d].
+
+  @examples[#:eval plot-eval
+    (plot3d (stacked-histogram3d
+              (hash->cat2-vals (hash 'A (hash 'C '(1))
+                                     'B (hash 'C '(1 1)
+                                              'D '(1 1 1))))))]
+}
+

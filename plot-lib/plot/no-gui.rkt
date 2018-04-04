@@ -81,6 +81,7 @@
  rectangles
  area-histogram
  discrete-histogram
+ hash->cat-vals
  stacked-histogram)
 
 (require "private/plot2d/decoration.rkt")
@@ -150,6 +151,7 @@
 (provide
  rectangles3d
  discrete-histogram3d
+ hash->cat2-vals
  stacked-histogram3d)
 
 (require "private/plot3d/decoration.rkt")

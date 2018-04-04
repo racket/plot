@@ -667,6 +667,19 @@ The heights of each bar section are given as a list.
                        #:legend-anchor 'top-right)]
 }
 
+@subsection{2D Rectangle Inputs}
+
+@defproc[(hash->cat-vals [hash (hash/c any/c any/c)])
+         (sequence/c (list any/c any/c))]{
+  Convert a @tech{hash table} to the format expected by @racket[discrete-histogram]
+   or @racket[stacked-histogram].
+
+  @examples[#:eval plot-eval
+    (plot (discrete-histogram
+            (hash->cat-vals (hash 'wins 33 'losses 24))))]
+}
+
+
 @section{2D Plot Decoration Renderers}
 
 @defproc[(x-axis [y real? 0]
