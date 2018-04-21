@@ -355,7 +355,7 @@
 
     (: get-x-tick-label-params (-> (Listof Label-Params)))
     (define (get-x-tick-label-params)
-      (if (plot-x-axis?)
+      (if (and (plot-x-axis?) (plot-x-tick-labels?))
           (get-tick-label-params x-ticks
                                  x-tick-label-offset
                                  (λ ([x : Real]) (x-tick-value->dc x))
@@ -365,7 +365,7 @@
 
     (: get-y-tick-label-params (-> (Listof Label-Params)))
     (define (get-y-tick-label-params)
-      (if (plot-y-axis?)
+      (if (and (plot-y-axis?) (plot-y-tick-labels?))
           (get-tick-label-params y-ticks
                                  y-tick-label-offset
                                  (λ ([y : Real]) (y-tick-value->dc y))
@@ -375,7 +375,7 @@
 
     (: get-x-far-tick-label-params (-> (Listof Label-Params)))
     (define (get-x-far-tick-label-params)
-      (if (and (plot-x-far-axis?) draw-x-far-tick-labels?)
+      (if (or (and (plot-x-far-axis?) draw-x-far-tick-labels?) (and (plot-x-far-axis?) (plot-x-far-tick-labels?)))
           (get-tick-label-params x-far-ticks
                                  x-far-tick-label-offset
                                  (λ ([x : Real]) (x-far-tick-value->dc x))
@@ -385,7 +385,7 @@
 
     (: get-y-far-tick-label-params (-> (Listof Label-Params)))
     (define (get-y-far-tick-label-params)
-      (if (and (plot-y-far-axis?) draw-y-far-tick-labels?)
+      (if (or (and (plot-y-far-axis?) draw-y-far-tick-labels?) (and (plot-y-far-axis?) (plot-y-far-tick-labels?)))
           (get-tick-label-params y-far-ticks
                                  y-far-tick-label-offset
                                  (λ ([y : Real]) (y-far-tick-value->dc y))

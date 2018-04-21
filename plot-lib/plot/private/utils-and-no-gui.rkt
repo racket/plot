@@ -58,6 +58,12 @@
  plot-x-far-axis?
  plot-y-far-axis?
  plot-z-far-axis?
+ plot-x-tick-labels?
+ plot-y-tick-labels?
+ plot-z-tick-labels?
+ plot-x-far-tick-labels?
+ plot-y-far-tick-labels?
+ plot-z-far-tick-labels?
  plot-x-tick-label-anchor
  plot-y-tick-label-anchor
  plot-x-far-tick-label-anchor

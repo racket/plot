@@ -627,7 +627,7 @@
     
     (: get-x-tick-label-params (-> (Listof Label-Params)))
     (define (get-x-tick-label-params)
-      (if (plot-x-axis?)
+      (if (and (plot-x-axis?) (plot-x-tick-labels?))
           (let ([offset  (if x-axis-y-min? (vneg (y-axis-dir)) (y-axis-dir))])
             (get-tick-label-params (sort-ticks x-ticks (λ ([x : Real]) (x-tick-value->view x)))
                                    (λ ([x : Real]) (x-tick-value->dc x))
@@ -637,7 +637,7 @@
     
     (: get-y-tick-label-params (-> (Listof Label-Params)))
     (define (get-y-tick-label-params)
-      (if (plot-y-axis?)
+      (if (and (plot-y-axis?) (plot-y-tick-labels?))
           (let ([offset  (if y-axis-x-min? (vneg (x-axis-dir)) (x-axis-dir))])
             (get-tick-label-params (sort-ticks y-ticks (λ ([y : Real]) (y-tick-value->view y)))
                                    (λ ([y : Real]) (y-tick-value->dc y))
@@ -647,7 +647,7 @@
     
     (: get-z-tick-label-params (-> (Listof Label-Params)))
     (define (get-z-tick-label-params)
-      (if (plot-z-axis?)
+      (if (and (plot-z-axis?) (plot-z-tick-labels?))
           (get-tick-label-params z-ticks
                                  (λ ([z : Real]) (z-tick-value->dc z))
                                  #(-1 0)
@@ -656,7 +656,7 @@
     
     (: get-x-far-tick-label-params (-> (Listof Label-Params)))
     (define (get-x-far-tick-label-params)
-      (if (and (plot-x-far-axis?) draw-x-far-tick-labels?)
+      (if (or (and (plot-x-far-axis?) draw-x-far-tick-labels?) (and (plot-x-far-axis?) (plot-x-far-tick-labels?)))
           (let ([offset  (if x-axis-y-min? (y-axis-dir) (vneg (y-axis-dir)))])
             (get-tick-label-params (sort-ticks x-far-ticks (λ ([x : Real])
                                                              (x-far-tick-value->view x)))
@@ -667,7 +667,7 @@
     
     (: get-y-far-tick-label-params (-> (Listof Label-Params)))
     (define (get-y-far-tick-label-params)
-      (if (and (plot-y-far-axis?) draw-y-far-tick-labels?)
+      (if (or (and (plot-y-far-axis?) draw-y-far-tick-labels?) (and (plot-y-far-axis?) (plot-y-far-tick-labels?)))
           (let ([offset  (if y-axis-x-min? (x-axis-dir) (vneg (x-axis-dir)))])
             (get-tick-label-params (sort-ticks y-far-ticks (λ ([y : Real])
                                                              (y-far-tick-value->view y)))
@@ -678,7 +678,7 @@
     
     (: get-z-far-tick-label-params (-> (Listof Label-Params)))
     (define (get-z-far-tick-label-params)
-      (if (and (plot-z-far-axis?) draw-z-far-tick-labels?)
+      (if (or (and (plot-z-far-axis?) draw-z-far-tick-labels?) (and (plot-z-far-axis?) (plot-z-far-tick-labels?)))
           (get-tick-label-params z-far-ticks
                                  (λ ([z : Real]) (z-far-tick-value->dc z))
                                  #(1 0)
