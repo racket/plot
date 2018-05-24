@@ -12,12 +12,16 @@
                   plot-z-axis? plot-z-far-axis?))
   
   (define-parameter-group plot-tick-labels
-    (plot-x-tick-label-anchor
+    (plot-x-tick-labels?
+     plot-x-tick-label-anchor
      plot-x-tick-label-angle
+     plot-x-far-tick-labels?
      plot-x-far-tick-label-anchor
      plot-x-far-tick-label-angle
+     plot-y-tick-labels?
      plot-y-tick-label-anchor
      plot-y-tick-label-angle
+     plot-y-far-tick-labels?
      plot-y-far-tick-label-anchor
      plot-y-far-tick-label-angle))
   
@@ -89,7 +93,7 @@
       Anchor
       Nonnegative-Real
       (List Boolean Boolean Boolean Boolean Boolean Boolean)
-      (List Anchor Real Anchor Real Anchor Real Anchor Real)
+      (List Boolean Anchor Real Boolean Anchor Real Boolean Anchor Real Boolean Anchor Real)
       Boolean
       Boolean)
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)

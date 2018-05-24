@@ -136,6 +136,16 @@ When any of these is @racket[#f], the corresponding axis is not drawn.
 Use these along with @racket[x-axis] and @racket[y-axis] renderers if you want axes that intersect the origin or some other point.
 }
 
+@deftogether[((defparam plot-x-tick-labels? draw? boolean? #:value #t)
+             (defparam plot-y-tick-labels? draw? boolean? #:value #t)
+             (defparam plot-z-tick-labels? draw? boolean? #:value #t)
+             (defparam plot-x-far-tick-labels? draw? boolean? #:value #f)
+             (defparam plot-y-far-tick-labels? draw? boolean? #:value #f)
+             (defparam plot-z-far-tick-labels? draw? boolean? #:value #f))]{
+When any of these is @racket[#f], the corresponding labels for the ticks on the axis are not drawn.
+These parameters work together with the parameters like @racket[plot-x-axis?] that control the drawing of the axes; i.e. tick labels won't be drawn unless the axis itself is drawn.
+}
+
 @defparam[plot-animating? animating? boolean? #:value #f]{
 When @(racket #t), certain renderers draw simplified plots to speed up drawing.
 @(plot-name) sets it to @(racket #t), for example, when a user is clicking and dragging a 3D plot to rotate it.
