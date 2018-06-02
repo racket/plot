@@ -331,10 +331,14 @@
     ;; -----------------------------------------------------------------------------------------------
     ;; Tick label parameters
 
+    (: draw-x-tick-labels? Boolean)
+    (: draw-y-tick-labels? Boolean)
     (: draw-x-far-tick-labels? Boolean)
     (: draw-y-far-tick-labels? Boolean)
-    (define draw-x-far-tick-labels? (not (and (plot-x-axis?) (equal? x-ticks x-far-ticks))))
-    (define draw-y-far-tick-labels? (not (and (plot-y-axis?) (equal? y-ticks y-far-ticks))))
+    (define draw-x-tick-labels? (plot-x-tick-labels?))
+    (define draw-y-tick-labels? (plot-y-tick-labels?))
+    (define draw-x-far-tick-labels? (or (plot-x-far-tick-labels?) (not (and (plot-x-axis?) (equal? x-ticks x-far-ticks)))))
+    (define draw-y-far-tick-labels? (or (plot-y-far-tick-labels?) (not (and (plot-y-axis?) (equal? y-ticks y-far-ticks)))))
 
     (: x-tick-label-offset (Vectorof Real))
     (: y-tick-label-offset (Vectorof Real))
@@ -355,7 +359,7 @@
 
     (: get-x-tick-label-params (-> (Listof Label-Params)))
     (define (get-x-tick-label-params)
-      (if (plot-x-axis?)
+      (if (and (plot-x-axis?) draw-x-tick-labels?)
           (get-tick-label-params x-ticks
                                  x-tick-label-offset
                                  (λ ([x : Real]) (x-tick-value->dc x))
@@ -365,7 +369,7 @@
 
     (: get-y-tick-label-params (-> (Listof Label-Params)))
     (define (get-y-tick-label-params)
-      (if (plot-y-axis?)
+      (if (and (plot-y-axis?) draw-y-tick-labels?)
           (get-tick-label-params y-ticks
                                  y-tick-label-offset
                                  (λ ([y : Real]) (y-tick-value->dc y))
@@ -423,14 +427,14 @@
 
     (: max-x-tick-label-height Real)
     (define max-x-tick-label-height
-      (if (plot-x-axis?)
+      (if (and (plot-x-axis?) draw-x-tick-labels?)
           (apply max 0 (map (λ ([corner : (Vectorof Real)]) (vector-ref corner 1))
                             (get-relative-corners (get-x-tick-label-params))))
           0))
 
     (: max-y-tick-label-width Real)
     (define max-y-tick-label-width
-      (if (plot-y-axis?)
+      (if (and (plot-y-axis?) draw-y-tick-labels?)
           (- (apply min 0 (map (λ ([corner : (Vectorof Real)]) (vector-ref corner 0))
                                (get-relative-corners (get-y-tick-label-params)))))
           0))
