@@ -114,13 +114,17 @@
     [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
     [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
     [else
+     ;; make-snip will be called in a separate thread, make sure the
+     ;; parameters have the correct values in that thread as well.
+     (define saved-plot-parameters (plot-parameters))
      (: make-snip (-> Positive-Integer Positive-Integer (Instance Snip%)))
      (define (make-snip width height)
-       (plot-snip
-        renderer-tree
-        #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
-        #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor))
-     (make-snip-frame make-snip width height (if title (format "Plot: ~a" title) "Plot"))]))
+       (parameterize/group ([plot-parameters  saved-plot-parameters])
+         (plot-snip
+          renderer-tree
+          #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
+          #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor)))
+           (make-snip-frame make-snip width height (if title (format "Plot: ~a" title) "Plot"))]))
 
 ;; ===================================================================================================
 ;; Plot to a frame or a snip, depending on (plot-new-window?)
