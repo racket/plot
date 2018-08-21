@@ -1,6 +1,8 @@
 #lang racket/base
 (require plot)
 
+(plot-new-window? #t) ;; to regression-test #45
+
 ;; These plots should NOT have decorations. If they do, that means the parameter
 ;; is somehow ignored.
 (parameterize ((plot-decorations? #f))
