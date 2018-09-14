@@ -139,9 +139,9 @@ Use these along with @racket[x-axis] and @racket[y-axis] renderers if you want a
 @deftogether[((defparam plot-x-tick-labels? draw? boolean? #:value #t)
              (defparam plot-y-tick-labels? draw? boolean? #:value #t)
              (defparam plot-z-tick-labels? draw? boolean? #:value #t)
-             (defparam plot-x-far-tick-labels? draw? boolean? #:value #f)
-             (defparam plot-y-far-tick-labels? draw? boolean? #:value #f)
-             (defparam plot-z-far-tick-labels? draw? boolean? #:value #f))]{
+             (defparam plot-x-far-tick-labels? draw? boolean?)
+             (defparam plot-y-far-tick-labels? draw? boolean?)
+             (defparam plot-z-far-tick-labels? draw? boolean?))]{
 When any of these is @racket[#f], the corresponding labels for the ticks on the axis are not drawn.
 These parameters work together with the parameters like @racket[plot-x-axis?] that control the drawing of the axes; i.e. tick labels won't be drawn unless the axis itself is drawn.
 }
