@@ -87,9 +87,9 @@
 (defparam plot-y-tick-labels? Boolean #t)
 (defparam plot-z-tick-labels? Boolean #t)
 
-(defparam plot-x-far-tick-labels? Boolean #f)
-(defparam plot-y-far-tick-labels? Boolean #f)
-(defparam plot-z-far-tick-labels? Boolean #f)
+(defparam plot-x-far-tick-labels? (U Boolean 'auto) 'auto)
+(defparam plot-y-far-tick-labels? (U Boolean 'auto) 'auto)
+(defparam plot-z-far-tick-labels? (U Boolean 'auto) 'auto)
 
 (defparam2 plot-x-tick-label-angle angle Real Real 0 (rational 'plot-x-tick-label-angle))
 (defparam2 plot-y-tick-label-angle angle Real Real 0 (rational 'plot-y-tick-label-angle))

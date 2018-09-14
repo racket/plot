@@ -93,7 +93,7 @@
       Anchor
       Nonnegative-Real
       (List Boolean Boolean Boolean Boolean Boolean Boolean)
-      (List Boolean Anchor Real Boolean Anchor Real Boolean Anchor Real Boolean Anchor Real)
+      (List Boolean Anchor Real (U Boolean 'auto) Anchor Real Boolean Anchor Real (U Boolean 'auto) Anchor Real)
       Boolean
       Boolean)
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)

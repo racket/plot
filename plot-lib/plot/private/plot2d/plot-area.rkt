@@ -337,8 +337,16 @@
     (: draw-y-far-tick-labels? Boolean)
     (define draw-x-tick-labels? (plot-x-tick-labels?))
     (define draw-y-tick-labels? (plot-y-tick-labels?))
-    (define draw-x-far-tick-labels? (or (plot-x-far-tick-labels?) (not (and (plot-x-axis?) (equal? x-ticks x-far-ticks)))))
-    (define draw-y-far-tick-labels? (or (plot-y-far-tick-labels?) (not (and (plot-y-axis?) (equal? y-ticks y-far-ticks)))))
+    (define draw-x-far-tick-labels?
+      (let ((flag (plot-x-far-tick-labels?)))
+        (if (eq? flag 'auto)
+            (not (and (plot-x-axis?) (equal? x-ticks x-far-ticks)))
+            flag)))
+    (define draw-y-far-tick-labels?
+      (let ((flag (plot-y-far-tick-labels?)))
+        (if (eq? flag 'auto)
+            (not (and (plot-y-axis?) (equal? y-ticks y-far-ticks)))
+            flag)))
 
     (: x-tick-label-offset (Vectorof Real))
     (: y-tick-label-offset (Vectorof Real))
