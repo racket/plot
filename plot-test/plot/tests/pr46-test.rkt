@@ -1,60 +1,134 @@
 #lang racket
 (require plot)
 
+(define r3d (surface3d (lambda (x y) (- (sqr x) (sqr y))) -1 1 -1 1))
+
 ;; Case 1: far ticks are the same as near ticks, labels are
 ;; drawn on the near axis only.
-(printf "Labels on near axis only~%")
-(parameterize ([plot-width    150]
-               [plot-height   150]
+(printf "\
+plot-{x,y,z}-ticks            - (linear-ticks)
+plot-{x,y,z}-far-ticks        - (linear-ticks)
+plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-far-tick-labels? - NOT SET~%")
+(parameterize ([plot-width    300]
+               [plot-height   300]
+               [plot-x-ticks (linear-ticks)]
+               [plot-x-far-ticks (linear-ticks)]
                [plot-y-ticks (linear-ticks)]
-               [plot-y-far-ticks (linear-ticks)])
-  (plot (function sin (- pi) pi)))
+               [plot-y-far-ticks (linear-ticks)]
+               [plot-z-ticks (linear-ticks)]
+               [plot-z-far-ticks (linear-ticks)])
+  (list 
+   (plot (function sin (- pi) pi))
+   (plot3d r3d)))
 
 
 ;; Case 2: far ticks are the same as near ticks, but labels are
 ;; forced to be drawn on the far axis as well.
-(printf "Labels on both near and far axes~%")
-(parameterize ([plot-width    150]
-               [plot-height   150]
+(printf "\
+plot-{x,y,z}-ticks            - (linear-ticks)
+plot-{x,y,z}-far-ticks        - (linear-ticks)
+plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-far-tick-labels? - #t~%")
+(parameterize ([plot-width    300]
+               [plot-height   300]
+               [plot-x-far-tick-labels? #t]
+               [plot-x-ticks (linear-ticks)]
+               [plot-x-far-ticks (linear-ticks)]
                [plot-y-far-tick-labels? #t]
                [plot-y-ticks (linear-ticks)]
-               [plot-y-far-ticks (linear-ticks)])
-  (plot (function sin (- pi) pi)))
+               [plot-y-far-ticks (linear-ticks)]
+               [plot-z-far-tick-labels? #t]
+               [plot-z-ticks (linear-ticks)]
+               [plot-z-far-ticks (linear-ticks)])
+ (list 
+   (plot (function sin (- pi) pi))
+   (plot3d r3d)))
 
 ;; Case 3: far ticks are the same as near ticks, labels are
 ;; disabled on the near axis, but will not be drawn on the far axis.
-(printf "Ticks on near and far axies, no labels at all~%")
-(parameterize ([plot-width    150]
-               [plot-height   150]
+(printf "\
+plot-{x,y,z}-ticks            - (linear-ticks)
+plot-{x,y,z}-far-ticks        - (linear-ticks)
+plot-{z,y,z}-tick-labels?     - #f
+plot-{x,y,z}-far-tick-labels? - NOT SET~%")
+(parameterize ([plot-width    300]
+               [plot-height   300]
+               [plot-x-tick-labels? #f]
+               [plot-x-ticks (linear-ticks)]
+               [plot-x-far-ticks (linear-ticks)]
                [plot-y-tick-labels? #f]
                [plot-y-ticks (linear-ticks)]
-               [plot-y-far-ticks (linear-ticks)])
-  (plot (function sin (- pi) pi)))
+               [plot-y-far-ticks (linear-ticks)]
+               [plot-z-tick-labels? #f]
+               [plot-z-ticks (linear-ticks)]
+               [plot-z-far-ticks (linear-ticks)])
+ (list 
+   (plot (function sin (- pi) pi))
+   (plot3d r3d)))
 
 ;; Case 4: no near ticks, only far ticks.  labels are drawn on the far ticks
-(printf "Labels on the far axis only, no ticks on the near axis~%")
-(parameterize ([plot-width    150]
-               [plot-height   150]
+(printf "\
+plot-{x,y,z}-ticks            - no-ticks
+plot-{x,y,z}-far-ticks        - (linear-ticks)
+plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-far-tick-labels? - NOT SET~%")
+(parameterize ([plot-width    300]
+               [plot-height   300]
+               [plot-x-ticks no-ticks]
+               [plot-x-far-ticks (linear-ticks)]
                [plot-y-ticks no-ticks]
-               [plot-y-far-ticks (linear-ticks)])
-  (plot (function sin (- pi) pi)))
+               [plot-y-far-ticks (linear-ticks)]
+               [plot-z-ticks no-ticks]
+               [plot-z-far-ticks (linear-ticks)])
+  (list 
+   (plot (function sin (- pi) pi))
+   (plot3d r3d)))
 
 ;; Case 5: no near ticks, only far ticks, but disable drawing labels on the far ticks
-(printf "No ticks on near axis, ticks on far axis, no labels on the far axis~%")
-(parameterize ([plot-width    150]
-               [plot-height   150]
+(printf "\
+plot-{x,y,z}-ticks            - no-ticks
+plot-{x,y,z}-far-ticks        - (linear-ticks)
+plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-far-tick-labels? - #f~%")
+(parameterize ([plot-width    300]
+               [plot-height   300]
+               [plot-x-ticks no-ticks]
+               [plot-x-far-tick-labels? #f]
+               [plot-x-far-ticks (linear-ticks)]
                [plot-y-ticks no-ticks]
                [plot-y-far-tick-labels? #f]
-               [plot-y-far-ticks (linear-ticks)])
-  (plot (function sin (- pi) pi)))
+               [plot-y-far-ticks (linear-ticks)]
+               [plot-z-ticks no-ticks]
+               [plot-z-far-tick-labels? #f]
+               [plot-z-far-ticks (linear-ticks)])
+  (list 
+   (plot (function sin (- pi) pi))
+   (plot3d r3d)))
 
 ;; Case 6: far ticks are the same as near ticks, switch to drawing labels on the
 ;; far axis
-(printf "Same ticks on near and far axis, labels on far axis only~%")
-(parameterize ([plot-width    150]
-               [plot-height   150]
+(printf "\
+plot-{x,y,z}-ticks            - (linear-ticks)
+plot-{x,y,z}-far-ticks        - (linear-ticks)
+plot-{z,y,z}-tick-labels?     - #f
+plot-{x,y,z}-far-tick-labels? - #t~%")
+(parameterize ([plot-width    300]
+               [plot-height   300]
+               [plot-x-tick-labels? #f]
+               [plot-x-far-tick-labels? #t]
+               [plot-x-ticks (linear-ticks)]
+               [plot-x-far-ticks (linear-ticks)]
                [plot-y-tick-labels? #f]
                [plot-y-far-tick-labels? #t]
                [plot-y-ticks (linear-ticks)]
-               [plot-y-far-ticks (linear-ticks)])
-  (plot (function sin (- pi) pi)))
+               [plot-y-far-ticks (linear-ticks)]
+               [plot-z-tick-labels? #f]
+               [plot-z-far-tick-labels? #t]
+               [plot-z-ticks (linear-ticks)]
+               [plot-z-far-ticks (linear-ticks)])
+  (list 
+   (plot (function sin (- pi) pi))
+   (plot3d r3d)))
+
+
