@@ -258,7 +258,7 @@ Integer brush styles repeat starting at @(racket 7).
 @subsection{Real Functions}
 
 @defproc[(polar->cartesian [θ real?] [r real?]) (vector/c real? real?)]{
-Converts 2D polar coordinates to 3D cartesian coordinates.
+Converts 2D polar coordinates to 2D cartesian coordinates.
 }
 
 @defproc[(3d-polar->3d-cartesian [θ real?] [ρ real?] [r real?]) (vector/c real? real? real?)]{
