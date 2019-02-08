@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require (only-in typed/mred/mred Snip% Frame%)
+         (only-in racket/gui/base make-screen-bitmap)
          typed/racket/draw typed/racket/class racket/match
          plot/utils
          plot/private/common/parameter-group
@@ -61,23 +62,18 @@
        (define (make-bm anim? bounds-rect width height)
          (: area (U #f (Instance 2D-Plot-Area%)))
          (define area #f)
-         (define bm
-           (parameterize/group ([plot-parameters  saved-plot-parameters]
-                                [plot-animating?  (if anim? #t (plot-animating?))])
-                               ((if (plot-animating?) draw-bitmap draw-bitmap/supersampling)
-                                (λ (dc)
-                                  (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
-                                    (get-ticks renderer-list bounds-rect))
-                                  
-                                  (define new-area
-                                    (make-object 2d-plot-area%
-                                      bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks
-                                      dc 0 0 width height))
-                                  
-                                  (set! area new-area)
-                                  
-                                  (plot-area new-area renderer-list))
-                                width height)))
+         (define bm (make-screen-bitmap width height))
+         (parameterize/group ([plot-parameters  saved-plot-parameters]
+                              [plot-animating?  (if anim? #t (plot-animating?))])
+           (define dc (make-object bitmap-dc% bm))
+           (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
+             (get-ticks renderer-list bounds-rect))
+           (define new-area
+             (make-object 2d-plot-area%
+                          bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks
+                          dc 0 0 width height))
+           (set! area new-area)
+           (plot-area new-area renderer-list))
          (values bm area))
        
        (define-values (bm area) (make-bm #f bounds-rect width height))

@@ -121,13 +121,13 @@
                        #:y-label [y-label (plot-y-label)]
                        #:z-label [z-label (plot-z-label)]
                        #:legend-anchor [legend-anchor (plot-legend-anchor)])
-  ((if (plot-animating?) draw-bitmap draw-bitmap/supersampling)
-   (λ (dc)
-     (plot3d/dc renderer-tree dc 0 0 width height
-                #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
-                #:angle angle #:altitude altitude #:title title #:x-label x-label #:y-label y-label
-                #:z-label z-label #:legend-anchor legend-anchor))
-   width height))
+  (define bm (make-bitmap width height))
+  (define dc (make-object bitmap-dc% bm))
+  (plot3d/dc renderer-tree dc 0 0 width height
+             #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
+             #:angle angle #:altitude altitude #:title title #:x-label x-label #:y-label y-label
+             #:z-label z-label #:legend-anchor legend-anchor)
+  bm)
 
 ;; ===================================================================================================
 ;; Plot to a pict

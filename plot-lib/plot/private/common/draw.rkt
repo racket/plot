@@ -429,23 +429,3 @@
                   (define scale (max 1.0 (fl (send pen get-width))))
                   (define sty (scale-pen-style (symbol->style style-sym) scale))
                   (draw-lines* dc vs sty)]))]))
-
-;; ===================================================================================================
-;; Drawing a bitmap using 2x supersampling
-
-(: draw-bitmap/supersampling (-> (-> (Instance DC<%>) Any) Positive-Integer Positive-Integer
-                                 (Instance Bitmap%)))
-(define (draw-bitmap/supersampling draw width height)
-  (define bm (make-bitmap width height #:backing-scale 2))
-  (define dc (make-object bitmap-dc% bm))
-  (send dc set-alignment-scale 2)
-  (draw dc)
-  bm)
-
-(: draw-bitmap (-> (-> (Instance DC<%>) Any) Positive-Integer Positive-Integer
-                   (Instance Bitmap%)))
-(define (draw-bitmap draw width height)
-  (define bm (make-bitmap width height))
-  (define dc (make-object bitmap-dc% bm))
-  (draw dc)
-  bm)
