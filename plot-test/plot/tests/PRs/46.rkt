@@ -8,7 +8,7 @@
 (printf "\
 plot-{x,y,z}-ticks            - (linear-ticks)
 plot-{x,y,z}-far-ticks        - (linear-ticks)
-plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-tick-labels?     - NOT SET
 plot-{x,y,z}-far-tick-labels? - NOT SET~%")
 (parameterize ([plot-width    300]
                [plot-height   300]
@@ -28,7 +28,7 @@ plot-{x,y,z}-far-tick-labels? - NOT SET~%")
 (printf "\
 plot-{x,y,z}-ticks            - (linear-ticks)
 plot-{x,y,z}-far-ticks        - (linear-ticks)
-plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-tick-labels?     - NOT SET
 plot-{x,y,z}-far-tick-labels? - #t~%")
 (parameterize ([plot-width    300]
                [plot-height   300]
@@ -50,7 +50,7 @@ plot-{x,y,z}-far-tick-labels? - #t~%")
 (printf "\
 plot-{x,y,z}-ticks            - (linear-ticks)
 plot-{x,y,z}-far-ticks        - (linear-ticks)
-plot-{z,y,z}-tick-labels?     - #f
+plot-{x,y,z}-tick-labels?     - #f
 plot-{x,y,z}-far-tick-labels? - NOT SET~%")
 (parameterize ([plot-width    300]
                [plot-height   300]
@@ -71,7 +71,7 @@ plot-{x,y,z}-far-tick-labels? - NOT SET~%")
 (printf "\
 plot-{x,y,z}-ticks            - no-ticks
 plot-{x,y,z}-far-ticks        - (linear-ticks)
-plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-tick-labels?     - NOT SET
 plot-{x,y,z}-far-tick-labels? - NOT SET~%")
 (parameterize ([plot-width    300]
                [plot-height   300]
@@ -89,7 +89,7 @@ plot-{x,y,z}-far-tick-labels? - NOT SET~%")
 (printf "\
 plot-{x,y,z}-ticks            - no-ticks
 plot-{x,y,z}-far-ticks        - (linear-ticks)
-plot-{z,y,z}-tick-labels?     - NOT SET
+plot-{x,y,z}-tick-labels?     - NOT SET
 plot-{x,y,z}-far-tick-labels? - #f~%")
 (parameterize ([plot-width    300]
                [plot-height   300]
@@ -111,7 +111,7 @@ plot-{x,y,z}-far-tick-labels? - #f~%")
 (printf "\
 plot-{x,y,z}-ticks            - (linear-ticks)
 plot-{x,y,z}-far-ticks        - (linear-ticks)
-plot-{z,y,z}-tick-labels?     - #f
+plot-{x,y,z}-tick-labels?     - #f
 plot-{x,y,z}-far-tick-labels? - #t~%")
 (parameterize ([plot-width    300]
                [plot-height   300]
