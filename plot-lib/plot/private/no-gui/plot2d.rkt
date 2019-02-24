@@ -91,12 +91,12 @@
                      #:x-label [x-label (plot-x-label)]
                      #:y-label [y-label (plot-y-label)]
                      #:legend-anchor [legend-anchor (plot-legend-anchor)])
-  ((if (plot-animating?) draw-bitmap draw-bitmap/supersampling)
-   (λ (dc) 
-     (plot/dc renderer-tree dc 0 0 width height
-              #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
-              #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor))
-   width height))
+  (define bm (make-bitmap width height))
+  (define dc (make-object bitmap-dc% bm))
+  (plot/dc renderer-tree dc 0 0 width height
+           #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
+           #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor)
+  bm)
 
 ;; ===================================================================================================
 ;; Plot to a pict
