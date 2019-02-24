@@ -1,7 +1,7 @@
 #lang typed/racket/base
 
 (require (only-in typed/mred/mred Snip% Frame%)
-         (only-in racket/gui/base make-screen-bitmap)
+         (only-in racket/gui/base get-display-backing-scale)
          typed/racket/draw typed/racket/class racket/match racket/list
          plot/utils
          plot/private/common/parameter-group
@@ -79,7 +79,9 @@
                            [plot-animating?  (if anim? #t (plot-animating?))]
                            [plot3d-angle     angle]
                            [plot3d-altitude  altitude])
-        (define bm (make-screen-bitmap width height))
+        (define bm (make-bitmap
+                     width height #t
+                     #:backing-scale (or (get-display-backing-scale) 1.0)))
         (define dc (make-object bitmap-dc% bm))
         (define area (make-object 3d-plot-area%
                                   bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks

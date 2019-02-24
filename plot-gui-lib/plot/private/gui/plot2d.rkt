@@ -1,7 +1,7 @@
 #lang typed/racket/base
 
 (require (only-in typed/mred/mred Snip% Frame%)
-         (only-in racket/gui/base make-screen-bitmap)
+         (only-in racket/gui/base get-display-backing-scale)
          typed/racket/draw typed/racket/class racket/match
          plot/utils
          plot/private/common/parameter-group
@@ -62,7 +62,9 @@
        (define (make-bm anim? bounds-rect width height)
          (: area (U #f (Instance 2D-Plot-Area%)))
          (define area #f)
-         (define bm (make-screen-bitmap width height))
+         (define bm (make-bitmap
+                     width height #t
+                     #:backing-scale (or (get-display-backing-scale) 1.0)))
          (parameterize/group ([plot-parameters  saved-plot-parameters]
                               [plot-animating?  (if anim? #t (plot-animating?))])
            (define dc (make-object bitmap-dc% bm))
