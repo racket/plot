@@ -142,16 +142,25 @@
  parse-format-string
  apply-formatter)
 
-(require "private/common/draw-attribs.rkt")
+(require (only-in "private/common/draw-attribs.rkt"
+                  ->color
+                  ->pen-style
+                  ->brush-style
+                  color-seq
+                  color-seq*)
+         "private/common/color-map.rkt")
 
 (provide
  ->color
- ->pen-color
- ->brush-color
  ->pen-style
  ->brush-style
  color-seq
- color-seq*)
+ color-seq*
+ ->pen-color
+ ->brush-color
+ color-map-names
+ color-map-size
+ register-color-map)
 
 (require "private/common/sample.rkt")
 

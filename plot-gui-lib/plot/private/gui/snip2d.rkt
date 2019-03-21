@@ -8,6 +8,7 @@
          plot/private/common/parameter-groups
          plot/private/common/parameter-group
          plot/private/common/draw-attribs
+         plot/private/common/color-map
          plot/private/plot2d/plot-area
          plot/private/plot2d/renderer
          plot/private/no-gui/plot2d-utils

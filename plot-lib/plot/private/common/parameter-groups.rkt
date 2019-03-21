@@ -35,7 +35,9 @@
      plot-legend-anchor plot-legend-box-alpha
      plot-axes? plot-tick-labels
      plot-decorations?
-     plot-animating?))
+     plot-animating?
+     plot-pen-color-map
+     plot-brush-color-map))
   
   (define-parameter-group plot3d-appearance
     (plot3d-samples
@@ -95,7 +97,9 @@
       (List Boolean Boolean Boolean Boolean Boolean Boolean)
       (List Boolean Anchor Real (U Boolean 'auto) Anchor Real Boolean Anchor Real (U Boolean 'auto) Anchor Real)
       Boolean
-      Boolean)
+      Boolean
+      (U Symbol #f)
+      (U Symbol #f))
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)
      (List
       (U False String)

@@ -47,7 +47,8 @@
  stretch-transform
  collapse-transform)
 
-(require "common/parameters.rkt")
+(require "common/parameters.rkt"
+         "common/draw-attribs.rkt")
 
 (provide
  plot-deprecation-warnings?
@@ -86,6 +87,8 @@
  plot-legend-box-alpha
  plot-decorations?
  plot-animating?
+ plot-pen-color-map
+ plot-brush-color-map
  plot3d-samples
  plot3d-angle
  plot3d-altitude

@@ -10,6 +10,7 @@
          typed/racket/class
          racket/match racket/math racket/bool racket/list racket/vector
          "draw-attribs.rkt"
+         "color-map.rkt"
          "draw.rkt"
          "math.rkt"
          "sample.rkt"

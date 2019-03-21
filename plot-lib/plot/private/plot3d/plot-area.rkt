@@ -8,6 +8,7 @@
          "../common/plot-device.rkt"
          "../common/ticks.rkt"
          "../common/draw-attribs.rkt"
+         "../common/color-map.rkt"
          "../common/draw.rkt"
          "../common/axis-transform.rkt"
          "../common/parameters.rkt"
