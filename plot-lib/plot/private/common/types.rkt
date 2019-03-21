@@ -27,6 +27,8 @@
 (deftype Plot-Color
   (U Integer Color))
 
+(deftype Color-Map (Vectorof (List Byte Byte Byte))) 
+
 (deftype Plot-Pen-Style-Sym
   (U 'transparent 'solid    'dot 'long-dash
      'short-dash  'dot-dash))

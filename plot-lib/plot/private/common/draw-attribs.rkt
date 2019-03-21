@@ -154,8 +154,8 @@
   (define r (assert (+ 127 (* 128 (expt (max 0 (- 1 (integer->gray-value i))) 3/4))) real?))
   (list r r r))
 
-(: pen-colors (Vectorof (List Byte Byte Byte)))
-(define pen-colors
+(: default-pen-colors (Vectorof (List Byte Byte Byte)))
+(define default-pen-colors
   (for/vector ([color  (in-list (append (list (integer->gray-pen-color 0))
                                         (build-list 120 integer->pen-color)
                                         (build-list 7 (λ ([n : Index])
@@ -166,8 +166,8 @@
           (real->color-byte g)
           (real->color-byte b))))
 
-(: brush-colors (Vectorof (List Byte Byte Byte)))
-(define brush-colors
+(: default-brush-colors (Vectorof (List Byte Byte Byte)))
+(define default-brush-colors
   (for/vector ([color  (in-list (append (list (integer->gray-brush-color 0))
                                         (build-list 120 integer->brush-color)
                                         (build-list 7 (λ ([n : Index])
@@ -177,16 +177,6 @@
     (list (real->color-byte r)
           (real->color-byte g)
           (real->color-byte b))))
-
-(:: ->pen-color (-> Plot-Color (List Real Real Real)))
-(define (->pen-color c)
-  (cond [(exact-integer? c)  (vector-ref pen-colors (modulo c 128))]
-        [else                (->color c)]))
-
-(:: ->brush-color (-> Plot-Color (List Real Real Real)))
-(define (->brush-color c)
-  (cond [(exact-integer? c)  (vector-ref brush-colors (modulo c 128))]
-        [else                (->color c)]))
 
 (:: ->pen-style (-> Plot-Pen-Style Plot-Pen-Style-Sym))
 (define (->pen-style s)
@@ -235,3 +225,31 @@
         [gs  (linear-seq* gs num #:start? start? #:end? end?)]
         [bs  (linear-seq* bs num #:start? start? #:end? end?)])
     (map (λ ([r : Real] [g : Real] [b : Real]) (list r g b)) rs gs bs)))
+
+(:: default-contour-colors (-> (Listof Real) (Listof Plot-Color)))
+(define (default-contour-colors zs)
+  (color-seq* (list (vector-ref default-pen-colors 5)
+                    (vector-ref default-pen-colors 0)
+                    (vector-ref default-pen-colors 1))
+              (length zs)))
+
+(:: default-contour-fill-colors (-> (Listof ivl) (Listof Plot-Color)))
+(define (default-contour-fill-colors z-ivls)
+  (color-seq* (list (vector-ref default-brush-colors 5)
+                    (vector-ref default-brush-colors 0)
+                    (vector-ref default-brush-colors 1))
+              (length z-ivls)))
+
+(:: default-isosurface-colors (-> (Listof Real) (Listof Plot-Color)))
+(define (default-isosurface-colors zs)
+  (color-seq* (list (vector-ref default-brush-colors 5)
+                    (vector-ref default-brush-colors 0)
+                    (vector-ref default-brush-colors 1))
+              (length zs)))
+
+(:: default-isosurface-line-colors (-> (Listof Real) (Listof Plot-Color)))
+(define (default-isosurface-line-colors zs)
+  (color-seq* (list (vector-ref default-pen-colors 5)
+                    (vector-ref default-pen-colors 0)
+                    (vector-ref default-pen-colors 1))
+              (length zs)))

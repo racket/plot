@@ -62,8 +62,8 @@
 
 (defparam2 plot-width Integer Positive-Integer 400 (integer>=1 'plot-width))
 (defparam2 plot-height Integer Positive-Integer 400 (integer>=1 'plot-height))
-(defparam plot-foreground color Plot-Color 0)
-(defparam plot-background color Plot-Color 0)
+(defparam plot-foreground color Plot-Color "black")
+(defparam plot-background color Plot-Color "white")
 (defparam2 plot-foreground-alpha alpha Real Nonnegative-Real 1 (unit-ivl 'plot-foreground-alpha))
 (defparam2 plot-background-alpha alpha Real Nonnegative-Real 1 (unit-ivl 'plot-background-alpha))
 (defparam2 plot-line-width width Real Nonnegative-Real 1 (nonnegative-rational 'plot-line-width))
@@ -102,6 +102,9 @@
 (defparam plot-y-far-tick-label-anchor anchor Anchor 'left)
 
 (defparam plot-decorations? Boolean #t)
+
+(defparam plot-pen-color-map (U Symbol #f) #f)
+(defparam plot-brush-color-map (U Symbol #f) #f)
 
 (:: pen-gap (-> Real))
 (define (pen-gap)
@@ -224,16 +227,6 @@
 
 ;; Contours
 
-(:: default-contour-colors (-> (Listof Real) (Listof Plot-Color)))
-(define (default-contour-colors zs)
-  (color-seq* (list (->pen-color 5) (->pen-color 0) (->pen-color 1))
-              (length zs)))
-
-(:: default-contour-fill-colors (-> (Listof ivl) (Listof Plot-Color)))
-(define (default-contour-fill-colors z-ivls)
-  (color-seq* (list (->brush-color 5) (->brush-color 0) (->brush-color 1))
-              (length z-ivls)))
-
 (defparam2 contour-samples Integer Positive-Integer 51 (integer>=2 'contour-samples))
 (defparam contour-levels Contour-Levels 'auto)
 (defparam contour-colors (Plot-Colors (Listof Real)) default-contour-colors)
@@ -312,16 +305,6 @@
 (defparam contour-interval-line-styles (Plot-Pen-Styles (Listof ivl)) '(solid))
 
 ;; Isosurfaces
-
-(:: default-isosurface-colors (-> (Listof Real) (Listof Plot-Color)))
-(define (default-isosurface-colors zs)
-  (color-seq* (list (->brush-color 5) (->brush-color 0) (->brush-color 1))
-              (length zs)))
-
-(:: default-isosurface-line-colors (-> (Listof Real) (Listof Plot-Color)))
-(define (default-isosurface-line-colors zs)
-  (color-seq* (list (->pen-color 5) (->pen-color 0) (->pen-color 1))
-              (length zs)))
 
 (defparam isosurface-levels Contour-Levels 'auto)
 (defparam isosurface-colors (Plot-Colors (Listof Real)) default-isosurface-colors)

@@ -6,6 +6,7 @@
          plot/private/common/parameter-groups
          plot/private/common/parameter-group
          plot/private/common/draw-attribs
+         plot/private/common/color-map
          "worker-thread.rkt")
 
 (provide plot-snip%)
