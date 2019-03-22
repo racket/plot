@@ -190,11 +190,11 @@ Use @(racket ->pen-color) and @(racket ->brush-color) to convert integers.
 }
 
 @defproc[(->pen-color [c plot-color/c]) (list/c real? real? real?)]{
-Converts a @italic{line} color to an RGB triplet. This function interprets integer colors as darker and more saturated than @(racket ->brush-color) does.
 
-Non-integer colors are converted using @(racket ->color).
-Integer colors are chosen for good pairwise contrast, especially between neighbors.
-Integer colors repeat starting with @(racket 128).
+Convert a @italic{line} color to an RGB triplet. Integer colors are looked up
+in the current @racket[plot-pen-color-map], and non-integer colors are
+converted using @(racket ->color).  When the integer color is larger than the
+number of colors in the color map, it will wrap around.
 
 @examples[#:eval plot-eval
                  (equal? (->pen-color 0) (->pen-color 8))
@@ -204,12 +204,15 @@ Integer colors repeat starting with @(racket 128).
                         #:colors (map ->pen-color (build-list 8 values))))]
 }
 
-@defproc[(->brush-color [c plot-color/c]) (list/c real? real? real?)]{
-Converts a @italic{fill} color to an RGB triplet. This function interprets integer colors as lighter and less saturated than @(racket ->pen-color) does.
+The example above is using the internal color map, with
+@racket[plot-pen-color-map] set to @racket[#f].
 
-Non-integer colors are converted using @(racket ->color).
-Integer colors are chosen for good pairwise contrast, especially between neighbors.
-Integer colors repeat starting with @(racket 128).
+@defproc[(->brush-color [c plot-color/c]) (list/c real? real? real?)]{
+
+Convert a @italic{fill} color to an RGB triplet.  Integer colors are looked up
+in the current @racket[plot-brush-color-map] and non-integer colors are
+converted using @(racket ->color).  When the integer color is larger than the
+number of colors in the color map, it will wrap around.
 
 @examples[#:eval plot-eval
                  (equal? (->brush-color 0) (->brush-color 8))
@@ -218,7 +221,11 @@ Integer colors repeat starting with @(racket 128).
                         #:levels 7 #:contour-styles '(transparent)
                         #:colors (map ->brush-color (build-list 8 values))))]
 
-In the above example, @(racket map)ping @(racket ->brush-color) over the list is actually unnecessary, because @(racket contour-intervals) uses @(racket ->brush-color) internally to convert fill colors.
+The example above is using the internal color map, with
+@racket[plot-brush-color-map] is set to @racket[#f]. In this example, @(racket
+map)ping @(racket ->brush-color) over the list is actually unnecessary,
+because @(racket contour-intervals) uses @(racket ->brush-color) internally to
+convert fill colors.
 
 The @(racket function-interval) function generally plots areas using a fill color and lines using a line color.
 Both kinds of color have the default value @(racket 3).
@@ -250,6 +257,28 @@ Integer brush styles repeat starting at @(racket 7).
                  (map ->brush-style '(0 1 2 3))
                  (map ->brush-style '(4 5 6))]
 }
+
+@defproc[(color-map-names) (listof symbol?)]{
+
+Return the list of available color map names to be used by
+@racket[plot-pen-color-map] and @racket[plot-brush-color-map].
+
+}
+
+@defproc[(color-map-size (name symbol?)) integer?]{
+
+Return the number of colors in the color map @racket[name].  If @racket[name]
+is not a valid color map name, the function will signal an error.
+
+}
+
+@defproc[(register-color-map (name symbol?) (color-map (vectorof (list byte? byte? byte?)))) void]{
+
+Register a new color map @racket[name] with the colors being a vector of RGB
+triplets.  If a color map by that name already exists, it is replaced.
+
+}
+
 
 @;====================================================================================================
 @section{Plot-Specific Math}
