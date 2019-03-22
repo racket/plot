@@ -42,3 +42,33 @@
 
 (define (close-plot-eval)
   (close-eval plot-eval))
+
+(require plot plot/utils pict racket/match racket/class racket/draw)
+(define (pretty-print-color-maps (width 400) (height 30))
+  (define cm-names
+    (sort (color-map-names)
+          (lambda (a b)
+            (string<=? (symbol->string a) (symbol->string b)))))
+  (define cm-labels
+    (for/list ([cm cm-names])
+      (text (symbol->string cm) null 16)))
+  (define cm-picts
+    (for/list ([cm cm-names])
+      (parameterize ([plot-pen-color-map cm])
+        (define w (/ width (color-map-size cm)))
+        (apply
+         hc-append 0
+         (for/list ([c (in-range (color-map-size cm))])
+           (match-define (list r g b) (->pen-color c))
+           (define color (make-object color% r g b))
+           (filled-rectangle w height #:draw-border? #f #:color color))))))
+  (define picts
+    (let loop ([result '()]
+               [labels cm-labels]
+               [picts cm-picts])
+      (if (null? labels)
+          (reverse result)
+          (loop (cons (car picts) (cons (car labels) result))
+                (cdr labels)
+                (cdr picts)))))
+  (table 2 picts lc-superimpose cc-superimpose 15 3))

@@ -161,6 +161,32 @@ This returns @racket[samples] when @racket[plot-animating?] is @racket[#f].
 When @(racket #f), axes, axis labels, ticks, tick labels, and the title are not drawn.
 }
 
+@deftogether[((defparam plot-pen-color-map name (or/c symbol? #f) #:value #f)
+              (defparam plot-brush-color-map name (or/c symbol? #f) #:value #f))]{
+
+Specify the color maps to be used by @racket[->pen-color] and
+@racket[->brush-color] respectively, for converting integer values into RGB
+triplets, or when integer values are used with the @racket[#:color] keyword of
+various plot renderers.  You can determine the list of available color map
+names using @racket[color-map-names].
+
+If @racket[name] is not a valid color map name, the internal color map will be
+used, this is the same as specifying @racket[#f].
+
+When the color map value is set to @racket[#f], internal color maps will be
+used, one for pen and one for brush colors.  The internal color map used for
+pen colors has darker and more saturated colors than the one used for brush
+colors.  These colors are chosen for good pairwise contrast, especially
+between neighbors and they repeat starting with @(racket 128).
+
+The color maps available by default are shown below and additional ones can be
+added using @racket[register-color-map]:
+
+@centered{@(pretty-print-color-maps)}
+
+}
+
+
 @section{Lines}
 
 @defparam[line-samples n (and/c exact-integer? (>=/c 2)) #:value 500]{
