@@ -184,6 +184,8 @@ added using @racket[register-color-map]:
 
 @centered{@(pretty-print-color-maps)}
 
+@history[#:added "7.3"]
+
 }
 
 

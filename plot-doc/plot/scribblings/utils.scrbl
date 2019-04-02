@@ -263,6 +263,8 @@ Integer brush styles repeat starting at @(racket 7).
 Return the list of available color map names to be used by
 @racket[plot-pen-color-map] and @racket[plot-brush-color-map].
 
+@history[#:added "7.3"]
+
 }
 
 @defproc[(color-map-size (name symbol?)) integer?]{
@@ -270,12 +272,16 @@ Return the list of available color map names to be used by
 Return the number of colors in the color map @racket[name].  If @racket[name]
 is not a valid color map name, the function will signal an error.
 
+@history[#:added "7.3"]
+
 }
 
 @defproc[(register-color-map (name symbol?) (color-map (vectorof (list byte? byte? byte?)))) void]{
 
 Register a new color map @racket[name] with the colors being a vector of RGB
 triplets.  If a color map by that name already exists, it is replaced.
+
+@history[#:added "7.3"]
 
 }
 
