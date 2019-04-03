@@ -43,7 +43,7 @@
 (define (close-plot-eval)
   (close-eval plot-eval))
 
-(require plot plot/utils pict racket/match racket/class racket/draw)
+(require plot/no-gui plot/utils pict racket/match racket/class racket/draw)
 (define (pretty-print-color-maps (width 400) (height 30))
   (define cm-names
     (sort (color-map-names)
