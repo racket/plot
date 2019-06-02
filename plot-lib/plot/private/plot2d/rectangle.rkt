@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require racket/match typed/racket/class racket/list racket/sequence
+         (only-in racket/math infinite?)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -24,10 +25,10 @@
   (send area put-alpha alpha)
   (for ([rect  (in-list rects)])
     (match-define (vector (ivl vx-min vx-max) (ivl vy-min vy-max)) rect)
-    (define x-min (if (or (eqv? vx-min -inf.0) (eqv? vx-min -inf.f)) bx-min vx-min))
-    (define x-max (if (or (eqv? vx-max +inf.0) (eqv? vx-max +inf.f)) bx-max vx-max))
-    (define y-min (if (or (eqv? vy-min -inf.0) (eqv? vy-min -inf.f)) by-min vy-min))
-    (define y-max (if (or (eqv? vy-max +inf.0) (eqv? vy-max +inf.f)) by-max vy-max))
+    (define x-min (if (and vx-min (infinite? vx-min)) bx-min vx-min))
+    (define x-max (if (and vx-max (infinite? vx-max)) bx-max vx-max))
+    (define y-min (if (and vy-min (infinite? vy-min)) by-min vy-min))
+    (define y-max (if (and vy-max (infinite? vy-max)) by-max vy-max))
     (send area put-rect (vector (ivl x-min x-max) (ivl y-min y-max))))
   
   (cond [label  (rectangle-legend-entry label color style line-color line-width line-style)]
