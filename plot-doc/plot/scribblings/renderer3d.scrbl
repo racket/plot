@@ -201,16 +201,27 @@ Combining polar function renderers allows faking latitudes or longitudes in larg
           [#:label label (or/c string? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots a two-input, one-output function. For example,
-  @interaction[#:eval plot-eval (plot3d (parametric-surface3d
-                                         (λ (θ ϕ)
-                                           (list (* (+ 5 (sin ϕ)) (sin θ))
-                                                 (* (+ 5 (sin ϕ)) (cos θ))
-                                                 (+ 0 (cos ϕ))))
-                                         0 (* 2 pi) #:s-samples 60
-                                         0 (* 2 pi)
-                                         #:z-min -6 #:z-max 6
-                                         #:label "thorus")
-                                        #:altitude 22)]
+  @interaction[#:eval plot-eval
+               (plot3d (list
+                        (parametric-surface3d
+                         (λ (θ ϕ)
+                           (list (* (+ 5 (sin ϕ)) (sin θ))
+                                 (* (+ 5 (sin ϕ)) (cos θ))
+                                 (+ 0 (cos ϕ))))
+                         0 (* 2 pi) #:s-samples 50
+                         0 (* 2 pi)
+                         #:label "torus1")
+                        (parametric-surface3d
+                         (λ (θ ϕ)
+                           (list (+ 4 (* (+ 3 (sin ϕ)) (sin θ)))
+                                 (+ 0 (cos ϕ))
+                                 (* (+ 3 (sin ϕ)) (cos θ))))
+                         0 (* 2 pi) #:s-samples 30
+                         0 (* 2 pi)
+                         #:color 4
+                         #:label "torus2"))
+                       #:z-min -6 #:z-max 6
+                       #:altitude 22)]
 }
 
 @defproc[(polygons3d
