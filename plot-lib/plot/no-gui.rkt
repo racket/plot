@@ -146,6 +146,11 @@
  isosurfaces3d
  polar3d)
 
+(require "private/plot3d/param-surf.rkt")
+(provide
+ polygons3d
+ parametric-surface3d)
+
 (require "private/plot3d/rectangle.rkt")
 (provide
  rectangles3d

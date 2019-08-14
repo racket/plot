@@ -182,6 +182,60 @@ Combining polar function renderers allows faking latitudes or longitudes in larg
                                              #:line-style 'transparent #:alpha 2/3))))]
 }
 
+@defproc[(parametric-surface3d
+          [f (real? real? . -> . (sequence/c real?))]
+          [s-min rational?][s-max rational?]
+          [t-min rational?][t-max rational?]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (plot3d-samples)]
+          [#:s-samples s-samples (and/c exact-integer? (>=/c 2)) samples]
+          [#:t-samples t-samples (and/c exact-integer? (>=/c 2)) samples]
+          [#:color color plot-color/c (surface-color)]
+          [#:style style plot-brush-style/c (surface-style)]
+          [#:line-color line-color plot-color/c (surface-line-color)]
+          [#:line-width line-width (>=/c 0) (surface-line-width)]
+          [#:line-style line-style plot-pen-style/c (surface-line-style)]
+          [#:alpha alpha (real-in 0 1) (surface-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
+Returns a renderer that plots a two-input, one-output function. For example,
+  @interaction[#:eval plot-eval (plot3d (parametric-surface3d
+                                         (λ (θ ϕ)
+                                           (list (* (+ 5 (sin ϕ)) (sin θ))
+                                                 (* (+ 5 (sin ϕ)) (cos θ))
+                                                 (+ 0 (cos ϕ))))
+                                         0 (* 2 pi) #:s-samples 60
+                                         0 (* 2 pi)
+                                         #:z-min -6 #:z-max 6
+                                         #:label "thorus")
+                                        #:altitude 22)]
+}
+
+@defproc[(polygons3d
+          [vs (sequence/c (sequence/c (sequence/c real?)))]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:color color plot-color/c (surface-color)]
+          [#:style style plot-brush-style/c (surface-style)]
+          [#:line-color line-color plot-color/c (surface-line-color)]
+          [#:line-width line-width (>=/c 0) (surface-line-width)]
+          [#:line-style line-style plot-pen-style/c (surface-line-style)]
+          [#:alpha alpha (real-in 0 1) (surface-alpha)]
+          [#:label label (or/c string? #f) #f]
+          ) renderer3d?]{
+Returns a renderer that draws polygons.
+The @racket[parametric-surface3d] function is defined in terms of this one.
+ @interaction[#:eval plot-eval (plot3d
+                                (polygons3d (list (list (list 1 0 0)(list 0 0 1)(list 0 1 0)(list 1 1 1))
+                                                  (list (list 0 0 0)(list 0 0 1)(list 0 1 0))
+                                                  (list (list 1 0 0)(list 0 1 0)(list 0 0 0))))
+                                #:angle 355
+                                #:altitude 30)]
+}
+
 @section{3D Contour (Isoline) Renderers}
 
 @defproc[(isoline3d
