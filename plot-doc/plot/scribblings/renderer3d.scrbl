@@ -200,7 +200,9 @@ Combining polar function renderers allows faking latitudes or longitudes in larg
           [#:alpha alpha (real-in 0 1) (surface-alpha)]
           [#:label label (or/c string? #f) #f]
           ) renderer3d?]{
-Returns a renderer that plots a two-input, one-output function. For example,
+Returns a renderer that plots a two-input, one-output function. @racket[(f s t)] → @racket['(x y z)]
+
+For example,
   @interaction[#:eval plot-eval
                (plot3d (list
                         (parametric-surface3d
