@@ -161,20 +161,21 @@ Returns a renderer that plots a two-input, one-output function. For example,
           [#:alpha alpha (real-in 0 1) (surface-alpha)]
           [#:label label (or/c string? #f) #f]
           ) renderer3d?]{
-Returns a renderer that plots a function from latitude and longitude to radius.
+Returns a renderer that plots a function from longitude and latitude to radius.
+@racket[(f θ ϕ)] → @racket[r]
 
-Currently, latitudes range from @(racket 0) to @(racket (* 2 pi)), and longitudes from @(racket (* -1/2 pi)) to @(racket (* 1/2 pi)).
+Currently, longitudes(θ) range from @(racket 0) to @(racket (* 2 pi)), and latitudes(ϕ) from @(racket (* -1/2 pi)) to @(racket (* 1/2 pi)).
 These intervals may become optional arguments to @racket[polar3d] in the future.
 
 A sphere is the graph of a polar function of constant radius:
-@interaction[#:eval plot-eval (plot3d (polar3d (λ (θ ρ) 1)) #:altitude 25)]
+@interaction[#:eval plot-eval (plot3d (polar3d (λ (θ ϕ) 1)) #:altitude 25)]
 
 Combining polar function renderers allows faking latitudes or longitudes in larger ranges, to get, for example, a seashell plot:
 @interaction[#:eval plot-eval
                     (parameterize ([plot-decorations?  #f]
                                    [plot3d-samples     75])
-                      (define (f1 θ ρ) (+ 1 (/ θ 2 pi) (* 1/8 (sin (* 8 ρ)))))
-                      (define (f2 θ ρ) (+ 0 (/ θ 2 pi) (* 1/8 (sin (* 8 ρ)))))
+                      (define (f1 θ ϕ) (+ 1 (/ θ 2 pi) (* 1/8 (sin (* 8 ϕ)))))
+                      (define (f2 θ ϕ) (+ 0 (/ θ 2 pi) (* 1/8 (sin (* 8 ϕ)))))
                       
                       (plot3d (list (polar3d f1 #:color "navajowhite"
                                              #:line-style 'transparent #:alpha 2/3)
