@@ -95,13 +95,6 @@
                             x-min x-max y-min y-max z-min z-max
                             color style line-color line-width line-style alpha label))]))
 
-#;(module+ test
-  (require plot)
-  (plot3d
-   (polygons3d (list (list (list 1 0 0)(list 0 0 1)(list 0 1 0))
-                     (list (list 0 0 0)(list 0 0 1)(list 0 1 0))
-                     (list (list 1 0 0)(list 0 0 1)(list 0 0 0))))))
-
 (:: parametric-surface3d
     (->* [(-> Real Real (Sequenceof Real)) (U #f Real) (U #f Real) (U #f Real) (U #f Real)]
          [#:x-min (U #f Real) #:x-max (U #f Real)
@@ -171,17 +164,3 @@
       (λ () vs+)
       x-min x-max y-min y-max z-min z-max
       color style line-color line-width line-style alpha label)]))
-
-#;(module+ test
-  (require plot)
-  (time
-   (plot3d
-    (parametric-surface3d (λ ([ϕ : Real] [γ : Real])
-                            (list (* (cos ϕ)(cos γ))
-                                  (* (sin ϕ)(cos γ))
-                                  (sin γ)))
-                          0 (* 2 (angle -1)) #:s-samples 80
-                          (- (/ (angle -1) 2)) (/ (angle -1) 2) #:t-samples 40
-                          )))
-  (time
-   (plot3d (polar3d (λ (ϕ γ)1)))))
