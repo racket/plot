@@ -297,8 +297,8 @@
      (define vs
        (for*/list : (Listof (Vectorof Real))
          ([θ  (in-list (linear-seq 0.0 2pi (* 4 samples)))]
-          [ρ  (in-list (linear-seq (* -1/2 pi) (* 1/2 pi) (* 2 samples)))])
-         (3d-polar->3d-cartesian θ ρ (f θ ρ))))
+          [ϕ  (in-list (linear-seq (* -1/2 pi) (* 1/2 pi) (* 2 samples)))])
+         (3d-polar->3d-cartesian θ ϕ (f θ ϕ))))
      (define rvs (filter vrational? vs))
      (cond [(empty? rvs)  (renderer3d #f #f #f #f)]
            [else
