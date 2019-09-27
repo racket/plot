@@ -149,26 +149,30 @@
        (define-values (major-xs minor-xs) (linear-tick-values x-min x-max number base divisors))
        (tick-values->pre-ticks major-xs minor-xs))]))
 
-(:: linear-ticks-format (-> Ticks-Format))
-(define (linear-ticks-format)
+(:: linear-ticks-format (->* []
+                             [#:scientific? Boolean]
+                             Ticks-Format))
+(define (linear-ticks-format #:scientific? [scientific? #t])
   (λ (x-min x-max ts)
     (with-exact-bounds x-min x-max
       (define digits (digits-for-range x-min x-max))
       (for/list ([t  (in-list ts)])
-        (real->plot-label (pre-tick-value t) digits)))))
+        (real->plot-label (pre-tick-value t) digits scientific?)))))
 
 (:: linear-ticks (->* []
                       [#:number Positive-Integer
                        #:base Positive-Integer
-                       #:divisors (Listof Positive-Integer)]
+                       #:divisors (Listof Positive-Integer)
+                       #:scientific? Boolean]
                       ticks))
 (define (linear-ticks #:number [number (ticks-default-number)]
                       #:base [base 10]
-                      #:divisors [divisors '(1 2 4 5)])
+                      #:divisors [divisors '(1 2 4 5)]
+                      #:scientific? [scientific? #t])
   (ticks (linear-ticks-layout #:number number
                               #:base base
                               #:divisors divisors)
-         (linear-ticks-format)))
+         (linear-ticks-format #:scientific? scientific?)))
 
 ;; ===================================================================================================
 ;; No ticks

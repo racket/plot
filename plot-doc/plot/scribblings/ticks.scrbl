@@ -175,7 +175,7 @@ This convenience function is used internally to transform points before renderin
 
 @section[#:tag "ticks"]{Axis Ticks}
 
-Each plot axis has two indepedent sets of ticks: the @italic{near} ticks and the @italic{far} ticks.
+Each plot axis has two independent sets of ticks: the @italic{near} ticks and the @italic{far} ticks.
 
 @deftogether[(@defparam[plot-x-ticks ticks ticks? #:value (linear-ticks)]
               @defparam[plot-x-far-ticks ticks ticks? #:value (ticks-mimic plot-x-ticks)]
@@ -207,7 +207,7 @@ They are always identical by default.
 Minor tick labels are never drawn.
 
 Renderers produced  by @racket[contours] and @racket[contour-intervals] use the value of @racket[plot-z-ticks] to place and label contour lines.
-For example, compare plots of the same function renderered using both @racket[contour-intervals] and @racket[contour-intervals3d]:
+For example, compare plots of the same function rendered using both @racket[contour-intervals] and @racket[contour-intervals3d]:
 @interaction[#:eval plot-eval
                     (parameterize ([plot-z-ticks  (currency-ticks)])
                       (define (saddle x y) (- (sqr x) (sqr y)))
@@ -271,9 +271,10 @@ For example, the following plot shows the actual number of major ticks for the i
 
 @deftogether[(@defproc[(linear-ticks-layout [#:number number exact-positive-integer? (ticks-default-number)]
                                             [#:base base (and/c exact-integer? (>=/c 2)) 10]
-                                            [#:divisors divisors (listof exact-positive-integer?) '(1 2 4 5)])
+                                            [#:divisors divisors (listof exact-positive-integer?) '(1 2 4 5)]
+                                            [#:scientific? scientific? #t])
                        ticks-layout/c]
-              @defproc[(linear-ticks-format) ticks-format/c]
+              @defproc[(linear-ticks-format [#:scientific? scientific? #t]) ticks-format/c]
               @defproc[(linear-ticks [#:number number exact-positive-integer? (ticks-default-number)]
                        [#:base base (and/c exact-integer? (>=/c 2)) 10]
                        [#:divisors divisors (listof exact-positive-integer?) '(1 2 4 5)])
@@ -284,7 +285,10 @@ To lay out ticks, @racket[linear-ticks-layout] finds the power of @racket[base] 
 @margin-note*{For strategic use of non-default arguments, see @racket[bit/byte-ticks], @racket[currency-ticks], and @racket[fraction-ticks].}
 The default arguments correspond to the standard 1-2-5-in-base-10 rule used almost everywhere in plot tick layout.
 
-To format ticks, @racket[linear-ticks-format] uses @racket[real->plot-label], and uses @racket[digits-for-range] to determine the maximum number of fractional digits in the decimal expansion.
+To format ticks, @racket[linear-ticks-format] uses @racket[real->plot-label] passing the value of @racket[scientific?], and uses @racket[digits-for-range] to determine the maximum number of fractional digits in the decimal expansion.
+
+@history[#:changed "7.4.0.10" @elem{Added the @racket[#:scientific?] argument to @racket[linear-ticks-format] and @racket[linear-ticks].}
+
 }
 
 @subsection{Log Ticks}
@@ -474,7 +478,7 @@ Short-scale suffix abbreviations as commonly used in the United Kingdom since sw
 European Union long-scale suffix abbreviations, which stand for ``kilo,'' ``million,'' ``milliard,'' and ``billion.''
 
 The abbreviations actually used vary with geography, even within countries, but these seem to be common.
-Further long-scale suffix abbreviations such as for ``billiard'' are ommitted due to lack of even weak consensus.
+Further long-scale suffix abbreviations such as for ``billiard'' are omitted due to lack of even weak consensus.
 }
 
 @defthing[us-currency-formats (list/c string? string? string?) #:value '("~$~w.~f~s" "(~$~w.~f~s)" "~$0")]{
@@ -530,7 +534,7 @@ The layout function, format function, and combined @racket[ticks] for no ticks w
                                        [#:size size (or/c 'byte 'bit) 'byte]
                                        [#:kind kind (or/c 'CS 'SI) 'CS])
                        ticks?])]{
-The format function and and combined @racket[ticks] for bit or byte values.
+The format function and combined @racket[ticks] for bit or byte values.
 
 The @racket[#:kind] keyword argument indicates either International System of Units (@racket['SI]) suffixes, as used to communicate hard drive capacities, or Computer Science (@racket['CS]) suffixes, as used to communicate memory capacities.
 
@@ -547,7 +551,7 @@ For layout, @racket[bit/byte-ticks] uses @racket[linear-ticks-layout] with
               @defproc[(fraction-ticks [#:base base (and/c exact-integer? (>=/c 2)) 10]
                                        [#:divisors divisors (listof exact-positive-integer?) '(1 2 3 4 5)])
                        ticks?])]{
-The format function and and combined @racket[ticks] for fraction-formatted values.
+The format function and combined @racket[ticks] for fraction-formatted values.
 For layout, @racket[fraction-ticks] uses @racket[linear-ticks-layout], passing it the given @racket[divisors].
 }
 
@@ -568,7 +572,7 @@ Unlike with typical @secref["transforms"], @racket[fun] is allowed to transform 
 (See @racket[make-axis-transform] for an explanation about transforming endpoints.)
 
 Use @racket[ticks-scale] to plot values at multiple scales simultaneously, with one scale on the near axis and one scale on the far axis.
-The following example plots degrees Celsius on the left and degrees Farenheit on the right:
+The following example plots degrees Celsius on the left and degrees Fahrenheit on the right:
 @interaction[#:eval plot-eval
                     (parameterize
                         ([plot-x-ticks      (time-ticks)]
