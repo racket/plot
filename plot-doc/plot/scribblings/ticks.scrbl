@@ -287,7 +287,7 @@ The default arguments correspond to the standard 1-2-5-in-base-10 rule used almo
 
 To format ticks, @racket[linear-ticks-format] uses @racket[real->plot-label] passing the value of @racket[scientific?], and uses @racket[digits-for-range] to determine the maximum number of fractional digits in the decimal expansion.
 
-@history[#:changed "7.4.0.10" @elem{Added the @racket[#:scientific?] argument to @racket[linear-ticks-format] and @racket[linear-ticks].}
+@history[#:changed "1.1" @elem{Added the @racket[#:scientific?] argument to @racket[linear-ticks-format] and @racket[linear-ticks].}]
 
 }
 

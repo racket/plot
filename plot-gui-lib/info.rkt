@@ -15,3 +15,5 @@
 (define pkg-desc "Plot GUI interface")
 
 (define pkg-authors '(ntoronto))
+
+(define version "1.1")
