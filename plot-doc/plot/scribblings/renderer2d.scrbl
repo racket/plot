@@ -150,6 +150,7 @@ An example of automatic scaling:
           [#:line-style line-style plot-pen-style/c (error-bar-line-style)]
           [#:width width (>=/c 0) (error-bar-width)]
           [#:alpha alpha (real-in 0 1) (error-bar-alpha)]
+          [#:invert? invert? boolean? #f]
           ) renderer2d?]{
 Returns a renderer that draws error bars.
 The first and second element in each vector in @(racket bars) comprise the coordinate; the third is the height.
@@ -158,7 +159,12 @@ The first and second element in each vector in @(racket bars) comprise the coord
                                 (error-bars (list (vector 2 4 12)
                                                   (vector 4 16 20)
                                                   (vector 6 36 10)))))]
-}
+
+If @racket[invert?] is @racket[#t], the x and y coordinates are inverted, and the bars are drawn horizontally
+rather than vertically. This is intended for use with the corresponding option of @racket[discrete-histogram]
+and @racket[stacked-histogram].
+
+@history[#:changed "1.1" @elem{Added the @racket[#:invert?] option.}]}
 
 @defproc[(candlesticks
           [candles (sequence/c (sequence/c #:min-count 5 real?))]

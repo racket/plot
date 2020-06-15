@@ -188,21 +188,25 @@
 
 (: error-bars-render-fun (-> (Listof Real) (Listof Real) (Listof Real)
                              Plot-Color Nonnegative-Real Plot-Pen-Style
-                             Nonnegative-Real Nonnegative-Real
+                             Nonnegative-Real Nonnegative-Real Boolean
                              2D-Render-Proc))
-(define ((error-bars-render-fun xs ys hs color line-width line-style width alpha) area)
+(define ((error-bars-render-fun xs ys hs color line-width line-style width alpha invert?) area)
   (define clip-rect (send area get-clip-rect))
   (define radius (* 1/2 width))
+  (define angle (if invert? (/ pi 2) 0))
+
+  (: maybe-invert (All (A) (-> A A (Vectorof A))))
+  (define maybe-invert (if invert? (λ (x y) (vector y x)) vector))
   
   (send area put-alpha alpha)
   (send area put-pen color line-width line-style)
   (for ([x  (in-list xs)] [y  (in-list ys)] [h  (in-list hs)])
-    (when (rect-contains? clip-rect (vector x y))
-      (define v1 (vector x (- y h)))
-      (define v2 (vector x (+ y h)))
+    (when (rect-contains? clip-rect (maybe-invert x y))
+      (define v1 (maybe-invert x (- y h)))
+      (define v2 (maybe-invert x (+ y h)))
       (send area put-line v1 v2)
-      (send area put-tick v1 radius 0)
-      (send area put-tick v2 radius 0)))
+      (send area put-tick v1 radius angle)
+      (send area put-tick v2 radius angle)))
   
   empty)
 
@@ -214,7 +218,8 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:width Nonnegative-Real
-          #:alpha Nonnegative-Real]
+          #:alpha Nonnegative-Real
+          #:invert? Boolean]
          renderer2d))
 (define (error-bars bars
                     #:x-min [x-min #f] #:x-max [x-max #f]
@@ -223,7 +228,8 @@
                     #:line-width [line-width (error-bar-line-width)]
                     #:line-style [line-style (error-bar-line-style)]
                     #:width [width (error-bar-width)]
-                    #:alpha [alpha (error-bar-alpha)])
+                    #:alpha [alpha (error-bar-alpha)]
+                    #:invert? [invert? #f])
   (define fail/kw (make-raise-keyword-error 'error-bars))
   (cond
     [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
@@ -246,9 +252,14 @@
                     [x-max  (if x-max x-max (apply max* xs))]
                     [y-min  (if y-min y-min (apply min* (map - ys hs)))]
                     [y-max  (if y-max y-max (apply max* (map + ys hs)))])
-                (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
-                            (error-bars-render-fun xs ys hs
-                                                   color line-width line-style width alpha)))]))]))
+                (: maybe-invert (All (A) (-> A A (Vectorof A))))
+                (define maybe-invert (if invert? (λ (x y) (vector y x)) vector))
+                (renderer2d
+                 (maybe-invert (ivl x-min x-max) (ivl y-min y-max))
+                 #f
+                 default-ticks-fun
+                 (error-bars-render-fun xs ys hs
+                                        color line-width line-style width alpha invert?)))]))]))
 
 ;; ===================================================================================================
 ;; Candlesticks
