@@ -1,0 +1,25 @@
+on: [push, pull_request]
+name: CI
+jobs:
+  build:
+    name: "Build on Racket '${{ matrix.racket-version }}' (${{ matrix.racket-variant }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        racket-version: ["7.7", "current"]
+        racket-variant: ["regular", "CS"]
+    steps:
+      - uses: actions/checkout@master
+      - uses: Bogdanp/setup-racket@v0.8
+        with:
+          architecture: x64
+          distribution: minimal
+          variant: ${{ matrix.racket-variant }}
+          version: ${{ matrix.racket-version }}
+      - run: racket -l- pkg/dirs-catalog --link catalog .
+      - run: echo "file://`pwd`/catalog" > catalogs.txt
+      - run: raco pkg config catalogs >> catalogs.txt
+      - run: raco pkg config --set catalogs `cat catalogs.txt`
+      - run: raco pkg config catalogs
+      - run: sudo raco pkg install --batch --auto plot
+      # - run: raco test --drdr plot-test/
