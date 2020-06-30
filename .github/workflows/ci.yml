@@ -21,5 +21,5 @@ jobs:
       - run: raco pkg config catalogs >> catalogs.txt
       - run: raco pkg config --set catalogs `cat catalogs.txt`
       - run: raco pkg config catalogs
-      # - run: sudo raco pkg install --batch --auto plot
+      - run: sudo raco pkg install --batch --auto plot
       # - run: raco test --drdr plot-test/
