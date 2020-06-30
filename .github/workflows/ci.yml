@@ -17,7 +17,7 @@ jobs:
           variant: ${{ matrix.racket-variant }}
           version: ${{ matrix.racket-version }}
       - run: racket -l- pkg/dirs-catalog --link catalog .
-      - run: CPATH=`pwd` echo "file://$CPATH/catalog" > catalogs.txt
+      - run: echo "file://`pwd`/catalog" > catalogs.txt
       - run: raco pkg config catalogs >> catalogs.txt
       - run: raco pkg config --set catalogs `cat catalogs.txt`
       - run: raco pkg config catalogs
