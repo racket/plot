@@ -1,0 +1,21 @@
+on: [push, pull_request]
+name: CI
+jobs:
+  build:
+    name: "Build on Racket '${{ matrix.racket-version }}' (${{ matrix.racket-variant }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        racket-version: ["7.6", "7.7", "current"]
+        racket-variant: ["regular", "CS"]
+    steps:
+      - uses: actions/checkout@master
+      - uses: Bogdanp/setup-racket@v0.3
+        with:
+          architecture: x64
+          distribution: full
+          variant: ${{ matrix.racket-variant }}
+          version: ${{ matrix.racket-version }}
+      - run: sudo raco pkg update --name plot --link --batch --auto plot/
+      - run: sudo raco pkg install --batch --auto plot/
+      - run: raco test --drdr plot-test/
