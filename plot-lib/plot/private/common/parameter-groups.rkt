@@ -32,6 +32,7 @@
      plot-background plot-background-alpha
      plot-line-width plot-tick-size
      plot-font-size plot-font-face plot-font-family
+     plot-legend-font-size plot-legend-font-face plot-legend-font-family
      plot-legend-anchor plot-legend-box-alpha
      plot-axes? plot-tick-labels
      plot-decorations?
@@ -92,6 +93,9 @@
       Nonnegative-Real
       (U False String)
       Font-Family
+      (U False Nonnegative-Real)
+      (U False String)
+      (U False Font-Family)
       Anchor
       Nonnegative-Real
       (List Boolean Boolean Boolean Boolean Boolean Boolean)
