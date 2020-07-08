@@ -24,6 +24,7 @@
         [command2 (in-list set2)])
     (define tag1 (car command1))
     (define tag2 (car command2))
+    (printf "checking ~a - ~a~%" tag1 tag2)
     (cond ((and (equal? tag1 'draw-text)
                 (equal? tag2 'draw-text))
            ;; Because of different fonts, the coordinates of the draw-text
