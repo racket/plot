@@ -44,3 +44,9 @@ jobs:
         
       - run: sudo raco pkg install --batch --auto plot-test
       - run: sudo xvfb-run raco test --no-run-if-absent --package plot-test
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: 'Updtated Draw Command Files'
+          path: plot-test/plot/tests/auto/data/new-*.rktd

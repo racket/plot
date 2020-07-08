@@ -35,7 +35,13 @@
    (test-case "pr5"
      (define saved (call-with-input-file pr5-data read))
      (define current (do-plot generate-draw-steps))
-     (check-same-draw-commands saved current))))
+     (if (same-draw-commands? saved current)
+         (check-true #t)
+         (begin
+           (printf "draw commands not the same, writing new set")
+           (call-with-output-file "./data/new-pr5-data.rktd" (lambda (out) (write current out)))
+           (check-true #f)
+           )))))
 
 (module+ test
   (require rackunit/text-ui)

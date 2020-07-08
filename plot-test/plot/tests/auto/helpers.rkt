@@ -18,6 +18,17 @@
         (#t
          (check-equal? set1 set2))))
 
+(define (same-draw-commands? set1 set2)
+  (cond ((and (pair? set1) (pair? set2))
+         (and
+          (same-draw-commands? (car set1) (car set2))
+          (same-draw-commands? (cdr set1) (cdr set2))))
+        ((and (number? set1) (number? set2))
+         (let ([difference (abs (- set1 set2))])
+           (< difference 1e-4)))
+        (#t
+         (equal? set1 set2))))
+
 (define (check-same-draw-commands set1 set2)
   (check-equal? (length set1) (length set2))
   (for ([command1 (in-list set1)]
@@ -43,4 +54,5 @@
           (#t
            (check-same-commands command1 command2)))))
 
-(provide generate-draw-steps check-same-draw-commands)
+(provide generate-draw-steps check-same-draw-commands
+         same-draw-commands?)
