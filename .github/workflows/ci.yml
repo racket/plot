@@ -6,8 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        racket-version: ["7.7", "current"]
-        racket-variant: ["regular", "CS"]
+        racket-version: ["7.7"]         # "current" is also an option
+        racket-variant: ["regular"]     # "CS" is also an option
     steps:
       - uses: actions/checkout@master
       - uses: Bogdanp/setup-racket@v0.8
@@ -34,8 +34,13 @@ jobs:
       - run: sudo raco pkg install --batch --auto plot
 
       # This runs any tests inside the plot, plot-lib, plot-gui-lib and
-      # plot-doc packages, but NOT the plot-test package.  Most of the tests
-      # are in the `plot-test` package, but just in case someone wrote a test
-      # module...
+      # plot-doc packages, but NOT the plot-test package.  The actual tests
+      # are in the `plot-test` package, so we don't expect any tests here, but
+      # just in case someone wrote a test module...
 
       - run: sudo raco test --no-run-if-absent --deps --package plot
+
+      # Install the plot-test package and run the tests
+        
+      - run: sudo raco pkg install --batch --auto plot-test
+      - run: sudo raco test --no-run-if-absent --package plot-test
