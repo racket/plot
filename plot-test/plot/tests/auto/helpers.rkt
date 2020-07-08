@@ -11,8 +11,8 @@
 
 (define (check-same-commands set1 set2)
   (cond ((and (pair? set1) (pair? set2))
-         (check-same-draw-commands (car set1) (car set2))
-         (check-same-draw-commands (cdr set1) (cdr set2)))
+         (check-same-commands (car set1) (car set2))
+         (check-same-commands (cdr set1) (cdr set2)))
         ((and (number? set1) (number? set2))
          (check-= set1 set2 1e-4))
         (#t
