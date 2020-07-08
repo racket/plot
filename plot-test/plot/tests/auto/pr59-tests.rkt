@@ -44,11 +44,22 @@
    (test-case "pr59 not inverted"
      (define saved (call-with-input-file pr59-not-inverted-data read))
      (define current (do-plot-not-inverted generate-draw-steps))
+     (if (same-draw-commands? saved current)
+         (check-true #t)
+         (begin
+           (printf "draw commands not the same, writing new set")
+           (call-with-output-file "./data/new-pr59-not-inverted-data.rktd" (lambda (out) (write current out)))
+           (check-true #f)))
      (check-same-draw-commands saved current))
    (test-case "pr59 inverted"
      (define saved (call-with-input-file pr59-inverted-data read))
      (define current (do-plot-inverted generate-draw-steps))
-     (check-same-draw-commands saved current))))
+     (if (same-draw-commands? saved current)
+         (check-true #t)
+         (begin
+           (printf "draw commands not the same, writing new set")
+           (call-with-output-file "./data/new-pr59-inverted-data.rktd" (lambda (out) (write current out)))
+           (check-true #f))))))
 
 (module+ test
   (require rackunit/text-ui)
