@@ -12,7 +12,8 @@
                "rackunit-lib"
                "slideshow-lib"
                "typed-racket-lib"
-               "typed-racket-more"))
+               "typed-racket-more"
+               "contract-profile"))
 
 (define build-deps '())
 (define update-implies '("plot-lib"))
