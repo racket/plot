@@ -21,27 +21,12 @@
 ;;
 ;;   (do-plot (lambda (rt) (plot-file rt "./data/pr5.png")))
 ;;
-;; To generate the draw commands, to compare them, run:
-;;
-;;   (define data (do-plot generate-draw-steps))
-;;   (call-with-output-file "./data/pr5.rktd" (lambda (out) (write data out)) #:exists 'replace)
-;;
-
 (define-runtime-path pr5-data "./data/pr5-data.rktd")
 
 (define pr5-test-suite
   (test-suite
    "PR#5: Separate legend font from plot font for more control."
-   (test-case "pr5"
-     (define saved (call-with-input-file pr5-data read))
-     (define current (do-plot generate-draw-steps))
-     (if (same-draw-commands? saved current)
-         (check-true #t)
-         (begin
-           (printf "draw commands not the same, writing new set")
-           (call-with-output-file "./data/new-pr5-data.rktd" (lambda (out) (write current out)))
-           (check-true #f)
-           )))))
+   (test-case "pr5" (check-draw-steps do-plot pr5-data))))
 
 (module+ test
   (require rackunit/text-ui)

@@ -27,13 +27,6 @@
 ;;   (do-plot-not-inverted (lambda (rt) (plot-file rt "./data/pr59-not-inverted.png")))
 ;;   (do-plot-inverted (lambda (rt) (plot-file rt "./data/pr59-inverted.png")))
 ;;
-;; To generate the draw commands, to compare them, run:
-;;
-;;   (define data-not-inverted (do-plot-not-inverted generate-draw-steps))
-;;   (call-with-output-file "./data/pr59-not-inverted.rktd" (lambda (out) (write data-not-inverted out)) #:exists 'replace)
-;;
-;;   (define data-inverted (do-plot-inverted generate-draw-steps))
-;;   (call-with-output-file "./data/pr59-inverted.rktd" (lambda (out) (write data-inverted out)) #:exists 'replace)
 
 (define-runtime-path pr59-not-inverted-data "./data/pr59-not-inverted-data.rktd")
 (define-runtime-path pr59-inverted-data "./data/pr59-inverted-data.rktd")
@@ -42,23 +35,9 @@
   (test-suite
    "PR#59: Add #:invert? option to error-bars"
    (test-case "pr59 not inverted"
-     (define saved (call-with-input-file pr59-not-inverted-data read))
-     (define current (do-plot-not-inverted generate-draw-steps))
-     (if (same-draw-commands? saved current)
-         (check-true #t)
-         (begin
-           (printf "draw commands not the same, writing new set")
-           (call-with-output-file "./data/new-pr59-not-inverted-data.rktd" (lambda (out) (write current out)))
-           (check-true #f))))
+     (check-draw-steps do-plot-not-inverted pr59-not-inverted-data))
    (test-case "pr59 inverted"
-     (define saved (call-with-input-file pr59-inverted-data read))
-     (define current (do-plot-inverted generate-draw-steps))
-     (if (same-draw-commands? saved current)
-         (check-true #t)
-         (begin
-           (printf "draw commands not the same, writing new set")
-           (call-with-output-file "./data/new-pr59-inverted-data.rktd" (lambda (out) (write current out)))
-           (check-true #f))))))
+     (check-draw-steps do-plot-inverted pr59-inverted-data))))
 
 (module+ test
   (require rackunit/text-ui)
