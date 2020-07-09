@@ -48,5 +48,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: 'Updtated Draw Command Files'
-          path: plot-test/plot/tests/auto/data/new-*.rktd
+          name: 'Updated Data Files'
+          path: plot-test/plot/tests/auto/data/new-*
