@@ -11,7 +11,10 @@
     (init)
     (super-new)
     (define/override (get-text-extent text (font #f) (combine? #f) (offset 0))
-      (values (* 10 (string-length text)) 10 0 0))))
+      (values (* 10 (string-length text)) 10 0 0))
+    (define/override (get-char-width) 10)
+    (define/override (get-char-height) 10)
+    ))
 
 (define (generate-draw-steps renderer-tree)
   (define dc (new mock-record-dc% [width (plot-width)] [height (plot-height)]))
