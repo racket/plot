@@ -16,10 +16,31 @@ jobs:
           distribution: minimal
           variant: ${{ matrix.racket-variant }}
           version: ${{ matrix.racket-version }}
+
+      # Setup this source repository as a package catalog which has higher
+      # priority than the main catalog
+
       - run: racket -l- pkg/dirs-catalog --link catalog .
       - run: echo "file://`pwd`/catalog" > catalogs.txt
       - run: raco pkg config catalogs >> catalogs.txt
       - run: raco pkg config --set catalogs `cat catalogs.txt`
       - run: raco pkg config catalogs
+
+      # Install plot and its dependencies.  Since we installed minimal racket,
+      # this will fetch most of the packages from the main package catalog,
+      # except for the packages inside this directory, which have higher
+      # priority.
+
       - run: sudo raco pkg install --batch --auto plot
-      # - run: raco test --drdr plot-test/
+
+      # This runs any tests inside the plot, plot-lib, plot-gui-lib and
+      # plot-doc packages, but NOT the plot-test package.  The actual tests
+      # are in the `plot-test` package, so we don't expect any tests here, but
+      # just in case someone wrote a test module...
+
+      - run: sudo xvfb-run raco test --no-run-if-absent --deps --package plot
+
+      # Install the plot-test package and run the tests
+        
+      - run: sudo raco pkg install --batch --auto plot-test
+      - run: sudo xvfb-run raco test --no-run-if-absent --package plot-test
