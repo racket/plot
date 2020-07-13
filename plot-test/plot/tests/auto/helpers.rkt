@@ -1,11 +1,30 @@
 #lang racket
 (require plot racket/draw rackunit)
 
+(provide check-draw-steps check-draw-steps-3d)
+
+;; Helper functions to write plot tests which verify that the renderers work
+;; correctly.  See `check-draw-steps` and `check-draw-steps-3d`.
+;;
+;; The overall testing strategy is that the user verifies a set of renderers
+;; to work correctly, generates some draw steps and a sample image and uses
+;; `check-draw-steps` (or `check-draw-steps-3d` for 3d plots) to verify that
+;; the plot package continues to render the plots using the same draw commands
+;; (therefore producing identical plots).
+;;
+;; If a test fails, the user has a sample image to compare what went wrong as
+;; well as a new set of draw steps to compare against the saved one.
+
 ;; Unless overridden, use these dimensions for the plots we generate for test
 ;; purposes.
 (plot-width 1024)
 (plot-height 768)
 
+;; A record-dc% to store the draw commands issued by plot or plot3d.  We
+;; override the font related functions to return constant and predictable
+;; values -- this allows the tests to generate and verify the same draw
+;; commands on different platforms where, due to different fonts installed,
+;; the positions of various plot elements would be slightly different.
 (define mock-record-dc%
   (class record-dc%
     (init)
@@ -16,16 +35,25 @@
     (define/override (get-char-height) 10)
     ))
 
+;; Generate the draw steps required to plot the RENDERER-TREE.  This function
+;; creates a `mock-record-dc%`, uses `plot/dc` to render to this DC and
+;; retrieves the recorded steps from it.
 (define (generate-draw-steps renderer-tree)
   (define dc (new mock-record-dc% [width (plot-width)] [height (plot-height)]))
   (plot/dc renderer-tree dc 0 0 (plot-width) (plot-height))
   (send dc get-recorded-datum))
 
+;; Same as `generate-draw-steps` but uses `plot3d/dc` and should be used for
+;; 3D plots.
 (define (generate-draw-steps-3d renderer-tree)
   (define dc (new mock-record-dc% [width (plot-width)] [height (plot-height)]))
   (plot3d/dc renderer-tree dc 0 0 (plot-width) (plot-height))
   (send dc get-recorded-datum))
 
+;; Return #t if two sets of draw steps, SET1 and SET2 are the same, false
+;; otherwise.  This function recursively traverses the cons tree of SET1 and
+;; SET1 comparing elements using equal?, unless the elements are numbers in
+;; which case it checks that the difference between them is small.
 (define (same-draw-steps? set1 set2)
   (cond ((and (pair? set1) (pair? set2))
          (and
@@ -37,8 +65,46 @@
         (#t
          (equal? set1 set2))))
 
+;; Verify that the draw steps produced by PLOT-FUNCTION match the ones in
+;; SAVED-STEPS-FILE.  If they do, this function returns VOID, otherwise it
+;; fails using `fail`, so it is suitable for use in rackunit tests.
+;;
+;; When the function fails, the current set of draw steps as well as an image
+;; of the current plot is saved in the same directory as SAVED-STEPS-FILE,
+;; with the prefix "new-" they can be compared against the saved data to
+;; determine what went wrong.
+;;
+;; The PLOT-FUNCTION is a function that must be supplied by the user to
+;; generate the plot.  Instead of calling `plot` directly, PLOT-FUNCTION will
+;; take a function argument which will be used to pass the renderer tree to
+;; (this allows calling plot inside a parameterize call).
+;;
+;; For example to test that the following plot works correctly:
+;;
+;;     (parameterize ([plot-title "Hello"])
+;;       (plot (function (lambda (x) x) -1 1)))
+;;
+;; You would need to write the following plot function:
+;;
+;;     (define (plot-function output-fn)
+;;       (parameterize ([plot-title "Hello"])
+;;         (output-fn (function (lambda (x) x) -1 1)))
+;;
+;; This way of writing the function allows testing it in different conditions.
+;; For example, to generate an interactive plot in the DrRacket REPL you can
+;; run:
+;;
+;;    (plot-function plot)
+;;
+;; To write the plot to an image:
+;;
+;;    (plot-function (lambda (rt) (plot-file rt "plot-image.png")))
+;;
 (define (check-draw-steps plot-function saved-steps-file)
-  (define saved (call-with-input-file saved-steps-file read))
+  (define saved
+    (if (file-exists? saved-steps-file)
+        (call-with-input-file saved-steps-file read)
+        null))
   (define current (plot-function generate-draw-steps))
   (unless (same-draw-steps? saved current)
     ;; Save the current draw steps to file, so they can be compared against
@@ -53,8 +119,12 @@
     (plot-function (lambda (rt) (plot-file rt image-file)))
     (fail (format "draw steps not the same, new set written to ~a" data-file))))
 
+;; Same as `check-draw-steps` but for 3D plots.
 (define (check-draw-steps-3d plot-function saved-steps-file)
-  (define saved (call-with-input-file saved-steps-file read))
+  (define saved
+    (if (file-exists? saved-steps-file)
+        (call-with-input-file saved-steps-file read)
+        null))
   (define current (plot-function generate-draw-steps-3d))
   (unless (same-draw-steps? saved current)
     ;; Save the current draw steps to file, so they can be compared against
@@ -68,5 +138,3 @@
     (define image-file (path-replace-extension data-file ".png"))
     (plot-function (lambda (rt) (plot3d-file rt image-file)))
     (fail (format "draw steps not the same, new set written to ~a" data-file))))
-
-(provide same-draw-steps? check-draw-steps check-draw-steps-3d)

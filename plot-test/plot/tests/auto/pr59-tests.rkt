@@ -22,12 +22,6 @@
                                      (vector 36 6 10))
                                #:invert? #t))))
 
-;; To generate a plot image (e.g. to compare it to the saves samples, run:
-;;
-;;   (do-plot-not-inverted (lambda (rt) (plot-file rt "./data/pr59-not-inverted.png")))
-;;   (do-plot-inverted (lambda (rt) (plot-file rt "./data/pr59-inverted.png")))
-;;
-
 (define-runtime-path pr59-not-inverted-data "./data/pr59-not-inverted-data.rktd")
 (define-runtime-path pr59-inverted-data "./data/pr59-inverted-data.rktd")
 
