@@ -21,6 +21,11 @@
   (plot/dc renderer-tree dc 0 0 (plot-width) (plot-height))
   (send dc get-recorded-datum))
 
+(define (generate-draw-steps-3d renderer-tree)
+  (define dc (new mock-record-dc% [width (plot-width)] [height (plot-height)]))
+  (plot3d/dc renderer-tree dc 0 0 (plot-width) (plot-height))
+  (send dc get-recorded-datum))
+
 (define (same-draw-steps? set1 set2)
   (cond ((and (pair? set1) (pair? set2))
          (and
@@ -48,4 +53,20 @@
     (plot-function (lambda (rt) (plot-file rt image-file)))
     (fail (format "draw steps not the same, new set written to ~a" data-file))))
 
-(provide generate-draw-steps same-draw-steps? check-draw-steps)
+(define (check-draw-steps-3d plot-function saved-steps-file)
+  (define saved (call-with-input-file saved-steps-file read))
+  (define current (plot-function generate-draw-steps-3d))
+  (unless (same-draw-steps? saved current)
+    ;; Save the current draw steps to file, so they can be compared against
+    ;; the original (and maybe updated)
+    (define-values (base name must-be-dir?) (split-path saved-steps-file))
+    (define data-file (build-path
+                       base
+                       (string-append "new-" (path->string name))))
+    (call-with-output-file data-file (lambda (out) (write current out)) #:exists 'replace)
+    ;; Also generate an image of the current plot
+    (define image-file (path-replace-extension data-file ".png"))
+    (plot-function (lambda (rt) (plot3d-file rt image-file)))
+    (fail (format "draw steps not the same, new set written to ~a" data-file))))
+
+(provide same-draw-steps? check-draw-steps check-draw-steps-3d)
