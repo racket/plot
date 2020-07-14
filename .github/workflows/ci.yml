@@ -45,6 +45,10 @@ jobs:
       - run: sudo raco pkg install --batch --auto plot-test
       - run: sudo xvfb-run raco test --no-run-if-absent --package plot-test
 
+      # If any of the plot-test tests failed, they will generate new draw step
+      # files and sample images.  Upload these as an Github Actions Artifact,
+      # so they can be inspected by the developer.
+      
       - uses: actions/upload-artifact@v2
         if: failure()
         with:

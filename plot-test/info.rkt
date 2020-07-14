@@ -21,3 +21,5 @@
 (define pkg-desc "Plot tests")
 
 (define pkg-authors '(ntoronto))
+
+(define test-responsibles '((all AlexHarsanyi@gmail.com)))
