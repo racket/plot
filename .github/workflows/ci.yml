@@ -9,7 +9,7 @@ jobs:
         racket-version: ["7.7", "current"]
         racket-variant: ["regular", "CS"]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - uses: Bogdanp/setup-racket@v0.8
         with:
           architecture: x64
@@ -38,12 +38,12 @@ jobs:
       # are in the `plot-test` package, so we don't expect any tests here, but
       # just in case someone wrote a test module...
 
-      - run: sudo xvfb-run raco test --no-run-if-absent --deps --package plot
+      - run: sudo xvfb-run raco test --deps --package plot
 
       # Install the plot-test package and run the tests
         
       - run: sudo raco pkg install --batch --auto plot-test
-      - run: sudo xvfb-run raco test --no-run-if-absent --package plot-test
+      - run: sudo xvfb-run raco test --package plot-test
 
       # If any of the plot-test tests failed, they will generate new draw step
       # files and sample images.  Upload these as an Github Actions Artifact,
@@ -52,5 +52,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: 'Updated Data Files'
-          path: plot-test/plot/tests/auto/data/new-*
+          name: New Test Data Files ${{ matrix.racket-version }} ${{ matrix.racket-variant }}
+          path: plot-test/plot/tests/**/test-data/new-*
