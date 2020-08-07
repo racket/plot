@@ -13,3 +13,5 @@
 (define pkg-desc "Compatibility library for Plot 5.1.3 and earlier")
 
 (define pkg-authors '(ntoronto))
+
+(define test-responsibles '((all AlexHarsanyi@gmail.com)))

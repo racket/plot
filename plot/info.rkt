@@ -8,3 +8,5 @@
 (define pkg-desc "Functions (and docs and tests) for plotting")
 
 (define pkg-authors '(ntoronto))
+
+(define test-responsibles '((all AlexHarsanyi@gmail.com)))

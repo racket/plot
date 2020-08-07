@@ -17,3 +17,5 @@
 (define pkg-authors '(ntoronto))
 
 (define version "1.1")
+
+(define test-responsibles '((all AlexHarsanyi@gmail.com)))

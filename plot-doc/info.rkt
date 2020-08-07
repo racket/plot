@@ -26,3 +26,5 @@
 (define pkg-desc "Documentation for plot")
 
 (define pkg-authors '(ntoronto))
+
+(define test-responsibles '((all AlexHarsanyi@gmail.com)))
