@@ -34,7 +34,7 @@ See @secref["renderer2d-function-arguments"] for a detailed example.
           [#:size size (>=/c 0) (point-size)]
           [#:line-width line-width (>=/c 0) (point-line-width)]
           [#:alpha alpha (real-in 0 1) (point-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that draws points in 3D space.
 
@@ -76,7 +76,7 @@ See the documentation for @racket[points] for examples where jittering may be ap
           [#:line-width line-width (>=/c 0) (vector-field-line-width)]
           [#:line-style line-style plot-pen-style/c (vector-field-line-style)]
           [#:alpha alpha (real-in 0 1) (vector-field-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that draws a vector field in 3D space.
 The arguments are interpreted identically to the corresponding arguments to @racket[vector-field].
@@ -96,7 +96,7 @@ The arguments are interpreted identically to the corresponding arguments to @rac
           [#:width width (>=/c 0) (line-width)]
           [#:style style plot-pen-style/c (line-style)]
           [#:alpha alpha (real-in 0 1) (line-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that draws connected lines.
 The @racket[parametric3d] function is defined in terms of this one.
@@ -113,7 +113,7 @@ The @racket[parametric3d] function is defined in terms of this one.
           [#:width width (>=/c 0) (line-width)]
           [#:style style plot-pen-style/c (line-style)]
           [#:alpha alpha (real-in 0 1) (line-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots a vector-valued function of time. For example,
 @interaction[#:eval plot-eval
@@ -137,14 +137,14 @@ Returns a renderer that plots a vector-valued function of time. For example,
           [#:line-width line-width (>=/c 0) (surface-line-width)]
           [#:line-style line-style plot-pen-style/c (surface-line-style)]
           [#:alpha alpha (real-in 0 1) (surface-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots a two-input, one-output function. For example,
 @interaction[#:eval plot-eval (plot3d (list (surface3d (λ (x y) (+ (sqr x) (sqr y))) -1 1 -1 1
-                                                       #:label "z = x^2 + y^2")
+                                                       #:label "z = x² + y²")
                                             (surface3d (λ (x y) (- (+ (sqr x) (sqr y)))) -1 1 -1 1
                                                        #:color 4 #:line-color 4
-                                                       #:label "z = -x^2 - y^2")))]
+                                                       #:label "z = -x² - y²")))]
 }
 
 @defproc[(polar3d
@@ -159,7 +159,7 @@ Returns a renderer that plots a two-input, one-output function. For example,
           [#:line-width line-width (>=/c 0) (surface-line-width)]
           [#:line-style line-style plot-pen-style/c (surface-line-style)]
           [#:alpha alpha (real-in 0 1) (surface-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots a function from longitude and latitude to radius.
 @racket[(f θ ϕ)] → @racket[r]
@@ -199,7 +199,7 @@ Combining polar function renderers allows faking latitudes or longitudes in larg
           [#:line-width line-width (>=/c 0) (surface-line-width)]
           [#:line-style line-style plot-pen-style/c (surface-line-style)]
           [#:alpha alpha (real-in 0 1) (surface-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots a two-input, one-output function. @racket[(f s t)] → @racket['(x y z)]
 
@@ -238,7 +238,7 @@ For example,
           [#:line-width line-width (>=/c 0) (surface-line-width)]
           [#:line-style line-style plot-pen-style/c (surface-line-style)]
           [#:alpha alpha (real-in 0 1) (surface-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that draws polygons.
 The @racket[parametric-surface3d] function is defined in terms of this one.
@@ -262,7 +262,7 @@ The @racket[parametric-surface3d] function is defined in terms of this one.
           [#:width width (>=/c 0) (line-width)]
           [#:style style plot-pen-style/c (line-style)]
           [#:alpha alpha (real-in 0 1) (line-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots a single contour line on the surface of a function.
 
@@ -286,7 +286,7 @@ This function is not terribly useful by itself, but can be when combined with ot
           [#:widths widths (pen-widths/c (listof real?)) (contour-widths)]
           [#:styles styles (plot-pen-styles/c (listof real?)) (contour-styles)]
           [#:alphas alphas (alphas/c (listof real?)) (contour-alphas)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots contour lines on the surface of a function.
 
@@ -295,7 +295,7 @@ In particular, when @(racket levels) is @(racket 'auto), contour values correspo
 
 For example,
 @interaction[#:eval plot-eval (plot3d (contours3d (λ (x y) (+ (sqr x) (sqr y))) -1.1 1.1 -1.1 1.1
-                                                  #:label "z = x^2 + y^2"))]
+                                                  #:label "z = x² + y²"))]
 }
 
 @defproc[(contour-intervals3d
@@ -314,7 +314,7 @@ For example,
           [#:contour-widths contour-widths (pen-widths/c (listof real?)) (contour-widths)]
           [#:contour-styles contour-styles (plot-pen-styles/c (listof real?)) (contour-styles)]
           [#:alphas alphas (alphas/c (listof ivl?)) (contour-interval-alphas)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots contour intervals and contour lines on the surface of a function.
 The appearance keyword arguments are interpreted identically to the appearance keyword arguments to @(racket contour-intervals).
@@ -322,7 +322,7 @@ The appearance keyword arguments are interpreted identically to the appearance k
 For example,
 @interaction[#:eval plot-eval (plot3d (contour-intervals3d (λ (x y) (+ (sqr x) (sqr y)))
                                                            -1.1 1.1 -1.1 1.1
-                                                           #:label "z = x^2 + y^2"))]
+                                                           #:label "z = x² + y²"))]
 }
 
 @section{3D Isosurface Renderers}
@@ -339,7 +339,7 @@ For example,
           [#:line-width line-width (>=/c 0) (surface-line-width)]
           [#:line-style line-style plot-pen-style/c (surface-line-style)]
           [#:alpha alpha (real-in 0 1) (surface-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots the surface of constant output value of the function @(racket f). The argument @(racket d) is the constant value.
 
@@ -364,7 +364,7 @@ For example, a sphere is all the points in which the Euclidean distance function
           [#:line-widths line-widths (pen-widths/c (listof real?)) (isosurface-line-widths)]
           [#:line-styles line-styles (plot-pen-styles/c (listof real?)) (isosurface-line-styles)]
           [#:alphas alphas (alphas/c (listof real?)) (isosurface-alphas)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that plots multiple isosurfaces. The appearance keyword arguments are interpreted similarly to those of @(racket contours).
 
@@ -392,7 +392,7 @@ If it helps, think of the output of @(racket f) as a density or charge.
           [#:line-width line-width (>=/c 0) (rectangle3d-line-width)]
           [#:line-style line-style plot-pen-style/c (rectangle-line-style)]
           [#:alpha alpha (real-in 0 1) (rectangle-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that draws rectangles.
 
@@ -430,7 +430,7 @@ This can be used to draw histograms; for example,
           [#:line-width line-width (>=/c 0) (rectangle3d-line-width)]
           [#:line-style line-style plot-pen-style/c (rectangle-line-style)]
           [#:alpha alpha (real-in 0 1) (rectangle-alpha)]
-          [#:label label (or/c string? #f) #f]
+          [#:label label (or/c string? pict? #f) #f]
           [#:add-x-ticks? add-x-ticks? boolean? #t]
           [#:add-y-ticks? add-y-ticks? boolean? #t]
           [#:x-far-ticks? x-far-ticks? boolean? #f]

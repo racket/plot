@@ -4,6 +4,7 @@
 
 (require typed/racket/class racket/match racket/math racket/list racket/sequence
          plot/utils
+         (only-in typed/pict pict)
          (only-in math/statistics stddev)
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -16,7 +17,7 @@
 (: lines-render-proc (-> (Listof (Vectorof Real))
                          Plot-Color Nonnegative-Real Plot-Pen-Style
                          Nonnegative-Real
-                         (U String #f)
+                         (U String pict #f)
                          2D-Render-Proc))
 (define ((lines-render-proc vs color width style alpha label) area)
   (send area put-alpha alpha)
@@ -34,7 +35,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (lines vs
                #:x-min [x-min #f] #:x-max [x-max #f]
@@ -74,7 +75,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (parametric f t-min t-max
                     #:x-min [x-min #f] #:x-max [x-max #f]
@@ -114,7 +115,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (polar f [θ-min 0] [θ-max (* 2 pi)]
                #:x-min [x-min #f] #:x-max [x-max #f]
@@ -153,7 +154,7 @@
                         Nonnegative-Real
                         Plot-Pen-Style
                         Nonnegative-Real
-                        (U String #f)
+                        (U String pict #f)
                         2D-Render-Proc))
 (define ((rule-render-proc v v-min v-max h/v color width style alpha label) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
@@ -178,7 +179,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
           renderer2d))
 (define (vrule x [y-min #f] [y-max #f]
                #:color [color (line-color)]
@@ -204,7 +205,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
           renderer2d))
 (define (hrule y [x-min #f] [x-max #f]
                #:color [color (line-color)]
@@ -229,7 +230,7 @@
 (: function-render-proc (-> Sampler Positive-Integer
                             Plot-Color Nonnegative-Real Plot-Pen-Style
                             Nonnegative-Real
-                            (U String #f)
+                            (U String pict #f)
                             2D-Render-Proc))
 (define ((function-render-proc f samples color width style alpha label) area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
@@ -251,7 +252,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (function f [x-min #f] [x-max #f]
                   #:y-min [y-min #f] #:y-max [y-max #f]
@@ -286,7 +287,7 @@
 (: inverse-render-proc (-> Sampler Positive-Integer
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U String #f)
+                           (U String pict #f)
                            2D-Render-Proc))
 (define ((inverse-render-proc f samples color width style alpha label) area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
@@ -308,7 +309,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (inverse f [y-min #f] [y-max #f]
                  #:x-min [x-min #f] #:x-max [x-max #f]
@@ -351,7 +352,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (density xs [bw-adjust 1] [orig-ws #f]
                  #:x-min [x-min #f] #:x-max [x-max #f]

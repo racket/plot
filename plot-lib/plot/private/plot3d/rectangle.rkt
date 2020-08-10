@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require racket/match racket/list typed/racket/class racket/sequence
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -14,7 +15,7 @@
                                 Plot-Color Plot-Brush-Style
                                 Plot-Color Nonnegative-Real Plot-Pen-Style
                                 Nonnegative-Real
-                                (U String #f)
+                                (U String pict #f)
                                 3D-Render-Proc))
 (define ((rectangles3d-render-proc rects color style line-color line-width line-style alpha label)
          area)
@@ -38,7 +39,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (rectangles3d rects
                       #:x-min [x-min #f] #:x-max [x-max #f]
@@ -132,7 +133,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)
+          #:label (U String pict #f)
           #:add-x-ticks? Boolean
           #:add-y-ticks? Boolean
           #:x-far-ticks? Boolean

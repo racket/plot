@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/class racket/match racket/list
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -13,7 +14,7 @@
 (: isoline3d-render-proc (-> 2D-Sampler Real Positive-Integer
                              Plot-Color Nonnegative-Real Plot-Pen-Style
                              Nonnegative-Real
-                             (U #f String)
+                             (U String pict #f)
                              3D-Render-Proc))
 (define ((isoline3d-render-proc f z samples color width style alpha label) area)
   (match-define (vector x-ivl y-ivl z-ivl) (send area get-bounds-rect))
@@ -43,7 +44,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (isoline3d f z
                    [x-min #f] [x-max #f]
@@ -86,7 +87,7 @@
                               (Pen-Widths (Listof Real))
                               (Plot-Pen-Styles (Listof Real))
                               (Alphas (Listof Real))
-                              (U String #f)
+                              (U String pict #f)
                               3D-Render-Proc))
 (define ((contours3d-render-proc f levels samples colors widths styles alphas label) area)
   (match-define (vector x-ivl y-ivl z-ivl) (send area get-bounds-rect))
@@ -136,7 +137,7 @@
           #:widths (Pen-Widths (Listof Real))
           #:styles (Plot-Pen-Styles (Listof Real))
           #:alphas (Alphas (Listof Real))
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (contours3d f
                     [x-min #f] [x-max #f]
@@ -182,7 +183,7 @@
                                        (Pen-Widths (Listof Real))
                                        (Plot-Pen-Styles (Listof Real))
                                        (Alphas (Listof ivl))
-                                       (U String #f)
+                                       (U String pict #f)
                                        3D-Render-Proc))
 (define ((contour-intervals3d-render-proc
           f levels samples colors styles line-colors line-widths line-styles
@@ -278,7 +279,7 @@
           #:contour-widths (Pen-Widths (Listof Real))
           #:contour-styles (Plot-Pen-Styles (Listof Real))
           #:alphas (Alphas (Listof ivl))
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (contour-intervals3d f
                              [x-min #f] [x-max #f]

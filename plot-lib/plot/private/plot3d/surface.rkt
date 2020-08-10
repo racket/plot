@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/class racket/match racket/list
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -14,7 +15,7 @@
                              Plot-Color Plot-Brush-Style
                              Plot-Color Nonnegative-Real Plot-Pen-Style
                              Nonnegative-Real
-                             (U #f String)
+                             (U String pict #f)
                              3D-Render-Proc))
 (define ((surface3d-render-proc f samples color style line-color line-width line-style alpha label)
          area)
@@ -44,7 +45,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U #f String)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (surface3d f [x-min #f] [x-max #f] [y-min #f] [y-max #f] #:z-min [z-min #f] #:z-max [z-max #f]
                    #:samples [samples (plot3d-samples)]

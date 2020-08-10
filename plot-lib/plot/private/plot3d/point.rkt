@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/class racket/list racket/match
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -20,7 +21,7 @@
                             Plot-Color Plot-Color
                             Nonnegative-Real Nonnegative-Real
                             Nonnegative-Real
-                            (U String #f)
+                            (U String pict #f)
                             3D-Render-Proc))
 (define ((points3d-render-proc vs sym color fill-color size line-width alpha label) area)
   (send area put-alpha alpha)
@@ -45,7 +46,7 @@
           #:size Nonnegative-Real
           #:line-width Nonnegative-Real
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (points3d vs
                   #:x-min [x-min #f] #:x-max [x-max #f]
@@ -105,7 +106,7 @@
        Positive-Integer (U Real 'auto 'normalized)
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
-       (U String #f)
+       (U String pict #f)
        3D-Render-Proc))
 (define ((vector-field3d-render-fun f samples scale color line-width line-style alpha label) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max))
@@ -171,7 +172,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (vector-field3d f [x-min #f] [x-max #f] [y-min #f] [y-max #f] [z-min #f] [z-max #f]
                         #:samples [samples (vector-field3d-samples)]

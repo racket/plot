@@ -3,6 +3,7 @@
 ;; Renderers for contour lines and contour intervals
 
 (require typed/racket/class racket/match racket/list racket/vector
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -15,7 +16,7 @@
 (: isoline-render-proc (-> 2D-Sampler Real Positive-Integer
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U String #f)
+                           (U String pict #f)
                            2D-Render-Proc))
 (define ((isoline-render-proc g z samples color width style alpha label) area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
@@ -46,7 +47,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (isoline f z [x-min #f] [x-max #f] [y-min #f] [y-max #f]
                  #:samples [samples (contour-samples)]
@@ -81,7 +82,7 @@
                             (Pen-Widths (Listof Real))
                             (Plot-Pen-Styles (Listof Real))
                             (Alphas (Listof Real))
-                            (U String #f)
+                            (U String pict #f)
                             2D-Render-Proc))
 (define ((contours-render-proc g levels samples colors widths styles alphas label) area)
   (let/ec return : (Treeof legend-entry)
@@ -130,7 +131,7 @@
           #:widths (Pen-Widths (Listof Real))
           #:styles (Plot-Pen-Styles (Listof Real))
           #:alphas (Alphas (Listof Real))
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (contours f [x-min #f] [x-max #f] [y-min #f] [y-max #f]
                   #:samples [samples (contour-samples)]
@@ -163,7 +164,7 @@
        (Plot-Colors (Listof ivl)) (Plot-Brush-Styles (Listof ivl))
        (Plot-Colors (Listof Real)) (Pen-Widths (Listof Real)) (Plot-Pen-Styles (Listof Real))
        (Alphas (Listof ivl))
-       (U String #f)
+       (U String pict #f)
        2D-Render-Proc))
 (define ((contour-intervals-render-proc
           g levels samples colors styles contour-colors contour-widths contour-styles alphas label)
@@ -240,7 +241,7 @@
           #:contour-widths (Pen-Widths (Listof Real))
           #:contour-styles (Plot-Pen-Styles (Listof Real))
           #:alphas (Alphas (Listof ivl))
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (contour-intervals
          f [x-min #f] [x-max #f] [y-min #f] [y-max #f]

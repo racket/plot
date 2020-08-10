@@ -202,7 +202,7 @@ Like @(racket plot-colors/c), but for fill styles.
 Like @(racket plot-colors/c), but for opacities.
 }
 
-@defproc[(labels/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof (or/c string? #f)))]{
+@defproc[(labels/c [in-contract contract?]) contract? #:value (maybe-function/c in-contract (listof (or/c string? pict? #f)))]{
 Like @racket[plot-colors/c], but for strings.
 This is used, for example, to label @racket[stacked-histogram]s.
 }

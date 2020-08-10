@@ -1,7 +1,7 @@
 #lang racket
 (require plot racket/draw rackunit file/gzip file/gunzip)
 
-(provide check-draw-steps check-draw-steps-3d)
+(provide check-draw-steps check-draw-steps-3d mock-record-dc%)
 
 ;; Helper functions to write plot tests which verify that the renderers work
 ;; correctly.  See `check-draw-steps` and `check-draw-steps-3d`.

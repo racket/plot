@@ -3,6 +3,7 @@
 ;; Renderers for intervals between functions.
 
 (require typed/racket/class racket/match racket/math racket/list
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -17,7 +18,7 @@
                                   Plot-Color Nonnegative-Real Plot-Pen-Style
                                   Plot-Color Nonnegative-Real Plot-Pen-Style
                                   Nonnegative-Real
-                                  (U String #f)
+                                  (U String pict #f)
                                   2D-Render-Proc))
 (define ((lines-interval-render-proc v1s v2s color style
                                      line1-color line1-width line1-style
@@ -54,7 +55,7 @@
           #:line2-width Nonnegative-Real
           #:line2-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (lines-interval v1s v2s
                         #:x-min [x-min #f] #:x-max [x-max #f]
@@ -110,7 +111,7 @@
           #:line2-width Nonnegative-Real
           #:line2-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (parametric-interval
          f1 f2 t-min t-max
@@ -167,7 +168,7 @@
           #:line2-width Nonnegative-Real
           #:line2-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (polar-interval
          f1 f2 [θ-min 0] [θ-max (* 2 pi)]
@@ -216,7 +217,7 @@
                                      Plot-Color Nonnegative-Real Plot-Pen-Style
                                      Plot-Color Nonnegative-Real Plot-Pen-Style
                                      Nonnegative-Real
-                                     (U String #f)
+                                     (U String pict #f)
                                      2D-Render-Proc))
 (define ((function-interval-render-proc f1 f2 samples color style
                                         line1-color line1-width line1-style
@@ -249,7 +250,7 @@
           #:line2-width Nonnegative-Real
           #:line2-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (function-interval
          f1 f2 [x-min #f] [x-max #f]
@@ -297,7 +298,7 @@
                                     Plot-Color Nonnegative-Real Plot-Pen-Style
                                     Plot-Color Nonnegative-Real Plot-Pen-Style
                                     Nonnegative-Real
-                                    (U String #f)
+                                    (U String pict #f)
                                     2D-Render-Proc))
 (define ((inverse-interval-render-proc f1 f2 samples color style
                                        line1-color line1-width line1-style
@@ -330,7 +331,7 @@
           #:line2-width Nonnegative-Real
           #:line2-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (inverse-interval
          f1 f2 [y-min #f] [y-max #f]
