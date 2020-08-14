@@ -62,6 +62,8 @@ negative direction, so total spread along e.g. the x-axis is twice @racket[x-jit
 
 Note that adding random noise to data, via jittering or otherwise, is usually a bad idea.
 See the documentation for @racket[points] for examples where jittering may be appropriate.
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(vector-field3d
@@ -83,6 +85,8 @@ The arguments are interpreted identically to the corresponding arguments to @rac
 @examples[#:eval plot-eval
                  (plot3d (vector-field3d (λ (x y z) (vector x z y))
                                          -2 2 -2 2 -2 2))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{3D Line Renderers}
@@ -100,6 +104,8 @@ The arguments are interpreted identically to the corresponding arguments to @rac
           ) renderer3d?]{
 Returns a renderer that draws connected lines.
 The @racket[parametric3d] function is defined in terms of this one.
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(parametric3d
@@ -121,6 +127,8 @@ Returns a renderer that plots a vector-valued function of time. For example,
                     (plot3d (parametric3d (λ (t) (3d-polar->3d-cartesian (* t 80) t 1))
                                           (- pi) pi #:samples 3000 #:alpha 0.5)
                             #:altitude 25)]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{3D Surface Renderers}
@@ -145,6 +153,8 @@ Returns a renderer that plots a two-input, one-output function. For example,
                                             (surface3d (λ (x y) (- (+ (sqr x) (sqr y)))) -1 1 -1 1
                                                        #:color 4 #:line-color 4
                                                        #:label "z = -x² - y²")))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(polar3d
@@ -181,6 +191,8 @@ Combining polar function renderers allows faking latitudes or longitudes in larg
                                              #:line-style 'transparent #:alpha 2/3)
                                     (polar3d f2 #:color "navajowhite"
                                              #:line-style 'transparent #:alpha 2/3))))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(parametric-surface3d
@@ -225,6 +237,8 @@ For example,
                          #:label "torus2"))
                        #:z-min -6 #:z-max 6
                        #:altitude 22)]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(polygons3d
@@ -248,6 +262,8 @@ The @racket[parametric-surface3d] function is defined in terms of this one.
                                                   (list (list 1 0 0)(list 0 1 0)(list 0 0 0))))
                                 #:angle 355
                                 #:altitude 30)]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{3D Contour (Isoline) Renderers}
@@ -273,6 +289,8 @@ This function is not terribly useful by itself, but can be when combined with ot
                     (define (saddle x y) (- (sqr x) (sqr y)))
                     (plot3d (list (surface3d saddle -1 1 -1 1)
                                   (isoline3d saddle 1/4 #:width 2 #:style 'long-dash)))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(contours3d
@@ -296,6 +314,8 @@ In particular, when @(racket levels) is @(racket 'auto), contour values correspo
 For example,
 @interaction[#:eval plot-eval (plot3d (contours3d (λ (x y) (+ (sqr x) (sqr y))) -1.1 1.1 -1.1 1.1
                                                   #:label "z = x² + y²"))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(contour-intervals3d
@@ -323,6 +343,8 @@ For example,
 @interaction[#:eval plot-eval (plot3d (contour-intervals3d (λ (x y) (+ (sqr x) (sqr y)))
                                                            -1.1 1.1 -1.1 1.1
                                                            #:label "z = x² + y²"))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{3D Isosurface Renderers}
@@ -348,6 +370,8 @@ For example, a sphere is all the points in which the Euclidean distance function
                                        (λ (x y z) (sqrt (+ (sqr x) (sqr y) (sqr z)))) 1
                                        -1 1 -1 1 -1 1)
                                       #:altitude 25)]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(isosurfaces3d
@@ -377,6 +401,8 @@ Use this to visualize functions from three inputs to one output; for example:
                             #:z-min -2 #:z-max 2)]
 
 If it helps, think of the output of @(racket f) as a density or charge.
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{3D Rectangle Renderers}
@@ -415,6 +441,8 @@ This can be used to draw histograms; for example,
                                                (vector x-ivl y-ivl (ivl 0 z)))))
                                           #:alpha 3/4
                                           #:label "Appx. 2D Normal"))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(discrete-histogram3d
@@ -443,6 +471,8 @@ Missing pairs are not drawn; for example,
                     (plot3d (discrete-histogram3d '(#(a a 1) #(a b 2) #(b b 3))
                                                   #:label "Missing (b,a)"
                                                   #:color 4 #:line-color 4))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(stacked-histogram3d

@@ -47,6 +47,8 @@ using Unicode characters, and thus some mathematical notation.  For more
 complex cases, a @(racket pict) can be used, whic allows arbitrary text and
 graphics to be used as label entries.
 
+@history[#:changed "7.9" "Added support for pictures for #:label"]
+
 Not every renderer-producing function has a @(racket #:label) argument; for example, @(racket error-bars).
 
 
@@ -120,6 +122,8 @@ For example:
   @item{To see the distribution of 1-dimensional data; as a substitute for box or violin plots.}
   @item{To anonymize spatial data, showing i.e. an office's neighborhood but hiding its address.}
 ]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(vector-field
@@ -145,6 +149,8 @@ An example of automatic scaling:
 @interaction[#:eval plot-eval
                     (plot (vector-field (λ (x y) (vector (+ x y) (- x y)))
                                         -2 2 -2 2))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(error-bars
@@ -206,6 +212,8 @@ fourth, and fifth elements in each vector comprise the open, high, low, and clos
                    ) renderer2d?]{
 Returns a renderer that plots a function of @italic{x}. For example, a parabola:
 @interaction[#:eval plot-eval (plot (function sqr -2 2))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(inverse [f (real? . -> . real?)]
@@ -225,6 +233,8 @@ For example, a parabola, an inverse parabola, and the reflection line:
                                 (function sqr -2 2 #:label "y = x²")
                                 (function (λ (x) x) #:color 0 #:style 'dot #:label "y = x")
                                 (inverse sqr -2 2 #:color 3 #:label "x = y²")))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(lines [vs  (sequence/c (sequence/c #:min-count 2 real?))]
@@ -247,6 +257,8 @@ This is directly useful for plotting a time series, such as a random walk:
                            #:color 6 #:label "Random walk"))]
 
 The @(racket parametric) and @(racket polar) functions are defined using @(racket lines).
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(parametric [f (real? . -> . (sequence/c real?))]
@@ -263,7 +275,9 @@ The @(racket parametric) and @(racket polar) functions are defined using @(racke
 Returns a renderer that plots vector-valued functions of time.
 For example, the circle as a function of time can be plotted using
 @interaction[#:eval plot-eval
-                    (plot (parametric (λ (t) (vector (cos t) (sin t))) 0 (* 2 pi)))]
+             (plot (parametric (λ (t) (vector (cos t) (sin t))) 0 (* 2 pi)))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(polar [f (real? . -> . real?)]
@@ -282,6 +296,8 @@ Note that the angle parameters @(racket θ-min) and @(racket θ-max) default to 
 
 For example, drawing a full circle:
 @interaction[#:eval plot-eval (plot (polar (λ (θ) 1)))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(density [xs (sequence/c real?)]
@@ -310,6 +326,8 @@ For example, to plot an estimated density of the triangle distribution:
                                           2000 (λ (n) (- (+ (random) (random)) 1)))
                                          #:color 0 #:width 2 #:style 'dot
                                          #:label "Est. density")))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(hrule [y real?]
@@ -322,6 +340,8 @@ For example, to plot an estimated density of the triangle distribution:
                 ) renderer2d?]{
 Draws a horizontal line at @italic{y}.
 By default, the line spans the entire plot area width.
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(vrule [x real?]
@@ -334,6 +354,8 @@ By default, the line spans the entire plot area width.
                 ) renderer2d?]{
 Draws a vertical line at @italic{x}.
 By default, the line spans the entire plot area height.
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{2D Interval Renderers}
@@ -360,6 +382,8 @@ Corresponds with @(racket function).
 
 @interaction[#:eval plot-eval (plot (function-interval (λ (x) 0) (λ (x) (exp (* -1/2 (sqr x))))
                                                        -4 4 #:line1-style 'transparent))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(inverse-interval
@@ -382,6 +406,8 @@ Corresponds with @(racket inverse).
 
 @interaction[#:eval plot-eval (plot (inverse-interval sin (λ (x) 0) (- pi) pi
                                                       #:line2-style 'long-dash))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(lines-interval
@@ -408,6 +434,8 @@ Corresponds with @(racket lines).
                            (lines-interval (list #(0 0) #(1 1/2)) (list #(0 1) #(1 3/2))
                                            #:color 4 #:line1-color 4 #:line2-color 4
                                            #:label "Parallelogram")))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(parametric-interval
@@ -436,6 +464,8 @@ Corresponds with @(racket parametric).
                     (define (f2 t) (vector (* 1/2 (cos t))
                                            (* 1/2 (sin t))))
                     (plot (parametric-interval f1 f2 (- pi) pi))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(polar-interval
@@ -462,6 +492,8 @@ Corresponds with @(racket polar).
                     (define (f2 θ) (+ 1 (* 1/4 (cos (* 10 θ)))))
                     (plot (list (polar-axes #:number 10)
                                 (polar-interval f1 f2 #:label "[f1,f2]")))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{2D Contour (Isoline) Renderers}
@@ -481,6 +513,8 @@ Returns a renderer that plots a contour line, or a line of constant value (heigh
 A circle of radius @(racket r), for example, is the line of constant value @(racket r) for the distance function:
 @interaction[#:eval plot-eval (plot (isoline (λ (x y) (sqrt (+ (sqr x) (sqr y)))) 1.5
                                              -2 2 -2 2 #:label "z"))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 In this case, @(racket r) = @(racket 1.5).
 
@@ -519,6 +553,8 @@ For example,
                                               #:colors '("blue" "red")
                                               #:widths '(4 1)
                                               #:styles '(solid dot)))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(contour-intervals
@@ -543,6 +579,8 @@ For example, the canonical saddle, with its gradient field superimposed:
                                                    -2 2 -2 2 #:label "z")
                                 (vector-field (λ (x y) (vector (* 2 x) (* -2 y)))
                                               #:color "black" #:label "Gradient")))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @section{2D Rectangle Renderers}
@@ -569,6 +607,8 @@ edge of the plot area in the respective direction.
 For example,
 @interaction[#:eval plot-eval (plot (rectangles (list (vector (ivl -1 0) (ivl -1 1))
                                                       (vector (ivl 0 2) (ivl 1 2)))))]
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(area-histogram
@@ -649,6 +689,8 @@ For example,
                           #:x-label "Breakfast Food" #:y-label "Cooking Time (minutes)"
                           #:title "Cooking Times For Breakfast Food, Per Processor")]
 When interleaving many histograms, consider setting the @racket[discrete-histogram-skip] parameter to change @racket[skip]'s default value.
+
+@history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(stacked-histogram
