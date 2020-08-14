@@ -10,7 +10,7 @@ jobs:
         racket-variant: ["regular", "CS"]
     steps:
       - uses: actions/checkout@v2
-      - uses: Bogdanp/setup-racket@v0.8
+      - uses: Bogdanp/setup-racket@v0.10
         with:
           architecture: x64
           distribution: minimal
