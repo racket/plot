@@ -107,8 +107,14 @@
     (define (zoom-or-unzoom)
       (cond [dragging?
              (set! dragging? #f)
-             (define new-rect (area-bounds->plot-bounds (get-new-area-bounds-rect)))
-             (cond [(and (rect-rational? new-rect) (not (rect-zero-area? new-rect)))
+             (define new-rect
+               (let ([bounds (get-new-area-bounds-rect)])
+                 ;; BOUNDS might be +nan.0 for an empty selection
+                 (and (rect-rational? bounds)
+                      (area-bounds->plot-bounds bounds))))
+             (cond [(and new-rect
+                         (rect-rational? new-rect)
+                         (not (rect-zero-area? new-rect)))
                     #;(printf "~a: new-plot-bounds-rect = ~v~n"
                               (current-milliseconds) new-rect)
                     (set! plot-bounds-rects (cons plot-bounds-rect plot-bounds-rects))
