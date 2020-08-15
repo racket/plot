@@ -8,6 +8,7 @@
 
 (require typed/racket/draw
          typed/racket/class
+         (only-in typed/pict pict pict? pict-width pict-height pict-descent pict-ascent)
          racket/match racket/math racket/bool racket/list racket/vector
          "draw-attribs.rkt"
          "color-map.rkt"
@@ -270,7 +271,7 @@
 
     ;; Sets only the font size, not the face or family.
     (define/public (set-font-size size)
-      (set-font-attribs size 
+      (set-font-attribs size
                         (send (send dc get-font) get-face)
                         (send (send dc get-font) get-family)))
 
@@ -286,7 +287,13 @@
     ;; Returns the extent of a string, as exact reals.
     (define/public (get-text-extent str)
       (define-values (w h b d)
-        (send dc get-text-extent str #f #t 0))
+        (cond ((string? str)
+               (send dc get-text-extent str #f #t 0))
+              ((pict? str)
+               (values (pict-width str) (pict-height str)
+                       (pict-descent str) (pict-ascent str)))
+              (#t
+               (values 0 0 0 0))))
       (values (inexact->exact w) (inexact->exact h)
               (inexact->exact b) (inexact->exact d)))
 
@@ -587,13 +594,13 @@
 
     (define/public (draw-legend legend-entries rect)
       (define n (length legend-entries))
-      (match-define (list (legend-entry #{labels : (Listof String)}
+      (match-define (list (legend-entry #{labels : (Listof (U String pict))}
                                         #{draw-procs : (Listof Legend-Draw-Proc)})
                           ...)
         legend-entries)
 
       (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) rect)
-      
+
       (define old-size (send (send dc get-font) get-point-size))
       (define old-face (send (send dc get-font) get-face))
       (define old-family (send (send dc get-font) get-family))
@@ -602,16 +609,23 @@
        (or (plot-legend-font-face) old-face)
        (or (plot-legend-font-family) old-family))
 
-      (define-values (_1 label-y-size baseline _2) (get-text-extent (first labels)))
-      (define horiz-gap (get-text-width " "))
+      (define-values (max-label-width max-label-height)
+        (for/fold ([width : Exact-Rational 0]
+                   [max-height : Exact-Rational 0])
+                  ([label (in-list labels)])
+          (define-values (w h b a) (get-text-extent label))
+          (values (max w width) (max h max-height))))
+
+      (define-values (horiz-gap min-label-height baseline _1)
+        (get-text-extent " "))
+      
       (define top-gap baseline)
       (define bottom-gap (* 1/2 baseline))
-      (define baseline-skip (+ label-y-size baseline))
+      (define baseline-skip (+ max-label-height baseline))
 
-      (define max-label-x-size (apply max (map (λ ([label : String]) (get-text-width label)) labels)))
-      (define labels-x-size (+ max-label-x-size horiz-gap))
+      (define labels-x-size (+ max-label-width horiz-gap))
 
-      (define draw-y-size (max 0 (- label-y-size baseline)))
+      (define draw-y-size (max 0 (- min-label-height baseline)))
       (define draw-x-size (* 4 draw-y-size))
 
       (define legend-x-size (+ horiz-gap
@@ -661,11 +675,15 @@
 
       (set-alpha (plot-foreground-alpha))
       (set-clipping-rect legend-rect)
-      (for ([label  (in-list labels)] [draw-proc  (in-list draw-procs)] [i  (in-naturals)])
-        (define label-y-min (+ legend-y-min top-gap (* i baseline-skip)))
-        (draw-text label (vector (ann label-x-min Real) (ann label-y-min Real)) 'top-left 0 0 #t)
+      (for ([label (in-list labels)] [draw-proc (in-list draw-procs)] [i (in-naturals)])
+        (define-values (_1 label-height _2 _3) (get-text-extent label))
+        (define legend-entry-y-min (+ legend-y-min top-gap (* i baseline-skip)))
+        (define label-y-min (+ legend-entry-y-min (* 1/2 (- max-label-height label-height))))
+        (if (pict? label)
+            (draw-pict label (vector (ann label-x-min Real) (ann label-y-min Real)) 'top-left 0)
+            (draw-text label (vector (ann label-x-min Real) (ann label-y-min Real)) 'top-left 0 0 #t))
 
-        (define draw-y-min (+ label-y-min (* 1/2 baseline)))
+        (define draw-y-min (+ legend-entry-y-min (* 1/2 (- max-label-height draw-y-size))))
 
         (define entry-pd (make-object plot-device% dc draw-x-min draw-y-min draw-x-size draw-y-size))
         (send entry-pd reset-drawing-params #f)
@@ -674,6 +692,6 @@
 
       ;; reset plot font attributes
       (set-font-attribs old-size old-face old-family)
-      
+
       (clear-clipping-rect))
     ))  ; end class

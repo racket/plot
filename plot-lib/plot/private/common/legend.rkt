@@ -3,6 +3,7 @@
 ;; Functions that create legend entries and lists of legend entries.
 
 (require racket/class racket/match racket/list racket/string
+         (only-in typed/pict pict)
          "type-doc.rkt"
          "math.rkt"
          "format.rkt"
@@ -14,7 +15,7 @@
 ;; ===================================================================================================
 ;; Line legends
 
-(:: line-legend-entry (-> String Plot-Color Nonnegative-Real Plot-Pen-Style legend-entry))
+(:: line-legend-entry (-> (U String pict) Plot-Color Nonnegative-Real Plot-Pen-Style legend-entry))
 (define (line-legend-entry label color width style)
   (legend-entry label (λ (pd x-size y-size)
                         (define y (* 1/2 y-size))
@@ -22,7 +23,7 @@
                         (send pd set-alpha 1)
                         (send pd draw-line (vector (ann 0 Real) y) (vector x-size y)))))
 
-(:: line-legend-entries (-> String (Listof Real) (Listof String)
+(:: line-legend-entries (-> (U String pict) (Listof Real) (Listof String)
                             (Plot-Colors (Listof Real))
                             (Pen-Widths (Listof Real))
                             (Plot-Pen-Styles (Listof Real))
@@ -51,7 +52,7 @@
 ;; ===================================================================================================
 ;; Rectangle legends
 
-(:: rectangle-legend-entry (-> String
+(:: rectangle-legend-entry (-> (U String pict)
                                Plot-Color Plot-Brush-Style
                                Plot-Color Nonnegative-Real Plot-Pen-Style
                                legend-entry))
@@ -63,7 +64,7 @@
                         (send pd draw-rect (vector (ivl 0 x-size) (ivl 0 y-size))))))
 
 (:: rectangle-legend-entries
-    (-> String (Listof Real)
+    (-> (U String pict) (Listof Real)
         (Plot-Colors (Listof Real)) (Plot-Brush-Styles (Listof Real))
         (Plot-Colors (Listof Real)) (Pen-Widths (Listof Real)) (Plot-Pen-Styles (Listof Real))
         (Listof legend-entry)))
@@ -97,7 +98,7 @@
 ;; ===================================================================================================
 ;; Interval legends
 
-(:: interval-legend-entry (-> String
+(:: interval-legend-entry (-> (U String pict)
                               Plot-Color Plot-Brush-Style
                               Plot-Color Nonnegative-Real Plot-Pen-Style
                               Plot-Color Nonnegative-Real Plot-Pen-Style
@@ -123,7 +124,7 @@
                               (vector x-size (ann 0 Real))))))
 
 (:: interval-legend-entries
-    (-> String (Listof ivl) (Listof String)
+    (-> (U String pict) (Listof ivl) (Listof String)
         (Plot-Colors (Listof ivl)) (Plot-Brush-Styles (Listof ivl))
         (Plot-Colors (Listof ivl)) (Pen-Widths (Listof ivl)) (Plot-Pen-Styles (Listof ivl))
         (Plot-Colors (Listof ivl)) (Pen-Widths (Listof ivl)) (Plot-Pen-Styles (Listof ivl))
@@ -178,7 +179,7 @@
 ;; ===================================================================================================
 ;; Point legends
 
-(:: point-legend-entry (-> String Point-Sym Plot-Color Plot-Color Nonnegative-Real Nonnegative-Real
+(:: point-legend-entry (-> (U String pict) Point-Sym Plot-Color Plot-Color Nonnegative-Real Nonnegative-Real
                            legend-entry))
 (define (point-legend-entry label sym color fill-color size line-width)
   (legend-entry label (λ (pd x-size y-size)
@@ -188,7 +189,7 @@
                         (send pd draw-glyphs
                               (list (vector (* 1/2 x-size) (* 1/2 y-size))) sym size))))
 
-(:: arrow-legend-entry (-> String Plot-Color Nonnegative-Real Plot-Pen-Style legend-entry))
+(:: arrow-legend-entry (-> (U String pict) Plot-Color Nonnegative-Real Plot-Pen-Style legend-entry))
 (define (arrow-legend-entry label color line-width line-style)
   (legend-entry label (λ (pd x-size y-size)
                         (send pd set-pen color line-width line-style)

@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/class racket/match racket/list
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -12,7 +13,7 @@
                              Plot-Color Plot-Brush-Style
                              Plot-Color Nonnegative-Real Plot-Pen-Style
                              Nonnegative-Real
-                             (U #f String)
+                             (U String pict #f)
                              3D-Render-Proc))
 (define ((polygons3d-render-proc vs-fun color style line-color line-width line-style alpha label)
          area)
@@ -30,7 +31,7 @@
                            Plot-Color Plot-Brush-Style
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U #f String)
+                           (U String pict #f)
                            renderer3d))
 (define (polygons3d-renderer vs-thnk x-min x-max y-min y-max z-min z-max
                              color style line-color line-width line-style alpha label)
@@ -65,7 +66,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U #f String)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (polygons3d vs
                     #:x-min [x-min #f] #:x-max [x-max #f]
@@ -109,7 +110,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U #f String)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (parametric-surface3d f s-min s-max t-min t-max
                               #:x-min [x-min #f] #:x-max [x-max #f]

@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/class racket/match racket/list math/flonum racket/math
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -14,7 +15,7 @@
                                 Plot-Color Plot-Brush-Style
                                 Plot-Color Nonnegative-Real Plot-Pen-Style
                                 Nonnegative-Real
-                                (U String #f)
+                                (U String pict #f)
                                 3D-Render-Proc))
 (define ((isosurface3d-render-proc
           f d samples color style line-color line-width line-style alpha label)
@@ -51,7 +52,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (isosurface3d f d [x-min #f] [x-max #f] [y-min #f] [y-max #f] [z-min #f] [z-max #f]
                       #:samples [samples (plot3d-samples)]
@@ -92,7 +93,7 @@
        (Plot-Colors (Listof Real)) (Plot-Brush-Styles (Listof Real))
        (Plot-Colors (Listof Real)) (Pen-Widths (Listof Real)) (Plot-Pen-Styles (Listof Real))
        (Alphas (Listof Real))
-       (U String #f)
+       (U String pict #f)
        3D-Render-Proc))
 (define ((isosurfaces3d-render-proc f rd-min rd-max levels samples colors styles
                                     line-colors line-widths line-styles alphas label)
@@ -155,7 +156,7 @@
           #:line-widths (Pen-Widths (Listof Real))
           #:line-styles (Plot-Pen-Styles (Listof Real))
           #:alphas (Alphas (Listof Real))
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (isosurfaces3d f [x-min #f] [x-max #f] [y-min #f] [y-max #f] [z-min #f] [z-max #f]
                        #:d-min [d-min #f] #:d-max [d-max #f]
@@ -196,7 +197,7 @@
                            Plot-Color Plot-Brush-Style
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U String #f)
+                           (U String pict #f)
                            3D-Render-Proc))
 (define ((polar3d-render-proc f g samples color style line-color line-width line-style alpha label)
          area)
@@ -268,7 +269,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (polar3d f
                  #:x-min [x-min #f] #:x-max [x-max #f]

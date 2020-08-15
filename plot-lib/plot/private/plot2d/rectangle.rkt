@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require racket/match typed/racket/class racket/list racket/sequence
+         (only-in typed/pict pict)
          (only-in racket/math infinite?)
          plot/utils
          "../common/type-doc.rkt"
@@ -15,7 +16,7 @@
                               Plot-Color Plot-Brush-Style
                               Plot-Color Nonnegative-Real Plot-Pen-Style
                               Nonnegative-Real
-                              (U String #f)
+                              (U String pict #f)
                               2D-Render-Proc))
 (define ((rectangles-render-proc rects color style line-color line-width line-style alpha label)
          area)
@@ -44,7 +45,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (rectangles rects
                     #:x-min [x-min #f] #:x-max [x-max #f]
@@ -111,7 +112,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (area-histogram f bin-bounds
                         #:x-min [x-min #f] #:x-max [x-max #f]
@@ -201,7 +202,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)
+          #:label (U String pict #f)
           #:add-ticks? Boolean
           #:far-ticks? Boolean]
          renderer2d))

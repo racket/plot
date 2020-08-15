@@ -79,7 +79,7 @@
 (deftype (Pen-Widths A)        (List-Generator A Nonnegative-Real))
 (deftype (Plot-Brush-Styles A) (List-Generator A Plot-Brush-Style))
 (deftype (Alphas A)            (List-Generator A Nonnegative-Real))
-(deftype (Labels A)            (List-Generator A (U String #f)))
+(deftype (Labels A)            (List-Generator A (U String pict #f)))
 
 (deftype Contour-Levels (U 'auto Positive-Integer (Listof Real)))
 
@@ -90,7 +90,7 @@
 
 (deftype Legend-Draw-Proc (-> (Instance Plot-Device%) Real Real Void))
 
-(struct legend-entry ([label : String] [draw : Legend-Draw-Proc]) #:transparent)
+(struct legend-entry ([label : (U String pict)] [draw : Legend-Draw-Proc]) #:transparent)
 
 (define-type Plot-Device%
   (Class
@@ -113,8 +113,8 @@
    [set-font-size (-> Real Void)]
    [get-char-height (-> Exact-Rational)]
    [get-char-baseline (-> Exact-Rational)]
-   [get-text-extent (-> String (Values Exact-Rational Exact-Rational Exact-Rational Exact-Rational))]
-   [get-text-width (-> String Exact-Rational)]
+   [get-text-extent (-> (U String pict) (Values Exact-Rational Exact-Rational Exact-Rational Exact-Rational))]
+   [get-text-width (-> (U String pict) Exact-Rational)]
    [set-text-foreground (-> Plot-Color Void)]
    [set-clipping-rect (-> Rect Void)]
    [clear-clipping-rect (-> Void)]

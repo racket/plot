@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/class racket/match racket/list
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -12,7 +13,7 @@
 (: lines3d-render-proc (-> (-> (Listof (Vectorof Real)))
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U String #f)
+                           (U String pict #f)
                            3D-Render-Proc))
 (define ((lines3d-render-proc vs-fun color width style alpha label) area)
   (send area put-alpha alpha)
@@ -26,7 +27,7 @@
                         (U #f Real) (U #f Real) (U #f Real) (U #f Real) (U #f Real) (U #f Real)
                         Plot-Color Nonnegative-Real Plot-Pen-Style
                         Nonnegative-Real
-                        (U String #f)
+                        (U String pict #f)
                         renderer3d))
 (define (lines3d-renderer
          vs-thnk x-min x-max y-min y-max z-min z-max color width style alpha label)
@@ -57,7 +58,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (lines3d vs
                  #:x-min [x-min #f] #:x-max [x-max #f]
@@ -95,7 +96,7 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer3d))
 (define (parametric3d f t-min t-max
                       #:x-min [x-min #f] #:x-max [x-max #f]

@@ -3,6 +3,7 @@
 ;; Renderers for points and other point-like things.
 
 (require typed/racket/class racket/match racket/math racket/list
+         (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -22,7 +23,7 @@
 (: points-render-fun (-> (Listof (Vectorof Real)) Point-Sym
                          Plot-Color Plot-Color Nonnegative-Real Nonnegative-Real
                          Nonnegative-Real
-                         (U String #f)
+                         (U String pict #f)
                          2D-Render-Proc))
 (define ((points-render-fun vs sym color fill-color size line-width alpha label) area)
   (send area put-alpha alpha)
@@ -44,7 +45,7 @@
           #:size Nonnegative-Real
           #:line-width Nonnegative-Real
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (points vs
                 #:x-min [x-min #f] #:x-max [x-max #f]
@@ -93,7 +94,7 @@
        Positive-Integer (U Real 'auto 'normalized)
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
-       (U String #f)
+       (U String pict #f)
        2D-Render-Proc))
 (define ((vector-field-render-fun f samples scale color line-width line-style alpha label) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
@@ -156,7 +157,7 @@
           #:line-width Nonnegative-Real
           #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String #f)]
+          #:label (U String pict #f)]
          renderer2d))
 (define (vector-field f [x-min #f] [x-max #f] [y-min #f] [y-max #f]
                       #:samples [samples (vector-field-samples)]
