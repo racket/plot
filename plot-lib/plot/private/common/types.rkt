@@ -125,7 +125,7 @@
    [draw-lines (-> (Listof (Vectorof Real)) Void)]
    [draw-line (-> (Vectorof Real) (Vectorof Real) Void)]
    [draw-text (->* [String (Vectorof Real)] [Anchor Real Real Boolean] Void)]
-   [get-text-corners (->* [String (Vectorof Real)] [Anchor Real Real] (Listof (Vectorof Real)))]
+   [get-text-corners (->* [(U String pict) (Vectorof Real)] [Anchor Real Real] (Listof (Vectorof Real)))]
    [draw-arrow (-> (Vectorof Real) (Vectorof Real) Void)]
    [get-tick-endpoints (-> (Vectorof Real) Real Real (List (Vectorof Real) (Vectorof Real)))]
    [draw-tick (-> (Vectorof Real) Real Real Void)]

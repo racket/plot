@@ -71,6 +71,7 @@
 
 (module typed-defs typed/racket/base
   (require typed/racket/draw
+           (only-in typed/pict pict)
            (submod ".." untyped-defs)
            "type-doc.rkt"
            "types.rkt"
@@ -106,13 +107,13 @@
       (U Symbol #f))
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)
      (List
-      (U False String)
-      (U False String)
-      (U False String)
-      (U False String)
-      (U False String)
-      (U False String)
-      (U False String))
+      (U False String pict)
+      (U False String pict)
+      (U False String pict)
+      (U False String pict)
+      (U False String pict)
+      (U False String pict)
+      (U False String pict))
      (List Boolean Nonnegative-Integer Boolean (Instance PS-Setup%))
      (List
       (List Axis-Transform ticks ticks)
