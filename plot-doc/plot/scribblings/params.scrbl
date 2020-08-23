@@ -310,6 +310,13 @@ width should take that into consideration. For example, a width of 86400 may be 
 as there are 86400 seconds in a day. This candle will be exactly one day in width.
 }
 
+@section{Color fields}
+
+@deftogether[((defparam color-field-samples n exact-positive-integer? #:value 20)
+              (defparam error-bar-alpha alpha (real-in 0 1) #:value 1))]{
+The default sample rate and opacity used by @racket[color-field].
+}
+
 @section{Contours and Contour Intervals}
 
 @deftogether[(

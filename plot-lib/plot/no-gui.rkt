@@ -51,6 +51,10 @@
  error-bars
  candlesticks)
 
+(require "private/plot2d/color-field.rkt")
+(provide
+ color-field)
+
 (require "private/plot2d/line.rkt")
 (provide
  lines
