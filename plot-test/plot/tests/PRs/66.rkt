@@ -25,7 +25,7 @@
   (test-suite
    "PR#66: color-field"
    (test-case "pr66-color-field"
-     (check-draw-steps-3d do-plot-color-field pr66-color-field-data))))
+     (check-draw-steps do-plot-color-field pr66-color-field-data))))
 
 (module+ test
   (require rackunit/text-ui)
