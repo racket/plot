@@ -402,7 +402,7 @@
                   (get-text-corners/anchor dc str x y anchor angle dist))]
             [else  empty]))
 
-    (define/public (draw-arrow v1 v2)
+    (define/public (draw-arrow v1 v2 [head-size-scale (arrow-head-size-scale)][head-angle-scale(arrow-head-size-scale)])
       (when (and (vrational? v1) (vrational? v2))
         (match-define (vector x1 y1) v1)
         (match-define (vector x2 y2) v2)
@@ -410,8 +410,8 @@
         (define dy (- y2 y1))
         (define angle (if (and (zero? dy) (zero? dx)) 0 (atan dy dx)))
         (define dist (sqrt (+ (sqr dx) (sqr dy))))
-        (define head-r (* 2/5 dist))
-        (define head-angle (* 1/6 pi))
+        (define head-r (* head-size-scale 2/5 dist))
+        (define head-angle (* head-angle-scale 1/6 pi))
         (define dx1 (* (cos (+ angle head-angle)) head-r))
         (define dy1 (* (sin (+ angle head-angle)) head-r))
         (define dx2 (* (cos (- angle head-angle)) head-r))
