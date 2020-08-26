@@ -330,6 +330,25 @@ For example, to plot an estimated density of the triangle distribution:
 @history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
+
+@defproc[(arrows [vs  (sequence/c (sequence/c #:min-count 2 real?))]
+                 [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+                 [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+                 [#:color color plot-color/c (arrows-color)]
+                 [#:width width (>=/c 0) (arrows-line-width)]
+                 [#:style style plot-pen-style/c (arrows-line-style)]
+                 [#:alpha alpha (real-in 0 1) (arrows-alpha)]
+                 [#:label label (or/c string? pict? #f) #f]
+                 ) renderer2d?]{
+Returns a renderer that draws connected arrows. Gaps can be introduced as shown below. Size and angle of the head are controlled by @racket[arrow-head-size-scale] and @racket[arrow-head-angle]
+ @interaction[#:eval plot-eval
+              (define skip '(+nan.0 +nan.0))
+              (parameterize ([arrow-head-size-scale '(= 10)])
+                (plot (arrows
+                       `((0 0)(2 1)(3 3),skip(0 0)(3 3))
+                       #:color 6 #:label "a=b+c")))]
+}
+
 @defproc[(hrule [y real?]
                 [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
                 [#:color color plot-color/c (line-color)]

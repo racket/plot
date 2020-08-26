@@ -131,6 +131,24 @@ Returns a renderer that plots a vector-valued function of time. For example,
 @history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
+@defproc[(arrows3d
+          [vs  (sequence/c (sequence/c #:min-count 3 real?))]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:color color plot-color/c (arrows-color)]
+          [#:width width (>=/c 0) (arrows-line-width)]
+          [#:style style plot-pen-style/c (arrows-line-style)]
+          [#:alpha alpha (real-in 0 1) (arrows-alpha)]
+          [#:label label (or/c string? pict? #f) #f]
+          ) renderer3d?]{
+Returns a renderer that draws connected arrows.
+@interaction[#:eval plot-eval
+             (define skip '(+nan.0 +nan.0 +nan.0))
+             (plot3d (arrows3d `((0 0 0)(1 1 1),skip(2 2 2)(3 2 1)))
+                       #:altitude 25)]
+}
+
 @section{3D Surface Renderers}
 
 @defproc[(surface3d

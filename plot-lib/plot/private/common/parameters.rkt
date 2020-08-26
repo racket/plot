@@ -210,9 +210,17 @@
 (defparam vector-field-scale (U Real 'auto 'normalized) 'auto)
 (defparam2 vector-field-alpha Real Nonnegative-Real 1 (unit-ivl 'vector-field-alpha))
 (defparam vector-field3d-samples Positive-Integer 9)
+
 ;;arrow
-(defparam arrow-head-size-scale Nonnegative 1)
-(defparam arrow-head-angle-scale Nonnegative 1)
+
+(defparam  arrows-color Plot-Color 1)
+(defparam2 arrows-line-width Real Nonnegative-Real 2/3
+  (nonnegative-rational 'arrows-line-width))
+(defparam  arrows-line-style Plot-Pen-Style 'solid)
+(defparam2 arrows-alpha Real Nonnegative-Real 1 (unit-ivl 'arrows-alpha))
+(defparam  arrow-head-size-scale (U Nonnegative-Real (List '= Nonnegative-Real)) 2/5)
+(defparam  arrow-head-angle Nonnegative-Real 0.5235987755982988);=pi/6=30°
+
 ;; Error bars
 
 (defparam2 error-bar-width Real Nonnegative-Real 6 (nonnegative-rational 'error-bar-width))

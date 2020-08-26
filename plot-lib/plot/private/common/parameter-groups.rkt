@@ -38,7 +38,9 @@
      plot-decorations?
      plot-animating?
      plot-pen-color-map
-     plot-brush-color-map))
+     plot-brush-color-map
+     arrow-head-size-scale
+     arrow-head-angle))
   
   (define-parameter-group plot3d-appearance
     (plot3d-samples
@@ -81,6 +83,7 @@
   
   (deftype Plot-Parameters
     (List
+     ;; plot-appearance
      (List
       Positive-Integer
       Positive-Integer
@@ -103,8 +106,12 @@
       Boolean
       Boolean
       (U Symbol #f)
-      (U Symbol #f))
+      (U Symbol #f)
+      (U (List '= Nonnegative-Real) Nonnegative-Real)
+      Nonnegative-Real)
+     ;;plot3d-appearance
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)
+     ;;plot-labels
      (List
       (U False String)
       (U False String)
@@ -113,7 +120,9 @@
       (U False String)
       (U False String)
       (U False String))
+     ;;plot-output
      (List Boolean Nonnegative-Integer Boolean (Instance PS-Setup%))
+     ;;plot-axes
      (List
       (List Axis-Transform ticks ticks)
       (List Axis-Transform ticks ticks)

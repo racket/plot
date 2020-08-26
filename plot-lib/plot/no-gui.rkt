@@ -60,7 +60,8 @@
  vrule
  function
  inverse
- density)
+ density
+ arrows)
 
 (require "private/plot2d/interval.rkt")
 (provide
@@ -133,7 +134,8 @@
 (require "private/plot3d/line.rkt")
 (provide
  lines3d
- parametric3d)
+ parametric3d
+ arrows3d)
 
 (require "private/plot3d/point.rkt")
 (provide
