@@ -2,7 +2,7 @@
 
 ;; Renderers for points and other point-like things.
 
-(require typed/racket/class racket/match racket/math racket/list
+(require typed/racket/class racket/match racket/list
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt")
@@ -20,8 +20,6 @@
 ;; ===================================================================================================
 ;; color-field
 ;; similar to point.rkt/vector-field, but draws a square area with a color
-
-(require (only-in "../common/parameters.rkt" color-field-samples color-field-alpha))
 
 (: color-field-render-fun
    (-> (-> Real Real Plot-Color)
