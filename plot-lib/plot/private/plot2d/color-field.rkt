@@ -74,7 +74,7 @@
                    (color-field-render-fun
                     f samples alpha)))]))
 
-(module+ test
+#;(module+ test
   (require plot)
   ;https://rosettacode.org/wiki/Mandelbrot_set#Racket
   (define (iterations [a : Number][z : Number][i : Nonnegative-Integer]) : Nonnegative-Integer
