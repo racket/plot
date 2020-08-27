@@ -161,6 +161,8 @@
  candlestick-line-width
  candlestick-line-style
  candlestick-alpha
+ color-field-samples
+ color-field-alpha
  contour-samples
  contour-levels
  contour-colors
