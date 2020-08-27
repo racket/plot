@@ -74,30 +74,3 @@
                    (color-field-render-fun
                     f samples alpha)))]))
 
-#;(module+ test
-  (require plot)
-  ;https://rosettacode.org/wiki/Mandelbrot_set#Racket
-  (define (iterations [a : Number][z : Number][i : Nonnegative-Integer]) : Nonnegative-Integer
-    (define z′ (+ (* z z) a))
-    (if (or (<= 255 i) (< 2 (magnitude z′)))
-        i
-        (iterations a z′ (+ i 1))))
- 
-  (define (iter->color [i : Nonnegative-Integer]) : Plot-Color
-    (if (= i 255)
-        'black
-        (list (* 5 (modulo i 15)) (* 32 (modulo i 7)) (* 8 (modulo i 31)))))
-
-  (define (mandelbrot [x : Real][y : Real]) : Plot-Color
-    (define z (make-rectangular (* 1.0 x) (* 1.0 y)))
-    (iter->color (iterations z 0 0)))
-
-  (plot (color-field mandelbrot -2.25 0.75 -1.25 1.25
-                     #:samples 200)))
-
-#;(module+ test
-  (require plot)
-  (define (in-circle [x : Real][y : Real])
-    (define z (make-rectangular x y))
-    (if (< (magnitude z) 1) (random 10) 'black))
-  (plot (color-field in-circle -2 2 -2 2)))

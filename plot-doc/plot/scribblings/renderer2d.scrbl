@@ -211,6 +211,7 @@ Returns a renderer that draws rectangles filled with a color based on the center
 @interaction[#:eval plot-eval
                     (plot (color-field (λ (x y) (if (< (+ (sqr x) (sqr y)) 1) (random 10) 'black))
                                         -2 2 -2 2))]
+@history[#:added "7.9"]
 }
 
 @section{2D Line Renderers}
