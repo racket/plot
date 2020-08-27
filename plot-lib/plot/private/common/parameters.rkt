@@ -218,7 +218,7 @@
   (nonnegative-rational 'arrows-line-width))
 (defparam  arrows-line-style Plot-Pen-Style 'solid)
 (defparam2 arrows-alpha Real Nonnegative-Real 1 (unit-ivl 'arrows-alpha))
-(defparam  arrow-head-size-scale (U Nonnegative-Real (List '= Nonnegative-Real)) 2/5)
+(defparam  arrow-head-size-or-scale (U Nonnegative-Real (List '= Nonnegative-Real)) 2/5)
 (defparam  arrow-head-angle Nonnegative-Real 0.5235987755982988);=pi/6=30°
 
 ;; Error bars

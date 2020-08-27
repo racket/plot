@@ -39,7 +39,7 @@
      plot-animating?
      plot-pen-color-map
      plot-brush-color-map
-     arrow-head-size-scale
+     arrow-head-size-or-scale
      arrow-head-angle))
   
   (define-parameter-group plot3d-appearance

@@ -403,7 +403,7 @@
             [else  empty]))
 
     (define/public (draw-arrow v1 v2
-                               [head-size-scale (arrow-head-size-scale)]; (U Nonnegative-Real '(= Nonnegative-Real)); second case is absolute
+                               [head-size-scale (arrow-head-size-or-scale)]; (U Nonnegative-Real '(= Nonnegative-Real)); second case is absolute
                                [head-angle (arrow-head-angle)])
       (when (and (vrational? v1) (vrational? v2))
         (match-define (vector x1 y1) v1)

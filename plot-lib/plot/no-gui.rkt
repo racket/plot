@@ -51,6 +51,10 @@
  error-bars
  candlesticks)
 
+(require "private/plot2d/arrows.rkt")
+(provide
+ arrows)
+
 (require "private/plot2d/line.rkt")
 (provide
  lines
@@ -60,8 +64,7 @@
  vrule
  function
  inverse
- density
- arrows)
+ density)
 
 (require "private/plot2d/interval.rkt")
 (provide
@@ -131,11 +134,14 @@
  contours3d
  contour-intervals3d)
 
+(require "private/plot3d/arrows.rkt")
+(provide
+ arrows3d)
+
 (require "private/plot3d/line.rkt")
 (provide
  lines3d
- parametric3d
- arrows3d)
+ parametric3d)
 
 (require "private/plot3d/point.rkt")
 (provide

@@ -145,7 +145,7 @@ If @(racket scale) is a real number, arrow lengths are multiplied by @(racket sc
 If @(racket 'auto), the scale is calculated in a way that keeps arrows from overlapping.
 If @(racket 'normalized), each arrow is made the same length: the maximum length that would have been allowed by @(racket 'auto).
 
-The shape of the arrow-head can be controlled with @racket[arrow-head-size-scale] and @racket[arrow-head-angle].
+The shape of the arrow-head can be controlled with @racket[arrow-head-size-or-scale] and @racket[arrow-head-angle].
 
 An example of automatic scaling:
 @interaction[#:eval plot-eval
@@ -333,7 +333,9 @@ For example, to plot an estimated density of the triangle distribution:
 }
 
 
-@defproc[(arrows [vs  (sequence/c (sequence/c #:min-count 2 real?))]
+@defproc[(arrows [vs  (or/c (listof (sequence/c #:min-count 2 real?))
+                            (vectorof (vector/c (sequence/c #:min-count 2 real?)
+                                                (sequence/c #:min-count 2 real?))))]
                  [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
                  [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
                  [#:color color plot-color/c (arrows-color)]
@@ -342,13 +344,18 @@ For example, to plot an estimated density of the triangle distribution:
                  [#:alpha alpha (real-in 0 1) (arrows-alpha)]
                  [#:label label (or/c string? pict? #f) #f]
                  ) renderer2d?]{
-Returns a renderer that draws connected arrows. Gaps can be introduced as shown below. Size and angle of the head are controlled by @racket[arrow-head-size-scale] and @racket[arrow-head-angle]
+Returns a renderer that draws either connected arrows, or couples where the first set is the arrow base and the second set is the arrow to be drawn. List and vector are interchangeble.
+For connected arrows, gaps can be introduced as shown below. Size and angle of the head are controlled by @racket[arrow-head-size-or-scale] and @racket[arrow-head-angle]
  @interaction[#:eval plot-eval
               (define skip '(+nan.0 +nan.0))
-              (parameterize ([arrow-head-size-scale '(= 10)])
-                (plot (arrows
-                       `((0 0)(2 1)(3 3),skip(0 0)(3 3))
-                       #:color 6 #:label "a=b+c")))]
+              (parameterize ([arrow-head-size-or-scale '(= 20)])
+                (plot (list
+                       (arrows
+                        `((0 0) (2 1) (3 3) ,skip (0 0) (3 3))
+                        #:color 6 #:label "a=b+c")
+                       (arrows
+                        `(((2 0) (0 1)))
+                        #:color 2 #:label "d"))))]
 @history[#:added "7.9"]
 }
 

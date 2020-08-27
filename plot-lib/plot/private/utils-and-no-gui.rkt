@@ -154,7 +154,7 @@
  arrows-line-width
  arrows-line-style
  arrows-alpha
- arrow-head-size-scale
+ arrow-head-size-or-scale
  arrow-head-angle
  error-bar-width
  error-bar-color
