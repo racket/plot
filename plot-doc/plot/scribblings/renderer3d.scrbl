@@ -86,7 +86,7 @@ The arguments are interpreted identically to the corresponding arguments to @rac
                  (plot3d (vector-field3d (λ (x y z) (vector x z y))
                                          -2 2 -2 2 -2 2))]
 
-@history[#:changed "7.9" "Added support for pictures for #:label"]
+@history[#:changed "7.9" "Added support for pictures for #:label and controlling the arrowhead"]
 }
 
 @section{3D Line Renderers}
@@ -143,10 +143,12 @@ Returns a renderer that plots a vector-valued function of time. For example,
           [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that draws connected arrows.
+The shape of the arrow-head can be controlled with @racket[arrow-head-size-scale] and @racket[arrow-head-angle].
 @interaction[#:eval plot-eval
              (define skip '(+nan.0 +nan.0 +nan.0))
              (plot3d (arrows3d `((0 0 0)(1 1 1),skip(2 2 2)(3 2 1)))
                        #:altitude 25)]
+@history[#:added "7.9"]
 }
 
 @section{3D Surface Renderers}

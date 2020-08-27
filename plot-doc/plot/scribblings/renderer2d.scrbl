@@ -145,12 +145,14 @@ If @(racket scale) is a real number, arrow lengths are multiplied by @(racket sc
 If @(racket 'auto), the scale is calculated in a way that keeps arrows from overlapping.
 If @(racket 'normalized), each arrow is made the same length: the maximum length that would have been allowed by @(racket 'auto).
 
+The shape of the arrow-head can be controlled with @racket[arrow-head-size-scale] and @racket[arrow-head-angle].
+
 An example of automatic scaling:
 @interaction[#:eval plot-eval
                     (plot (vector-field (λ (x y) (vector (+ x y) (- x y)))
                                         -2 2 -2 2))]
 
-@history[#:changed "7.9" "Added support for pictures for #:label"]
+@history[#:changed "7.9" "Added support for pictures for #:label and controlling the arrowhead"]
 }
 
 @defproc[(error-bars
@@ -347,6 +349,7 @@ Returns a renderer that draws connected arrows. Gaps can be introduced as shown 
                 (plot (arrows
                        `((0 0)(2 1)(3 3),skip(0 0)(3 3))
                        #:color 6 #:label "a=b+c")))]
+@history[#:added "7.9"]
 }
 
 @defproc[(hrule [y real?]
