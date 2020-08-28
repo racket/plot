@@ -8,14 +8,13 @@
 ;; Tests for: https://github.com/racket/plot/pull/42 - arrows and arrows3d
 
 (define (do-plot-arrows output-fn)
-  (define skip '(+nan.0 +nan.0))
   (parameterize ([arrow-head-size-or-scale '(= 10)]
                  [arrow-head-angle .1])
     (output-fn
      (list
       (arrows
-       `((0 0) (2 1) (3 3) ,skip (0 0) (3 3))
-       #:color 6 #:label "a=b+c")
+       `((0 0) (2 1) (3 3) (0 0))
+       #:color 6 #:label "a+b+c=0")
       (arrows
        `(((2 0) (0 1)) ((3 0) (-1 1)))
        #:color 2 #:label "d")))))
@@ -30,7 +29,6 @@
                        #(#(2 0 2)#(0 2 0))))))))
 
 (define (do-plot-vectorfield output-fn)
-  (define skip '(+nan.0 +nan.0))
   (parameterize ([arrow-head-size-or-scale '(= 10)]
                  [arrow-head-angle .1])
     (output-fn

@@ -146,8 +146,7 @@ Returns a renderer that plots a vector-valued function of time. For example,
           ) renderer3d?]{
 Returns a renderer that draws arrows. The arguments and arrow-head parameters are interpreted identically as in @racket[arrows].
 @interaction[#:eval plot-eval
-             (define skip '(+nan.0 +nan.0 +nan.0))
-             (plot3d (arrows3d `((0 0 0) (1 1 1) ,skip (2 2 2) (3 2 1)))
+             (plot3d (arrows3d `((0 0 0) (1 1 1) (2 2 2) (3 2 1)))
                        #:altitude 25)]
 @history[#:added "7.9"]
 }
