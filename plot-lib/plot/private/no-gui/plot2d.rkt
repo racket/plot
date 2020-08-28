@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/draw typed/racket/class
+         (only-in typed/pict pict)
          "../common/type-doc.rkt"
          "../common/types.rkt"
          "../common/draw.rkt"
@@ -31,9 +32,9 @@
           Real Real Nonnegative-Real Nonnegative-Real]
          [#:x-min (U Real #f) #:x-max (U Real #f)
           #:y-min (U Real #f) #:y-max (U Real #f)
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
           #:legend-anchor Anchor]
          Void))
 (define (plot/dc renderer-tree dc x y width height
@@ -77,9 +78,9 @@
           #:y-min (U Real #f) #:y-max (U Real #f)
           #:width Positive-Integer
           #:height Positive-Integer
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
           #:legend-anchor Anchor]
          (Instance Bitmap%)))
 (define (plot-bitmap renderer-tree
@@ -107,9 +108,9 @@
           #:y-min (U Real #f) #:y-max (U Real #f)
           #:width Positive-Integer
           #:height Positive-Integer
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
           #:legend-anchor Anchor]
          Pict))
 (define (plot-pict renderer-tree
@@ -140,9 +141,9 @@
           #:y-min (U Real #f) #:y-max (U Real #f)
           #:width Positive-Integer
           #:height Positive-Integer
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
           #:legend-anchor Anchor]
          Void))
 (define (plot-file renderer-tree output [kind 'auto]
