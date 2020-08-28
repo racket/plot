@@ -238,6 +238,12 @@
 (defparam candlestick-line-style Plot-Pen-Style 'solid)
 (defparam2 candlestick-alpha Real Nonnegative-Real 2/3 (unit-ivl 'candlestick-alpha))
 
+
+;; color fields
+
+(defparam color-field-samples Positive-Integer 20)
+(defparam2 color-field-alpha Real Nonnegative-Real 1 (unit-ivl 'color-field-alpha))
+
 ;; Contours
 
 (defparam2 contour-samples Integer Positive-Integer 51 (integer>=2 'contour-samples))

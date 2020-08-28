@@ -200,6 +200,22 @@ fourth, and fifth elements in each vector comprise the open, high, low, and clos
                                                     (vector 6 24 36 10 24)))))]
 }
 
+@defproc[(color-field
+          [f (or/c (-> real? real? plot-color/c)
+                   (-> (vector/c real? real?) plot-color/c))]
+          [x-min (or/c rational? #f) #f] [x-max (or/c rational? #f) #f]
+          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
+          [#:samples samples exact-positive-integer? (color-field-samples)]
+          [#:alpha alpha (real-in 0 1) (color-field-alpha)]
+          ) renderer2d?]{
+Returns a renderer that draws rectangles filled with a color based on the center point.
+
+@interaction[#:eval plot-eval
+                    (plot (color-field (λ (x y) (if (< (+ (sqr x) (sqr y)) 1) (random 10) 'black))
+                                        -2 2 -2 2))]
+@history[#:added "7.9"]
+}
+
 @section{2D Line Renderers}
 
 @defproc[(function [f (real? . -> . real?)]
