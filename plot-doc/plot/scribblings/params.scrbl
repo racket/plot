@@ -295,7 +295,7 @@ The default pen color, pen width, pen style, and opacity used by
 @deftogether[((defparam arrow-head-size-or-scale size (or/c (>=/c 0) (list/c '= (>=/c 0))) #:value 2/5)
               (defparam arrow-head-angle alpha (>=/c 0) #:value (/ pi 6)))]{
 The default size and angle of the arrow head in @racket[vector-field], @racket[vector-field3d], @racket[arrows] and @racket[arrows3d].
-Normally the size of the arrow head is scaled together with the size of the arrow. For an absolute @racket[size](in pixels!) use @racket[(list '= size)]
+When the @racket[arrow-head-size-or-scale] is a number, it is interpreted as a proportion of the arrow length , and will be bigger for longer arrows. When it is in the form @racket[(list '= size)], it is interpreted as the size of the arrow head in drawing units (pixels).
 @history[#:added "7.9"]
 }
 

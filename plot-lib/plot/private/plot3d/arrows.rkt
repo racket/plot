@@ -113,7 +113,8 @@
             (define v1 (sequence-head-vector 'arrows3d (car l) 3))
             (define v2 (sequence-head-vector 'arrows3d (cadr l) 3))
             (define v3 (vector (+ (vector-ref v1 0) (vector-ref v2 0))
-                               (+ (vector-ref v1 1) (vector-ref v2 1))))
+                               (+ (vector-ref v1 1) (vector-ref v2 1))
+                               (+ (vector-ref v1 2) (vector-ref v2 2))))
             (values S1
                     (cons (cons v1 v3) S2))]
            [else (argument-error)])))

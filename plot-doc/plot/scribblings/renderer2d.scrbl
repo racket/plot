@@ -360,17 +360,23 @@ For example, to plot an estimated density of the triangle distribution:
                  [#:alpha alpha (real-in 0 1) (arrows-alpha)]
                  [#:label label (or/c string? pict? #f) #f]
                  ) renderer2d?]{
-Returns a renderer that draws either connected arrows, or couples where the first set is the arrow base and the second set is the arrow to be drawn. List and vector are interchangeble.
-For connected arrows, gaps can be introduced as shown below. Size and angle of the head are controlled by @racket[arrow-head-size-or-scale] and @racket[arrow-head-angle]
+Returns a renderer which draws arrows. Arrows can be specified either as sequences of 2D points,
+in this case they will be drawn as connected arrows between each two adjacent points,
+or they can be specified as an origin point and a rectangular magnitude vector, in which case each arrow
+is drawn individually. See example below.
+
+In @racket[vs] list and vector are interchangeable. For connected arrows, gaps can be introduced as shown below.
+Size and angle of the head are controlled by @racket[arrow-head-size-or-scale] and @racket[arrow-head-angle]
  @interaction[#:eval plot-eval
               (define skip '(+nan.0 +nan.0))
-              (parameterize ([arrow-head-size-or-scale '(= 20)])
+              (parameterize ([arrow-head-size-or-scale '(= 20)]
+                             [arrow-head-angle .3])
                 (plot (list
                        (arrows
                         `((0 0) (2 1) (3 3) ,skip (0 0) (3 3))
                         #:color 6 #:label "a=b+c")
                        (arrows
-                        `(((2 0) (0 1)))
+                        `(((2 0) (0 1)) ((3 0) (-1 1)))
                         #:color 2 #:label "d"))))]
 @history[#:added "7.9"]
 }
