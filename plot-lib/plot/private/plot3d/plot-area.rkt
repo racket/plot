@@ -2,6 +2,7 @@
 
 (require typed/racket/class typed/racket/draw racket/match racket/list racket/math racket/flonum
          (only-in math fl vector->flvector)
+         (only-in typed/pict pict?)
          "../common/type-doc.rkt"
          "../common/types.rkt"
          "../common/math.rkt"
@@ -927,7 +928,9 @@
     (define/private (draw-title)
       (define title (plot-title))
       (when (and (plot-decorations?) title)
-        (send pd draw-text title (vector (* 1/2 dc-x-size) (ann 0 Real)) 'top)))
+        (if (string? title)
+            (send pd draw-text title (vector (* 1/2 dc-x-size) (ann 0 Real)) 'top)
+            (send pd draw-pict title  (vector (* 1/2 dc-x-size) (ann 0 Real)) 'top 0))))
     
     (: draw-back-axes (-> Void))
     (define/private (draw-back-axes)
@@ -974,8 +977,10 @@
     (define/private (draw-labels ps)
       (for ([p  (in-list ps)])
         (match-define (list label v anchor angle) p)
-        (when label
-          (send pd draw-text label v anchor angle 0 #t))))
+        (cond ((string? label)
+               (send pd draw-text label v anchor angle 0 #t))
+              ((pict? label)
+               (send pd draw-pict label v anchor 0)))))
     
     ;; ===============================================================================================
     ;; Render list and its BSP representation

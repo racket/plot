@@ -25,9 +25,9 @@ Each 3D plotting procedure behaves the same way as its corresponding 2D procedur
                [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
                [#:width width exact-positive-integer? (plot-width)]
                [#:height height exact-positive-integer? (plot-height)]
-               [#:title title (or/c string? #f) (plot-title)]
-               [#:x-label x-label (or/c string? #f) (plot-x-label)]
-               [#:y-label y-label (or/c string? #f) (plot-y-label)]
+               [#:title title (or/c string? pict? #f) (plot-title)]
+               [#:x-label x-label (or/c string? pict? #f) (plot-x-label)]
+               [#:y-label y-label (or/c string? pict? #f) (plot-y-label)]
                [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
                [#:out-file out-file (or/c path-string? output-port? #f) #f]
                [#:out-kind out-kind plot-file-format/c 'auto]
@@ -60,6 +60,8 @@ Here, the renderer draws in [-1,1] × [-1,1], but the plot area is [-1.5,1.5] ×
 @bold{Deprecated keywords.} The @(racket #:fgcolor) and @(racket #:bgcolor) keyword arguments are currently supported for backward compatibility, but may not be in the future.
 Please set the @(racket plot-foreground) and @(racket plot-background) parameters instead of using these keyword arguments.
 The @(racket #:lncolor) keyword argument is also accepted for backward compatibility but deprecated. It does nothing.
+
+@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label"]
 }
 
 @defproc[(plot3d [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
@@ -70,10 +72,10 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
                  [#:height height exact-positive-integer? (plot-height)]
                  [#:angle angle real? (plot3d-angle)]
                  [#:altitude altitude real? (plot3d-altitude)]
-                 [#:title title (or/c string? #f) (plot-title)]
-                 [#:x-label x-label (or/c string? #f) (plot-x-label)]
-                 [#:y-label y-label (or/c string? #f) (plot-y-label)]
-                 [#:z-label z-label (or/c string? #f) (plot-z-label)]
+                 [#:title title (or/c string? pict? #f) (plot-title)]
+                 [#:x-label x-label (or/c string? pict? #f) (plot-x-label)]
+                 [#:y-label y-label (or/c string? pict? #f) (plot-y-label)]
+                 [#:z-label z-label (or/c string? pict? #f) (plot-z-label)]
                  [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
                  [#:out-file out-file (or/c path-string? output-port? #f) #f]
                  [#:out-kind out-kind plot-file-format/c 'auto]
@@ -91,6 +93,8 @@ Please set the @(racket plot-foreground) and @(racket plot-background) parameter
 The @(racket #:lncolor) keyword argument is also accepted for backward compatibility but deprecated. It does nothing.
 
 The @(racket #:az) and @(racket #:alt) keyword arguments are backward-compatible, deprecated aliases for @(racket #:angle) and @(racket #:altitude), respectively.
+
+@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label, #:y-label and #:z-label"]
 }
 
 @defproc[(plot-snip [<plot-argument> <plot-argument-contract>] ...)

@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/draw typed/racket/class
+         (only-in typed/pict pict)
          "../common/type-doc.rkt"
          "../common/types.rkt"
          "../common/draw.rkt"
@@ -35,10 +36,10 @@
           #:y-min (U Real #f) #:y-max (U Real #f)
           #:z-min (U Real #f) #:z-max (U Real #f)
           #:angle Real #:altitude Real
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
-          #:z-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
+          #:z-label (U String pict #f)
           #:legend-anchor Anchor]
          Void))
 (define (plot3d/dc renderer-tree dc x y width height
@@ -102,10 +103,10 @@
           #:width Positive-Integer
           #:height Positive-Integer
           #:angle Real #:altitude Real
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
-          #:z-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
+          #:z-label (U String pict #f)
           #:legend-anchor Anchor]
          (Instance Bitmap%)))
 (define (plot3d-bitmap renderer-tree 
@@ -140,10 +141,10 @@
           #:width Positive-Integer
           #:height Positive-Integer
           #:angle Real #:altitude Real
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
-          #:z-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
+          #:z-label (U String pict #f)
           #:legend-anchor Anchor]
          Pict))
 (define (plot3d-pict renderer-tree 
@@ -181,10 +182,10 @@
           #:width Positive-Integer
           #:height Positive-Integer
           #:angle Real #:altitude Real
-          #:title (U String #f)
-          #:x-label (U String #f)
-          #:y-label (U String #f)
-          #:z-label (U String #f)
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)
+          #:z-label (U String pict #f)
           #:legend-anchor Anchor]
          Void))
 (define (plot3d-file renderer-tree output [kind 'auto]

@@ -5,6 +5,9 @@ jobs:
     name: "Build on Racket '${{ matrix.racket-version }}' (${{ matrix.racket-variant }})"
     runs-on: ubuntu-latest
     strategy:
+      # Let all jobs run to completion -- this will allow us to determine if
+      # the failure is specific to a Racket version.
+      fail-fast: false
       matrix:
         racket-version: ["7.8", "current"]
         racket-variant: ["regular", "CS"]
