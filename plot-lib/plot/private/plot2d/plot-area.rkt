@@ -787,7 +787,7 @@
     (define/public (put-arrow v1 v2)
       (let ([v1  (exact-vector2d v1)]
             [v2  (exact-vector2d v2)])
-        (when (and v1 v2 (or (in-bounds? v1) (in-bounds? v2)))
+        (when (and v1 v2 (in-bounds? v1))
           (send pd draw-arrow (plot->dc v1) (plot->dc v2)))))
 
     (define/public (put-tick v r angle)
