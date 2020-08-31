@@ -97,7 +97,7 @@
         (full8star . 8star)))
 
 (define-type Tick-Params (List Boolean (Vectorof Real) Real Real))
-(define-type Label-Params (List (U #f String) (Vectorof Real) Anchor Real))
+(define-type Label-Params (List (U #f String pict) (Vectorof Real) Anchor Real))
 
 (: plot-device% Plot-Device%)
 (define plot-device%

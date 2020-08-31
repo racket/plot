@@ -227,8 +227,12 @@
 
     (: init-top-margin Real)
     (define init-top-margin
-      (cond [(and (plot-decorations?) (plot-title))  (* 3/2 char-height)]
-            [else  0]))
+      (let ([title (plot-title)])
+        (cond [(and (plot-decorations?) title)
+               (if (pict? title)
+                   (+ (pict-height title) (* 1/2 char-height))
+                   (* 3/2 char-height))]
+              [else  0])))
 
     (: view->dc (-> (Vectorof Real) (Vectorof Real)))
     ;; Initial view->dc (draws labels and half of every tick off the allotted space on the dc)
@@ -470,9 +474,15 @@
 
     (: get-y-label-params (-> Label-Params))
     (define (get-y-label-params)
-      (define offset (vector (+ max-y-tick-offset max-y-tick-label-width half-char-height)
+      (define label (plot-y-label))
+      (define half-label-width (if (pict? label)
+                                   (* 1/2 (pict-width label))
+                                   half-char-height))
+      (define offset (vector (+ max-y-tick-offset max-y-tick-label-width half-label-width)
                              (ann 0 Real)))
-      (list (plot-y-label) (v- (view->dc (vector 0.0 0.5)) offset) 'bottom (/ pi 2)))
+      (if (string? label)
+          (list label (v- (view->dc (vector 0.0 0.5)) offset) 'bottom (/ pi 2))
+          (list label (v- (view->dc (vector 0.0 0.5)) offset) 'center 0)))
 
     (: get-x-far-label-params (-> Label-Params))
     (define (get-x-far-label-params)
@@ -482,9 +492,15 @@
 
     (: get-y-far-label-params (-> Label-Params))
     (define (get-y-far-label-params)
-      (define offset (vector (+ max-y-far-tick-offset max-y-far-tick-label-width half-char-height)
+      (define label (plot-y-far-label))
+      (define half-label-width (if (pict? label)
+                                   (* 1/2 (pict-width label))
+                                   half-char-height))
+      (define offset (vector (+ max-y-far-tick-offset max-y-far-tick-label-width half-label-width)
                              (ann 0 Real)))
-      (list (plot-y-far-label) (v+ (view->dc (vector 1.0 0.5)) offset) 'top (/ pi 2)))
+      (if (string? label)
+          (list label (v+ (view->dc (vector 1.0 0.5)) offset) 'top (/ pi 2))
+          (list label (v+ (view->dc (vector 1.0 0.5)) offset) 'center 0)))
 
 
     ;; -----------------------------------------------------------------------------------------------
@@ -594,7 +610,9 @@
     (define (draw-title)
       (define title (plot-title))
       (when (and (plot-decorations?) title)
-        (send pd draw-text title (vector (* 1/2 dc-x-size) (ann 0 Real)) 'top)))
+        (if (string? title)
+            (send pd draw-text title (vector (* 1/2 dc-x-size) (ann 0 Real)) 'top)
+            (send pd draw-pict title  (vector (* 1/2 dc-x-size) (ann 0 Real)) 'top))))
 
     (: draw-axes (-> Void))
     (define (draw-axes)
@@ -628,8 +646,10 @@
     (define (draw-labels)
       (for ([p  (in-list (get-all-label-params))])
         (match-define (list label v anchor angle) p)
-        (when label
-          (send pd draw-text label v anchor angle 0 #t))))
+        (cond ((pict? label)
+               (send pd draw-pict label v anchor 0))
+              ((string? label)
+               (send pd draw-text label v anchor angle 0 #t)))))
 
     ;; ===============================================================================================
     ;; Public drawing control (used by plot/dc)

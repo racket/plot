@@ -4,6 +4,7 @@
 
 (require typed/racket/class
          typed/racket/draw
+         (only-in typed/pict pict)
          "type-doc.rkt"
          "types.rkt"
          "draw-attribs.rkt"
@@ -141,14 +142,14 @@
 
 ;; Labels
 
-(defparam plot-title (U String #f) #f)
-(defparam plot-x-label (U String #f) "x axis")
-(defparam plot-y-label (U String #f) "y axis")
-(defparam plot-z-label (U String #f) #f)
+(defparam plot-title (U String pict #f) #f)
+(defparam plot-x-label (U String pict #f) "x axis")
+(defparam plot-y-label (U String pict #f) "y axis")
+(defparam plot-z-label (U String pict #f) #f)
 
-(defparam plot-x-far-label (U String #f) #f)
-(defparam plot-y-far-label (U String #f) #f)
-(defparam plot-z-far-label (U String #f) #f)
+(defparam plot-x-far-label (U String pict #f) #f)
+(defparam plot-y-far-label (U String pict #f) #f)
+(defparam plot-z-far-label (U String pict #f) #f)
 
 ;; Axes: transform, ticks
 

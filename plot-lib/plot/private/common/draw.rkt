@@ -114,13 +114,18 @@
     
     (send dc draw-text str (- x rdx) (- y rdy) #t 0 angle)))
 
-(: get-text-corners/anchor (->* [(Instance DC<%>) String Real Real]
+(: get-text-corners/anchor (->* [(Instance DC<%>) (U String pict) Real Real]
                                 [Anchor Real Real]
                                 (Listof (Vector Real Real))))
 (define (get-text-corners/anchor dc str x y [anchor 'top-left] [angle 0] [dist 0])
-  (define-values (width height _1 _2) (send dc get-text-extent str #f #t 0))
+  (define-values (width height _1 _2)
+    (if (string? str)
+        (send dc get-text-extent str #f #t 0)
+        (values (pict-width str) (pict-height str) 0 0)))
   (define nanchor (if (eq? anchor 'auto)
-                      (resolve-auto-anchor/str dc str x y angle dist)
+                      (if (string? str)
+                          (resolve-auto-anchor/str dc str x y angle dist)
+                          (resolve-auto-anchor/pict dc str x y dist))
                       anchor))
   (get-box-corners/anchor x y width height nanchor angle dist))
 
