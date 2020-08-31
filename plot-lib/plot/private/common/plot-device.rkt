@@ -306,6 +306,21 @@
     (define/public (set-text-foreground color)
       (send dc set-text-foreground (color->color% (->pen-color color))))
 
+
+    ;; -----------------------------------------------------------------------------------------------
+    ;; Arrows
+
+    (: pd-arrow-head-size-or-scale (U (List '= Nonnegative-Real) Nonnegative-Real))
+    (: pd-arrow-head-angle Nonnegative-Real)
+    (define pd-arrow-head-size-or-scale (arrow-head-size-or-scale))
+    (define pd-arrow-head-angle (arrow-head-angle))
+
+    ;; Sets the arrow-head shape (for draw-arrow)
+    (define/public (set-arrow-head size-or-scale angle)
+      (set! pd-arrow-head-size-or-scale size-or-scale)
+      (set! pd-arrow-head-angle angle))
+
+
     ;; -----------------------------------------------------------------------------------------------
     ;; Clipping
 
@@ -402,9 +417,7 @@
                   (get-text-corners/anchor dc str x y anchor angle dist))]
             [else  empty]))
 
-    (define/public (draw-arrow v1 v2
-                               [head-size-scale (arrow-head-size-or-scale)]; (U Nonnegative-Real '(= Nonnegative-Real)); second case is absolute
-                               [head-angle (arrow-head-angle)])
+    (define/public (draw-arrow v1 v2)
       (when (and (vrational? v1) (vrational? v2))
         (match-define (vector x1 y1) v1)
         (match-define (vector x2 y2) v2)
@@ -412,13 +425,15 @@
         (define dy (- y2 y1))
         (define angle (if (and (zero? dy) (zero? dx)) 0 (atan dy dx)))
         (define dist (sqrt (+ (sqr dx) (sqr dy))))
-        (define head-r (if (list? head-size-scale)
-                           (cadr head-size-scale)
-                           (* head-size-scale dist)))
-        (define dx1 (* (cos (+ angle head-angle)) head-r))
-        (define dy1 (* (sin (+ angle head-angle)) head-r))
-        (define dx2 (* (cos (- angle head-angle)) head-r))
-        (define dy2 (* (sin (- angle head-angle)) head-r))
+        (define head-r
+          (let ([size-or-scale pd-arrow-head-size-or-scale])
+            (if (list? size-or-scale)
+                (cadr size-or-scale)
+                (* size-or-scale dist))))
+        (define dx1 (* (cos (+ angle pd-arrow-head-angle)) head-r))
+        (define dy1 (* (sin (+ angle pd-arrow-head-angle)) head-r))
+        (define dx2 (* (cos (- angle pd-arrow-head-angle)) head-r))
+        (define dy2 (* (sin (- angle pd-arrow-head-angle)) head-r))
         (send dc draw-line x1 y1 x2 y2)
         (send dc draw-line x2 y2 (- x2 dx1) (- y2 dy1))
         (send dc draw-line x2 y2 (- x2 dx2) (- y2 dy2))))

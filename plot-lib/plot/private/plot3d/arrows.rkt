@@ -6,54 +6,32 @@
          "../common/type-doc.rkt"
          "../common/utils.rkt")
 
-(provide arrows3d-head/tail-render-fun
-         arrows3d-pair-render-fun
+(provide arrows3d-render-fun
          arrows3d)
 ;; ===================================================================================================
 ;; Arrows
 
-(: arrows3d-head/tail-render-fun
-   (-> (Listof (Vectorof Real))
-       Plot-Color Nonnegative-Real Plot-Pen-Style
-       Nonnegative-Real
-       (U String pict #f)
-       3D-Render-Proc))
-(define ((arrows3d-head/tail-render-fun vs
-                                        color line-width line-style
-                                        alpha
-                                        label) area)
-  (match-define (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) (send area get-bounds-rect))
-  
-  (cond
-    [(and x-min x-max y-min y-max z-min z-max)  
-     (send area put-alpha alpha)
-     (send area put-pen color line-width line-style)
-     (for ([x0 (in-list vs)]
-           [x1 (in-list (cdr vs))])
-       (send area put-arrow x0 x1))
-     (cond [label  (arrow-legend-entry label color line-width line-style)]
-           [else   empty])]
-    [else  empty])
-  )
-
-(: arrows3d-pair-render-fun
+(: arrows3d-render-fun
    (-> (Listof (Pair (Vectorof Real) (Vectorof Real)))
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
+       (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real
        (U String pict #f)
        3D-Render-Proc))
-(define ((arrows3d-pair-render-fun vs
-                                   color line-width line-style
-                                   alpha
-                                   label) area)
+(define ((arrows3d-render-fun vs
+                              color line-width line-style
+                              alpha
+                              arrow-head-size-or-scale arrow-head-angle
+                              label) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) (send area get-bounds-rect))
   
   (cond
     [(and x-min x-max y-min y-max z-min z-max)  
      (send area put-alpha alpha)
      (send area put-pen color line-width line-style)
+     (send area put-arrow-head arrow-head-size-or-scale arrow-head-angle)
      (for ([x (in-list vs)])
-       (send area put-arrow (car x) (cdr x)))
+       (send area put-arrow (car x) (cdr x) #t))
      (cond [label  (arrow-legend-entry label color line-width line-style)]
            [else   empty])]
     [else  empty])
@@ -71,6 +49,8 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
+          #:arrow-head-size-or-scale (U (List '= Nonnegative-Real) Nonnegative-Real)
+          #:arrow-head-angle Nonnegative-Real
           #:label (U String pict #f)]
          renderer3d))
 (define (arrows3d vs
@@ -81,6 +61,8 @@
                   #:width [width (arrows-line-width)]
                   #:style [style (arrows-line-style)]
                   #:alpha [alpha (arrows-alpha)]
+                  #:arrow-head-size-or-scale [arrow-head-size-or-scale (arrow-head-size-or-scale)]
+                  #:arrow-head-angle [arrow-head-angle (arrow-head-angle)]
                   #:label [label #f])
   (define fail/kw (make-raise-keyword-error 'lines3d))
   (cond
@@ -119,25 +101,33 @@
                     (cons (cons v1 v3) S2))]
            [else (argument-error)])))
 
+     (define vs*
+       (cond
+         [(empty? S2)
+          (define S1* (reverse S1))
+          (for/list : (Listof (Pair (Vectorof Real) (Vectorof Real)))
+            ([v1 (in-list S1*)]
+             [v2 (in-list (cdr S1*))])
+            (cons v1 v2))]
+         [else S2]))
+
      ;; calculate bound and pick right render-fun
      (define rvs
-       (cond
-         [(empty? S2) (filter vrational? S1)]
-         [else
-          (match-define (list (cons #{p1 : (Listof (Vectorof Real))}
-                                    #{p2 : (Listof (Vectorof Real))}) ...)
-            S2)
-          (filter vrational? (append p1 p2))]))
+       (let ()
+         (match-define (list (cons #{p1 : (Listof (Vectorof Real))}
+                                   #{p2 : (Listof (Vectorof Real))}) ...)
+           vs*)
+         (filter vrational? (append p1 p2))))
 
      (cond
        [(empty? rvs) (renderer3d #f #f #f #f)]
        [else
         (define-values (x- x+ y- y+ z- z+) (get-bounds x-min x-max y-min y-max z-min z-max rvs))
-        (if (empty? S2)
-            (renderer3d (vector (ivl x- x+) (ivl y- y+) (ivl z- z+)) #f default-ticks-fun
-                       (arrows3d-head/tail-render-fun (reverse S1) color width style alpha label))
-            (renderer3d (vector (ivl x- x+) (ivl y- y+) (ivl z- z+)) #f default-ticks-fun
-                       (arrows3d-pair-render-fun S2 color width style alpha label)))])]))
+        (renderer3d (vector (ivl x- x+) (ivl y- y+) (ivl z- z+)) #f default-ticks-fun
+                    (arrows3d-render-fun vs*
+                                         color width style alpha
+                                         arrow-head-size-or-scale arrow-head-angle
+                                         label))])]))
 
 
 (define (get-bounds [x-min : (Option Real)][x-max : (Option Real)]

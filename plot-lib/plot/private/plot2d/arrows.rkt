@@ -1,7 +1,5 @@
 #lang typed/racket/base
 
-;; Line renderers.
-
 (require typed/racket/class racket/match racket/math racket/list racket/sequence
          plot/utils
          (only-in typed/pict pict)
@@ -9,49 +7,45 @@
          "../common/type-doc.rkt"
          "../common/utils.rkt")
 
-(provide arrows-head/tail-render-fun
-         arrows-pair-render-fun
+(provide arrows-render-fun
          arrows)
 
 ;; ===================================================================================================
 ;; Arrows
 
-(: arrows-head/tail-render-fun
-   (-> (Listof (Vectorof Real))
-       Plot-Color Nonnegative-Real Plot-Pen-Style
-       Nonnegative-Real
-       (U String pict #f)
-       2D-Render-Proc))
-(define ((arrows-head/tail-render-fun vs color line-width line-style alpha label) area)
-  (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
-  
-  (cond
-    [(and x-min x-max y-min y-max)  
-     (send area put-alpha alpha)
-     (send area put-pen color line-width line-style)
-     (for ([x0 (in-list vs)]
-           [x1 (in-list (cdr vs))])
-       (send area put-arrow x0 x1))
-     (cond [label  (arrow-legend-entry label color line-width line-style)]
-           [else   empty])]
-    [else  empty])
-  )
-
-(: arrows-pair-render-fun
+(: arrows-render-fun
    (-> (Listof (Pair (Vectorof Real) (Vectorof Real)))
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
+       (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real
        (U String pict #f)
        2D-Render-Proc))
-(define ((arrows-pair-render-fun vs color line-width line-style alpha label) area)
+(define ((arrows-render-fun vs
+                            color line-width line-style
+                            alpha
+                            arrow-head-size-or-scale arrow-head-angle
+                            label) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
   
   (cond
     [(and x-min x-max y-min y-max)  
      (send area put-alpha alpha)
      (send area put-pen color line-width line-style)
+     (send area put-arrow-head arrow-head-size-or-scale arrow-head-angle)
      (for ([x (in-list vs)])
-       (send area put-arrow (car x) (cdr x)))
+       (match-define (cons (vector v1x v1y) (vector v2x v2y)) x)
+       (define (f [x : Real][y : Real])
+         (- (* (- v2x v1x) (- y v1y))
+            (* (- v2y v1y) (- x v1x))))
+       (cond
+        ;only draw the arrow head if the endpoint is visible
+        ;other option makes little sense since size and angle can be/is plot units-absolute
+        [(and (<= x-min v2x x-max) (<= y-min v2y y-max))
+         (send area put-arrow (car x) (cdr x) #t)]
+        ;only draw the vector line if it is visible
+        [(or (<= (* (f x-min y-min) (f x-max y-max)) 0)
+             (<= (* (f x-min y-max) (f x-max y-min)) 0))
+         (send area put-lines (list (car x) (cdr x)))]))
      (cond [label  (arrow-legend-entry label color line-width line-style)]
            [else   empty])]
     [else  empty])
@@ -69,6 +63,8 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
+          #:arrow-head-size-or-scale (U (List '= Nonnegative-Real) Nonnegative-Real)
+          #:arrow-head-angle Nonnegative-Real
           #:label (U String pict #f)]
          renderer2d))
 (define (arrows vs
@@ -78,6 +74,8 @@
                 #:width [width (arrows-line-width)]
                 #:style [style (arrows-line-style)]
                 #:alpha [alpha (arrows-alpha)]
+                #:arrow-head-size-or-scale [arrow-head-size-or-scale (arrow-head-size-or-scale)]
+                #:arrow-head-angle [arrow-head-angle (arrow-head-angle)]
                 #:label [label #f])
   (define fail/kw (make-raise-keyword-error 'lines))
   (cond
@@ -114,26 +112,34 @@
             (values S1
                     (cons (cons v1 v3) S2))]
            [else (argument-error)])))
+
+     (define vs*
+       (cond
+         [(empty? S2)
+          (define S1* (reverse S1))
+          (for/list : (Listof (Pair (Vectorof Real) (Vectorof Real)))
+            ([v1 (in-list S1*)]
+             [v2 (in-list (cdr S1*))])
+            (cons v1 v2))]
+         [else S2]))
      
      ;; calculate bound and pick right render-fun
      (define rvs
-       (cond
-         [(empty? S2) (filter vrational? S1)]
-         [else
-          (match-define (list (cons #{p1 : (Listof (Vectorof Real))}
-                                    #{p2 : (Listof (Vectorof Real))}) ...)
-            S2)
-          (filter vrational? (append p1 p2))]))
+       (let ()
+         (match-define (list (cons #{p1 : (Listof (Vectorof Real))}
+                                   #{p2 : (Listof (Vectorof Real))}) ...)
+           vs*)
+         (filter vrational? (append p1 p2))))
 
      (cond
        [(empty? rvs) (renderer2d #f #f #f #f)]
        [else
         (define-values (x- x+ y- y+) (get-bounds x-min x-max y-min y-max rvs))
-        (if (empty? S2)
-            (renderer2d (vector (ivl x- x+) (ivl y- y+)) #f default-ticks-fun
-                        (arrows-head/tail-render-fun (reverse S1) color width style alpha label))
-            (renderer2d (vector (ivl x- x+) (ivl y- y+)) #f default-ticks-fun
-                        (arrows-pair-render-fun S2 color width style alpha label)))])]))
+        (renderer2d (vector (ivl x- x+) (ivl y- y+)) #f default-ticks-fun
+                    (arrows-render-fun vs*
+                                       color width style alpha
+                                       arrow-head-size-or-scale arrow-head-angle
+                                       label))])]))
 
 (define (get-bounds [x-min : (Option Real)][x-max : (Option Real)]
                     [y-min : (Option Real)][y-max : (Option Real)]

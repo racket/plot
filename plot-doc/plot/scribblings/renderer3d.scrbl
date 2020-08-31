@@ -142,6 +142,8 @@ Returns a renderer that plots a vector-valued function of time. For example,
           [#:width width (>=/c 0) (arrows-line-width)]
           [#:style style plot-pen-style/c (arrows-line-style)]
           [#:alpha alpha (real-in 0 1) (arrows-alpha)]
+          [#:arrow-head-size-or-scale size (or/c (list/c '= (>=/c 0)) (>=/c 0)) (arrow-head-size-or-scale)]
+          [#:arrow-head-size-or-scale angle (>=/c 0) (arrow-head-angle)]
           [#:label label (or/c string? pict? #f) #f]
           ) renderer3d?]{
 Returns a renderer that draws arrows. The arguments and arrow-head parameters are interpreted identically as in @racket[arrows].

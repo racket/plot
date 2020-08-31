@@ -8,25 +8,35 @@
 ;; Tests for: https://github.com/racket/plot/pull/42 - arrows and arrows3d
 
 (define (do-plot-arrows output-fn)
-  (parameterize ([arrow-head-size-or-scale '(= 10)]
-                 [arrow-head-angle .1])
-    (output-fn
-     (list
-      (arrows
-       `((0 0) (2 1) (3 3) (0 0))
-       #:color 6 #:label "a+b+c=0")
-      (arrows
-       `(((2 0) (0 1)) ((3 0) (-1 1)))
-       #:color 2 #:label "d")))))
+  (output-fn
+   (list
+    (arrows
+     `((0 0) (2 1) (3 3) (2 2) (2 4) (0 0))
+     #:arrow-head-size-or-scale '(= 50)
+     #:arrow-head-angle .2
+     #:color 6 #:label "a+b+c=0")
+    (arrows
+     `(((2 0) (0 1))
+       ((3 0) (-1 1))
+       ((-1 2) (5 -1)))
+     #:color 2 #:label "d"))
+   #:x-min 0 #:y-min 0
+   #:x-max 3 #:y-max 3))
 
 (define (do-plot-arrows3d output-fn)
   (parameterize ([arrow-head-size-or-scale .5]
                  [arrow-head-angle .3]
                  [arrows-color 4])
     (output-fn
-     (list (arrows3d #((0 0 0)(1 1 1)(1 1 0)))
-           (arrows3d #(#(#(1 2 3)#(-1 -1 -1))
-                       #(#(2 0 2)#(0 2 0))))))))
+     (list (arrows3d #((0 0 0) (1 1 1) (1 1 0) (4 1 1) (1 2 2)))
+           (arrows3d #(#(#(1 2 3) #(-1 -1 -1))
+                       #(#(2 0 2) #(0 2 0))
+                       #(#(3/2 3/2 -1) #(0 0 5)))
+                     #:arrow-head-size-or-scale '(= 50)
+                     #:arrow-head-angle .1
+                     #:color 'blue))
+     #:x-min 0 #:y-min 0 #:z-min 0
+     #:x-max 3 #:y-max 3 #:z-max 3)))
 
 (define (do-plot-vectorfield output-fn)
   (parameterize ([arrow-head-size-or-scale '(= 10)]

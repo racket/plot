@@ -358,6 +358,8 @@ For example, to plot an estimated density of the triangle distribution:
                  [#:width width (>=/c 0) (arrows-line-width)]
                  [#:style style plot-pen-style/c (arrows-line-style)]
                  [#:alpha alpha (real-in 0 1) (arrows-alpha)]
+                 [#:arrow-head-size-or-scale size (or/c (list/c '= (>=/c 0)) (>=/c 0)) (arrow-head-size-or-scale)]
+                 [#:arrow-head-size-or-scale angle (>=/c 0) (arrow-head-angle)]
                  [#:label label (or/c string? pict? #f) #f]
                  ) renderer2d?]{
 Returns a renderer which draws arrows. Arrows can be specified either as sequences of 2D points,
@@ -365,17 +367,18 @@ in this case they will be drawn as connected arrows between each two adjacent po
 or they can be specified as an origin point and a rectangular magnitude vector, in which case each arrow
 is drawn individually. See example below.
 
-In @racket[vs] list and vector are interchangeable. Size and angle of the head are controlled by @racket[arrow-head-size-or-scale] and @racket[arrow-head-angle]
+In @racket[vs] list and vector are interchangeable. Arrow-heads are only drawn when the endpoint is inside the drawing area.
  @interaction[#:eval plot-eval
-              (parameterize ([arrow-head-size-or-scale '(= 20)]
-                             [arrow-head-angle .3])
-                (plot (list
-                       (arrows
-                        `((0 0) (2 1) (3 3) (0 0))
-                        #:color 6 #:label "a+b+c=0")
-                       (arrows
-                        `(((2 0) (0 1)) ((3 0) (-1 1)))
-                        #:color 2 #:label "d"))))]
+              (plot (list
+                     (arrows
+                      `((0 0) (2 1) (3 3) (0 0))
+                      #:arrow-head-size-or-scale '(= 20)
+                      #:arrow-head-angle .2
+                      #:color 6 #:label "a+b+c=0")
+                     (arrows
+                      `(((2 0) (0 1)) ((3 0) (-1 1)))
+                      #:arrow-head-size-or-scale .2
+                      #:color 2 #:label "d")))]
 @history[#:added "7.9"]
 }
 
