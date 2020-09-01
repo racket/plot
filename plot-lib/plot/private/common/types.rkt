@@ -27,7 +27,7 @@
 (deftype Plot-Color
   (U Integer Color))
 
-(deftype Color-Map (Vectorof (List Byte Byte Byte))) 
+(deftype Color-Map (Vectorof (List Byte Byte Byte)))
 
 (deftype Plot-Pen-Style-Sym
   (U 'transparent 'solid    'dot 'long-dash
@@ -84,8 +84,8 @@
 (deftype Contour-Levels (U 'auto Positive-Integer (Listof Real)))
 
 (define-type Image-File-Format
-  (U 'png 'jpeg 
-     'xbm 'xpm 'bmp 
+  (U 'png 'jpeg
+     'xbm 'xpm 'bmp
      'ps 'pdf 'svg))
 
 (deftype Legend-Draw-Proc (-> (Instance Plot-Device%) Real Real Void))
@@ -116,6 +116,7 @@
    [get-text-extent (-> (U String pict) (Values Exact-Rational Exact-Rational Exact-Rational Exact-Rational))]
    [get-text-width (-> (U String pict) Exact-Rational)]
    [set-text-foreground (-> Plot-Color Void)]
+   [set-arrow-head (-> (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real Void)]
    [set-clipping-rect (-> Rect Void)]
    [clear-clipping-rect (-> Void)]
    [clear (-> Void)]

@@ -78,7 +78,9 @@
                          [outline-color : (List Real Real Real)]
                          [pen-color : (List Real Real Real)]
                          [pen-width : Nonnegative-Real]
-                         [pen-style : Plot-Pen-Style-Sym])
+                         [pen-style : Plot-Pen-Style-Sym]
+                         [size-or-scale : (U (List '= Nonnegative-Real) Nonnegative-Real)]
+                         [angle : Nonnegative-Real])
   #:transparent)
 
 
@@ -129,6 +131,7 @@
          [put-font-family (-> Font-Family Void)]
          [put-font-attribs (-> Nonnegative-Real (U #f String) Font-Family Void)]
          [put-text-foreground (-> Plot-Color Void)]
+         [put-arrow-head (-> (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real Void)]
          [reset-drawing-params (-> Void)]
          [put-lines (-> (Listof (Vectorof Real)) Void)]
          [put-line (-> (Vectorof Real) (Vectorof Real) Void)]
@@ -136,7 +139,7 @@
          [put-rect (-> Rect Void)]
          [put-text (->* [String (Vectorof Real)] [Anchor Real Real Boolean Integer] Void)]
          [put-glyphs (->* [(Listof (Vectorof Real)) Point-Sym Nonnegative-Real] [Integer] Void)]
-         [put-arrow (-> (Vectorof Real) (Vectorof Real) Void)]
+         [put-arrow (->* ((Vectorof Real) (Vectorof Real)) (Boolean) Void)]
          ))
 
 (: 3d-plot-area% 3D-Plot-Area%)
@@ -1222,13 +1225,14 @@
     
     (: draw-arrow (-> arrow-data Void))
     (define/private (draw-arrow data)
-      (match-define (arrow-data alpha v1 v2 outline-color pen-color pen-width pen-style) data)
+      (match-define (arrow-data alpha v1 v2 outline-color pen-color pen-width pen-style size-or-scale angle) data)
       (let ([v1  (norm->dc v1)]
             [v2  (norm->dc v2)])
         (send pd set-alpha alpha)
         (send pd set-pen outline-color (+ 2 pen-width) 'solid)
         (send pd draw-arrow v1 v2)
         (send pd set-pen pen-color pen-width pen-style)
+        (send pd set-arrow-head size-or-scale angle)
         (send pd draw-arrow v1 v2)))
     
     (: draw-points (-> points Void))
@@ -1314,6 +1318,12 @@
     
     (: text-foreground (List Real Real Real))
     (define text-foreground '(0 0 0))
+
+    (: pa-arrow-head-size-or-scale (U (List '= Nonnegative-Real) Nonnegative-Real))
+    (: pa-arrow-head-angle Nonnegative-Real)
+    (define pa-arrow-head-size-or-scale (arrow-head-size-or-scale))
+    (define pa-arrow-head-angle (arrow-head-angle))
+
     
     ;; Drawing parameter accessors
     
@@ -1349,6 +1359,10 @@
     (define/public (put-text-foreground c)
       (set! text-foreground (->pen-color c)))
     
+    (define/public (put-arrow-head size-or-scale angle)
+      (set! pa-arrow-head-size-or-scale size-or-scale)
+      (set! pa-arrow-head-angle angle))
+
     (define/public (reset-drawing-params)
       (put-alpha (plot-foreground-alpha))
       (put-pen (plot-foreground) (plot-line-width) 'solid)
@@ -1499,16 +1513,17 @@
                                            (plot->norm (assert v values)))
                                          vs))))))
     
-    (define/public (put-arrow v1 v2)
+    (define/public (put-arrow v1 v2 [draw-outside? #f])
       (let ([v1  (exact-vector3d v1)]
             [v2  (exact-vector3d v2)])
-        (when (and v1 v2 (in-bounds? v1))
+        (when (and v1 v2 (or draw-outside? (in-bounds? v1)))
           (cond [(in-bounds? v2)
                  (define c (v* (v+ v1 v2) 1/2))
                  (define outline-color (->brush-color (plot-background)))
                  (add-shape! plot3d-area-layer
                              (points (arrow-data alpha (plot->norm v1) (plot->norm v2)
-                                                 outline-color pen-color pen-width pen-style)
+                                                 outline-color pen-color pen-width pen-style
+                                                 pa-arrow-head-size-or-scale pa-arrow-head-angle)
                                      (list (plot->norm c))))]
                 [else
                  (put-line v1 v2)]))))

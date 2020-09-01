@@ -21,7 +21,7 @@ See @secref["renderer2d-function-arguments"] for a detailed example.
 @section{3D Point Renderers}
 
 @defproc[(points3d
-          [vs  (sequence/c (sequence/c #:min-count 3 real?))]
+          [vs (sequence/c (sequence/c #:min-count 3 real?))]
           [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
           [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
           [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
@@ -86,7 +86,7 @@ The arguments are interpreted identically to the corresponding arguments to @rac
                  (plot3d (vector-field3d (λ (x y z) (vector x z y))
                                          -2 2 -2 2 -2 2))]
 
-@history[#:changed "7.9" "Added support for pictures for #:label"]
+@history[#:changed "7.9" "Added support for pictures for #:label and controlling the arrowhead"]
 }
 
 @section{3D Line Renderers}
@@ -129,6 +129,28 @@ Returns a renderer that plots a vector-valued function of time. For example,
                             #:altitude 25)]
 
 @history[#:changed "7.9" "Added support for pictures for #:label"]
+}
+
+@defproc[(arrows3d
+          [vs (or/c (listof (sequence/c #:min-count 3 real?))
+                    (vectorof (vector/c (sequence/c #:min-count 3 real?)
+                                        (sequence/c #:min-count 3 real?))))]
+          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f]
+          [#:color color plot-color/c (arrows-color)]
+          [#:width width (>=/c 0) (arrows-line-width)]
+          [#:style style plot-pen-style/c (arrows-line-style)]
+          [#:alpha alpha (real-in 0 1) (arrows-alpha)]
+          [#:arrow-head-size-or-scale size (or/c (list/c '= (>=/c 0)) (>=/c 0)) (arrow-head-size-or-scale)]
+          [#:arrow-head-angle angle (>=/c 0) (arrow-head-angle)]
+          [#:label label (or/c string? pict? #f) #f]
+          ) renderer3d?]{
+Returns a renderer that draws arrows. The arguments and arrow-head parameters are interpreted identically as in @racket[arrows].
+@interaction[#:eval plot-eval
+             (plot3d (arrows3d `((0 0 0) (1 1 1) (2 2 2) (3 2 1)))
+                       #:altitude 25)]
+@history[#:added "7.9"]
 }
 
 @section{3D Surface Renderers}

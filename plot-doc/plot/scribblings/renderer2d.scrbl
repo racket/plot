@@ -145,12 +145,14 @@ If @(racket scale) is a real number, arrow lengths are multiplied by @(racket sc
 If @(racket 'auto), the scale is calculated in a way that keeps arrows from overlapping.
 If @(racket 'normalized), each arrow is made the same length: the maximum length that would have been allowed by @(racket 'auto).
 
+The shape of the arrow-head can be controlled with @racket[arrow-head-size-or-scale] and @racket[arrow-head-angle].
+
 An example of automatic scaling:
 @interaction[#:eval plot-eval
                     (plot (vector-field (λ (x y) (vector (+ x y) (- x y)))
                                         -2 2 -2 2))]
 
-@history[#:changed "7.9" "Added support for pictures for #:label"]
+@history[#:changed "7.9" "Added support for pictures for #:label and controlling the arrowhead"]
 }
 
 @defproc[(error-bars
@@ -344,6 +346,40 @@ For example, to plot an estimated density of the triangle distribution:
                                          #:label "Est. density")))]
 
 @history[#:changed "7.9" "Added support for pictures for #:label"]
+}
+
+
+@defproc[(arrows [vs  (or/c (listof (sequence/c #:min-count 2 real?))
+                            (vectorof (vector/c (sequence/c #:min-count 2 real?)
+                                                (sequence/c #:min-count 2 real?))))]
+                 [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+                 [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+                 [#:color color plot-color/c (arrows-color)]
+                 [#:width width (>=/c 0) (arrows-line-width)]
+                 [#:style style plot-pen-style/c (arrows-line-style)]
+                 [#:alpha alpha (real-in 0 1) (arrows-alpha)]
+                 [#:arrow-head-size-or-scale size (or/c (list/c '= (>=/c 0)) (>=/c 0)) (arrow-head-size-or-scale)]
+                 [#:arrow-head-angle angle (>=/c 0) (arrow-head-angle)]
+                 [#:label label (or/c string? pict? #f) #f]
+                 ) renderer2d?]{
+Returns a renderer which draws arrows. Arrows can be specified either as sequences of 2D points,
+in this case they will be drawn as connected arrows between each two adjacent points,
+or they can be specified as an origin point and a rectangular magnitude vector, in which case each arrow
+is drawn individually. See example below.
+
+In @racket[vs] list and vector are interchangeable. Arrow-heads are only drawn when the endpoint is inside the drawing area.
+ @interaction[#:eval plot-eval
+              (plot (list
+                     (arrows
+                      `((0 0) (2 1) (3 3) (0 0))
+                      #:arrow-head-size-or-scale '(= 20)
+                      #:arrow-head-angle .2
+                      #:color 6 #:label "a+b+c=0")
+                     (arrows
+                      `(((2 0) (0 1)) ((3 0) (-1 1)))
+                      #:arrow-head-size-or-scale .2
+                      #:color 2 #:label "d")))]
+@history[#:added "7.9"]
 }
 
 @defproc[(hrule [y real?]

@@ -268,7 +268,7 @@ Used as default keyword arguments of @racket[point-label], @racket[function-labe
 @racket[inverse-label], @racket[parametric-label], @racket[polar-label] and @racket[point-label3d].
 }
 
-@section{Vector Fields}
+@section{Vector Fields & Arrows}
 
 @deftogether[((defparam vector-field-samples n exact-positive-integer? #:value 20)
               (defparam vector-field3d-samples n exact-positive-integer? #:value 9))]{
@@ -283,6 +283,22 @@ The default number of samples @racket[vector-field] and @racket[vector-field3d] 
 The default pen color, pen width, pen style, scaling factor, and opacity used by
 @racket[vector-field] and @racket[vector-field3d].
 }
+@deftogether[((defparam arrows-color color plot-color/c #:value 1)
+              (defparam arrows-line-width width (>=/c 0) #:value 2/3)
+              (defparam arrows-line-style style plot-pen-style/c #:value 'solid)
+              (defparam arrows-alpha alpha (real-in 0 1) #:value 1))]{
+The default pen color, pen width, pen style, and opacity used by
+@racket[arrows] and @racket[arrows3d].
+@history[#:added "7.9"]
+}
+
+@deftogether[((defparam arrow-head-size-or-scale size (or/c (>=/c 0) (list/c '= (>=/c 0))) #:value 2/5)
+              (defparam arrow-head-angle alpha (>=/c 0) #:value (/ pi 6)))]{
+The default size and angle of the arrow head in @racket[vector-field], @racket[vector-field3d], @racket[arrows] and @racket[arrows3d].
+When the @racket[arrow-head-size-or-scale] is a number, it is interpreted as a proportion of the arrow length , and will be bigger for longer arrows. When it is in the form @racket[(list '= size)], it is interpreted as the size of the arrow head in drawing units (pixels).
+@history[#:added "7.9"]
+}
+
 
 @section{Error Bars}
 

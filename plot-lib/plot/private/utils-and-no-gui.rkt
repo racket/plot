@@ -150,6 +150,12 @@
  vector-field-scale
  vector-field-alpha
  vector-field3d-samples
+ arrows-color
+ arrows-line-width
+ arrows-line-style
+ arrows-alpha
+ arrow-head-size-or-scale
+ arrow-head-angle
  error-bar-width
  error-bar-color
  error-bar-line-width

@@ -57,13 +57,14 @@
          [put-font-attribs (-> Nonnegative-Real (U #f String) Font-Family Void)]
          [put-text-foreground (-> Plot-Color Void)]
          [reset-drawing-params (-> Void)]
+         [put-arrow-head (-> (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real Void)]
          [put-lines (-> (Listof (Vectorof Real)) Void)]
          [put-line (-> (Vectorof Real) (Vectorof Real) Void)]
          [put-polygon (-> (Listof (Vectorof Real)) Void)]
          [put-rect (-> Rect Void)]
          [put-text (->* [String (Vectorof Real)] [Anchor Real Real Boolean] Void)]
          [put-glyphs (-> (Listof (Vectorof Real)) Point-Sym Nonnegative-Real Void)]
-         [put-arrow (-> (Vectorof Real) (Vectorof Real) Void)]
+         [put-arrow (->* ((Vectorof Real) (Vectorof Real)) (Boolean) Void)]
          [put-tick (-> (Vectorof Real) Real Real Void)]
          [put-pict (->* [pict (Vectorof Real)] [Anchor Real] Void)]
          ))
@@ -699,6 +700,8 @@
     (define/public (put-font-attribs size face family) (send pd set-font-attribs size face family))
     (define/public (put-text-foreground color) (send pd set-text-foreground color))
 
+    (define/public (put-arrow-head size-or-scale angle) (send pd set-arrow-head size-or-scale angle))
+
     (define/public (reset-drawing-params)
       (put-alpha (plot-foreground-alpha))
       (put-pen (plot-foreground) (plot-line-width) 'solid)
@@ -784,10 +787,10 @@
                                     vs)
                 symbol size))))
 
-    (define/public (put-arrow v1 v2)
+    (define/public (put-arrow v1 v2 [draw-outside? #f])
       (let ([v1  (exact-vector2d v1)]
             [v2  (exact-vector2d v2)])
-        (when (and v1 v2 (in-bounds? v1))
+        (when (and v1 v2 (or draw-outside? (in-bounds? v1)))
           (send pd draw-arrow (plot->dc v1) (plot->dc v2)))))
 
     (define/public (put-tick v r angle)
