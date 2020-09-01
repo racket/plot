@@ -359,7 +359,7 @@ For example, to plot an estimated density of the triangle distribution:
                  [#:style style plot-pen-style/c (arrows-line-style)]
                  [#:alpha alpha (real-in 0 1) (arrows-alpha)]
                  [#:arrow-head-size-or-scale size (or/c (list/c '= (>=/c 0)) (>=/c 0)) (arrow-head-size-or-scale)]
-                 [#:arrow-head-size-or-scale angle (>=/c 0) (arrow-head-angle)]
+                 [#:arrow-head-angle angle (>=/c 0) (arrow-head-angle)]
                  [#:label label (or/c string? pict? #f) #f]
                  ) renderer2d?]{
 Returns a renderer which draws arrows. Arrows can be specified either as sequences of 2D points,
