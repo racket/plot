@@ -126,11 +126,16 @@
                      [(? real?)  (map (λ ([mag : Real]) (* scale mag)) mags)]
                      ['normalized  (define box-size (min box-x-size box-y-size))
                                    (build-list (length dxs) (λ _ box-size))]
-                     ['auto  (define dx-max (apply max (map abs dxs)))
-                             (define dy-max (apply max (map abs dys)))
-                             (define scale (min (/ box-x-size dx-max)
-                                                (/ box-y-size dy-max)))
-                             (map (λ ([mag : Real]) (* scale mag)) mags)]))
+                     ['auto
+                      ;; When all dxs or dys are (exact) zero, the calculation of scale
+                      ;; will raise a 'division by zero' error. If we convert the values
+                      ;; to flonums, the partial result will be +inf.0, and the correct
+                      ;; scale can be calculated.
+                      (define dx-max (real->double-flonum (apply max (map abs dxs))))
+                      (define dy-max (real->double-flonum (apply max (map abs dys))))
+                      (define scale (min (/ box-x-size dx-max)
+                                         (/ box-y-size dy-max)))
+                      (map (λ ([mag : Real]) (* scale mag)) mags)]))
                  
                  (send area put-alpha alpha)
                  (send area put-pen color line-width line-style)
