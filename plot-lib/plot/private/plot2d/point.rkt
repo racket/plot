@@ -23,15 +23,12 @@
 (: points-render-fun (-> (Listof (Vectorof Real)) Point-Sym
                          Plot-Color Plot-Color Nonnegative-Real Nonnegative-Real
                          Nonnegative-Real
-                         (U String pict #f)
                          2D-Render-Proc))
-(define ((points-render-fun vs sym color fill-color size line-width alpha label) area)
+(define ((points-render-fun vs sym color fill-color size line-width alpha) area)
   (send area put-alpha alpha)
   (send area put-pen color line-width 'solid)
   (send area put-brush fill-color 'solid)
-  (send area put-glyphs vs sym size)
-  
-  (if label (point-legend-entry label sym color fill-color size line-width) empty))
+  (send area put-glyphs vs sym size))
 
 (:: points
     (->* [(Sequenceof (Sequenceof Real))]
@@ -71,7 +68,7 @@
      (let* ([vs  (sequence->listof-vector 'points vs 2)]
             [vs  (filter vrational? vs)])
        (cond
-         [(empty? vs)  (renderer2d #f #f #f #f)]
+         [(empty? vs)  empty-renderer2d]
          [else
           (unless (= 0 x-jitter y-jitter)
             (points-apply-jitters vs (vector x-jitter y-jitter) #:ivls (vector (ivl x-min x-max) (ivl y-min y-max))))
@@ -83,8 +80,9 @@
                 [fill-color  (if (eq? fill-color 'auto) (->pen-color color) fill-color)])
             (renderer2d
              (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+             (and label (λ (_) (point-legend-entry label sym color fill-color size line-width)))
              (points-render-fun vs sym color fill-color
-                                size line-width alpha label)))]))]))
+                                size line-width alpha)))]))]))
 
 ;; ===================================================================================================
 ;; Vector fields
@@ -94,62 +92,56 @@
        Positive-Integer (U Real 'auto 'normalized)
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
-       (U String pict #f)
        2D-Render-Proc))
-(define ((vector-field-render-fun f samples scale color line-width line-style alpha label) area)
+(define ((vector-field-render-fun f samples scale color line-width line-style alpha) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
   
-  (cond
-    [(and x-min x-max y-min y-max)
-     (define xs0 (linear-seq x-min x-max samples #:start? #t #:end? #t))
-     (define ys0 (linear-seq y-min y-max samples #:start? #t #:end? #t))
+  (when (and x-min x-max y-min y-max)
+    (define xs0 (linear-seq x-min x-max samples #:start? #t #:end? #t))
+    (define ys0 (linear-seq y-min y-max samples #:start? #t #:end? #t))
      
-     (define-values (xs ys dxs dys angles mags)
-       (for*/lists ([xs : (Listof Real)]
-                    [ys : (Listof Real)]
-                    [dxs : (Listof Real)]
-                    [dys : (Listof Real)]
-                    [angles : (Listof Real)]
-                    [mags : (Listof Nonnegative-Real)]
-                    ) ([x   (in-list xs0)]
-                       [y   (in-list ys0)]
-                       [dv  (in-value (f x y))] #:when (vrational? dv))
-         (match-define (vector dx dy) dv)
-         (values x y dx dy (atan2 dy dx) (sqrt (+ (sqr dx) (sqr dy))))))
+    (define-values (xs ys dxs dys angles mags)
+      (for*/lists ([xs : (Listof Real)]
+                   [ys : (Listof Real)]
+                   [dxs : (Listof Real)]
+                   [dys : (Listof Real)]
+                   [angles : (Listof Real)]
+                   [mags : (Listof Nonnegative-Real)]
+                   ) ([x   (in-list xs0)]
+                      [y   (in-list ys0)]
+                      [dv  (in-value (f x y))] #:when (vrational? dv))
+        (match-define (vector dx dy) dv)
+        (values x y dx dy (atan2 dy dx) (sqrt (+ (sqr dx) (sqr dy))))))
      
-     (cond [(empty? xs)  empty]
-           [else (define box-x-size (/ (- x-max x-min) samples))
-                 (define box-y-size (/ (- y-max y-min) samples))
+    (unless (empty? xs)
+      (define box-x-size (/ (- x-max x-min) samples))
+      (define box-y-size (/ (- y-max y-min) samples))
                  
-                 (define new-mags
-                   (match scale
-                     [(? real?)  (map (λ ([mag : Real]) (* scale mag)) mags)]
-                     ['normalized  (define box-size (min box-x-size box-y-size))
-                                   (build-list (length dxs) (λ _ box-size))]
-                     ['auto
-                      ;; When all dxs or dys are (exact) zero, the calculation of scale
-                      ;; will raise a 'division by zero' error. If we convert the values
-                      ;; to flonums, the partial result will be +inf.0, and the correct
-                      ;; scale can be calculated.
-                      (define dx-max (real->double-flonum (apply max (map abs dxs))))
-                      (define dy-max (real->double-flonum (apply max (map abs dys))))
-                      (define scale (min (/ box-x-size dx-max)
-                                         (/ box-y-size dy-max)))
-                      (map (λ ([mag : Real]) (* scale mag)) mags)]))
+      (define new-mags
+        (match scale
+          [(? real?)  (map (λ ([mag : Real]) (* scale mag)) mags)]
+          ['normalized  (define box-size (min box-x-size box-y-size))
+                        (build-list (length dxs) (λ _ box-size))]
+          ['auto
+           ;; When all dxs or dys are (exact) zero, the calculation of scale
+           ;; will raise a 'division by zero' error. If we convert the values
+           ;; to flonums, the partial result will be +inf.0, and the correct
+           ;; scale can be calculated.
+           (define dx-max (real->double-flonum (apply max (map abs dxs))))
+           (define dy-max (real->double-flonum (apply max (map abs dys))))
+           (define scale (min (/ box-x-size dx-max)
+                              (/ box-y-size dy-max)))
+           (map (λ ([mag : Real]) (* scale mag)) mags)]))
                  
-                 (send area put-alpha alpha)
-                 (send area put-pen color line-width line-style)
-                 (for ([x      (in-list xs)]
-                       [y      (in-list ys)]
-                       [angle  (in-list angles)]
-                       [mag    (in-list new-mags)])
-                   (send area put-arrow
-                         (vector x y)
-                         (vector (+ x (* mag (cos angle))) (+ y (* mag (sin angle))))))
-                 
-                 (cond [label  (arrow-legend-entry label color line-width line-style)]
-                       [else   empty])])]
-    [else  empty]))
+      (send area put-alpha alpha)
+      (send area put-pen color line-width line-style)
+      (for ([x      (in-list xs)]
+            [y      (in-list ys)]
+            [angle  (in-list angles)]
+            [mag    (in-list new-mags)])
+        (send area put-arrow
+              (vector x y)
+              (vector (+ x (* mag (cos angle))) (+ y (* mag (sin angle)))))))))
 
 (:: vector-field
     (->* [(U (-> Real Real (Sequenceof Real))
@@ -186,8 +178,9 @@
     [else
      (let ([f  (fix-vector-field-fun 'vector-field f)])
        (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+                   (and label (λ (_) (arrow-legend-entry label color line-width line-style)))
                    (vector-field-render-fun
-                    f samples scale color line-width line-style alpha label)))]))
+                    f samples scale color line-width line-style alpha)))]))
 
 ;; ===================================================================================================
 ;; Error bars
@@ -212,9 +205,7 @@
       (define v2 (maybe-invert x (+ y h)))
       (send area put-line v1 v2)
       (send area put-tick v1 radius angle)
-      (send area put-tick v2 radius angle)))
-  
-  empty)
+      (send area put-tick v2 radius angle))))
 
 (:: error-bars
     (->* [(Sequenceof (Sequenceof Real))]
@@ -247,7 +238,7 @@
     [else
      (let* ([bars  (sequence->listof-vector 'error-bars bars 3)]
             [bars  (filter vrational? bars)])
-       (cond [(empty? bars)  (renderer2d #f #f #f #f)]
+       (cond [(empty? bars)  empty-renderer2d]
              [else
               (match-define (list (vector #{xs : (Listof Real)}
                                           #{ys : (Listof Real)}
@@ -262,8 +253,7 @@
                 (define maybe-invert (if invert? (λ (x y) (vector y x)) vector))
                 (renderer2d
                  (maybe-invert (ivl x-min x-max) (ivl y-min y-max))
-                 #f
-                 default-ticks-fun
+                 #f default-ticks-fun #f
                  (error-bars-render-fun xs ys hs
                                         color line-width line-style width alpha invert?)))]))]))
 
@@ -295,8 +285,7 @@
                   (send area put-line v2 v4)
                   (send area put-line v1 v3)
                   (send area put-brush up-color 'solid)
-                  (send area put-rect r1)]))
-  empty)
+                  (send area put-rect r1)])))
 
 (:: candlesticks
     (->* [(Sequenceof (Sequenceof Real))]
@@ -329,7 +318,7 @@
     [else
      (let* ([candles  (sequence->listof-vector 'candlesticks candles 5)]
             [candles  (filter vrational? candles)])
-       (cond [(empty? candles)  (renderer2d #f #f #f #f)]
+       (cond [(empty? candles)  empty-renderer2d]
              [else
               (match-define (list (vector #{xs : (Listof Real)}
                                           #{opens : (Listof Real)}
@@ -342,6 +331,6 @@
                     [x-max  (if x-max x-max (+ (apply max* xs) width))]
                     [y-min  (if y-min y-min (apply min* lows))]
                     [y-max  (if y-max y-max (apply max* highs))])
-                (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+                (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun #f
                             (candlesticks-render-fun xs opens highs lows closes
                                                      up-color down-color line-width line-style width alpha)))]))]))

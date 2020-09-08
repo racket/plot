@@ -29,25 +29,22 @@
 (define ((color-field-render-fun f samples alpha) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
   
-  (cond
-    [(and x-min x-max y-min y-max)
-     (define xs (linear-seq x-min x-max (+ samples 1) #:start? #t #:end? #t))
-     (define ys (linear-seq y-min y-max (+ samples 1) #:start? #t #:end? #t))
+  (when (and x-min x-max y-min y-max)
+    (define xs (linear-seq x-min x-max (+ samples 1) #:start? #t #:end? #t))
+    (define ys (linear-seq y-min y-max (+ samples 1) #:start? #t #:end? #t))
 
-     (send area put-alpha alpha)
-     (send area put-pen 'black 0 'transparent)
-     (for ([x- (in-list xs)]
-           [x+ (in-list (cdr xs))])
-       (define x (/ (+ x- x+) 2))
-       (for ([y- (in-list ys)]
-             [y+ (in-list (cdr ys))])
-         (define y (/ (+ y- y+) 2))
-         (define c (f x y))
-         (send area put-brush c 'solid)
-         (send area put-rect (vector (ivl x- x+)
-                                     (ivl y- y+)))))
-     empty]
-    [else  empty]))
+    (send area put-alpha alpha)
+    (send area put-pen 'black 0 'transparent)
+    (for ([x- (in-list xs)]
+          [x+ (in-list (cdr xs))])
+      (define x (/ (+ x- x+) 2))
+      (for ([y- (in-list ys)]
+            [y+ (in-list (cdr ys))])
+        (define y (/ (+ y- y+) 2))
+        (define c (f x y))
+        (send area put-brush c 'solid)
+        (send area put-rect (vector (ivl x- x+)
+                                    (ivl y- y+)))))))
 
 (:: color-field
     (->* [(U (-> Real Real Plot-Color)
@@ -70,7 +67,7 @@
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (let ([f ((inst fix-a-field-fun Plot-Color) 'color-field f)])
-       (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+       (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun #f
                    (color-field-render-fun
                     f samples alpha)))]))
 

@@ -313,4 +313,5 @@
  (struct-out plot-element)
  (struct-out nonrenderer)
  (struct-out renderer2d)
+ empty-renderer2d
  (struct-out renderer3d))

@@ -35,9 +35,7 @@
     (define dist (+ radius (pen-gap)))
     (for ([t  (in-list x-ticks)] #:when (pre-tick-major? t))
       (match-define (tick x _ label) t)
-      (send area put-text label (vector x y) (if far? 'bottom 'top) 0 dist)))
-  
-  empty)
+      (send area put-text label (vector x y) (if far? 'bottom 'top) 0 dist))))
 
 (:: x-axis
     (->* [] [Real #:ticks? Boolean #:labels? Boolean #:far? Boolean #:alpha Nonnegative-Real]
@@ -52,7 +50,7 @@
     [(or (> alpha 1) (not (rational? alpha)))  (raise-keyword-error 'x-axis "real in [0,1]"
                                                                     '#:alpha alpha)]
     [else
-     (renderer2d #f #f #f (x-axis-render-proc y ticks? labels? far? alpha))]))
+     (renderer2d #f #f #f #f (x-axis-render-proc y ticks? labels? far? alpha))]))
 
 ;; ---------------------------------------------------------------------------------------------------
 
@@ -77,9 +75,7 @@
     (define dist (+ radius (pen-gap)))
     (for ([t  (in-list y-ticks)] #:when (pre-tick-major? t))
       (match-define (tick y _ label) t)
-      (send area put-text label (vector x y) (if far? 'left 'right) 0 dist)))
-  
-  empty)
+      (send area put-text label (vector x y) (if far? 'left 'right) 0 dist))))
 
 (:: y-axis
     (->* [] [Real #:ticks? Boolean #:labels? Boolean #:far? Boolean #:alpha Nonnegative-Real]
@@ -94,7 +90,7 @@
     [(or (> alpha 1) (not (rational? alpha)))  (raise-keyword-error 'y-axis "real in [0,1]"
                                                                     '#:alpha alpha)]
     [else
-     (renderer2d #f #f #f (y-axis-render-proc x ticks? labels? far? alpha))]))
+     (renderer2d #f #f #f #f (y-axis-render-proc x ticks? labels? far? alpha))]))
 
 (:: axes
     (->* []
@@ -195,8 +191,7 @@
 (define ((polar-axes-render-proc num ticks? labels? alpha) area)
   (send area put-alpha alpha)
   (when (num . > . 0) (draw-polar-axis-lines num area))
-  (when ticks? (draw-polar-axis-ticks (if (num . > . 0) num 12) labels? area))
-  empty)
+  (when ticks? (draw-polar-axis-ticks (if (num . > . 0) num 12) labels? area)))
 
 (:: polar-axes
     (->* [] [#:number Natural #:ticks? Boolean #:labels? Boolean #:alpha Nonnegative-Real]
@@ -209,7 +204,7 @@
     [(or (> alpha 1) (not (rational? alpha)))  (raise-keyword-error 'polar-axes "real in [0,1]"
                                                                     '#:alpha alpha)]
     [else
-     (renderer2d #f #f #f (polar-axes-render-proc num ticks? labels? alpha))]))
+     (renderer2d #f #f #f #f (polar-axes-render-proc num ticks? labels? alpha))]))
 
 ;; ===================================================================================================
 ;; Grid
@@ -223,8 +218,7 @@
     (for ([t  (in-list x-ticks)])
       (match-define (tick x major? _) t)
       (if major? (send area put-minor-pen) (send area put-minor-pen 'long-dash))
-      (send area put-line (vector x y-min) (vector x y-max))))
-  empty)
+      (send area put-line (vector x y-min) (vector x y-max)))))
 
 (: y-tick-lines-render-proc (-> 2D-Render-Proc))
 (define ((y-tick-lines-render-proc) area)
@@ -235,16 +229,15 @@
     (for ([t  (in-list y-ticks)])
       (match-define (tick y major? _) t)
       (if major? (send area put-minor-pen) (send area put-minor-pen 'long-dash))
-      (send area put-line (vector x-min y) (vector x-max y))))
-  empty)
+      (send area put-line (vector x-min y) (vector x-max y)))))
 
 (:: x-tick-lines (-> renderer2d))
 (define (x-tick-lines)
-  (renderer2d #f #f #f (x-tick-lines-render-proc)))
+  (renderer2d #f #f #f #f (x-tick-lines-render-proc)))
 
 (:: y-tick-lines (-> renderer2d))
 (define (y-tick-lines)
-  (renderer2d #f #f #f (y-tick-lines-render-proc)))
+  (renderer2d #f #f #f #f (y-tick-lines-render-proc)))
 
 (:: tick-grid (-> (Listof renderer2d)))
 (define (tick-grid)
@@ -284,9 +277,7 @@
     ; point
     (send area put-pen point-color point-line-width 'solid)
     (send area put-brush point-fill-color 'solid)
-    (send area put-glyphs (list v) point-sym point-size))
-  
-  empty)
+    (send area put-glyphs (list v) point-sym point-size)))
 
 (: pict-render-proc (-> pict (Vectorof Real)
                         Anchor
@@ -303,8 +294,7 @@
   ; point
   (send area put-pen point-color point-line-width 'solid)
   (send area put-brush point-fill-color 'solid)
-  (send area put-glyphs (list v) point-sym point-size)
-  empty)
+  (send area put-glyphs (list v) point-sym point-size))
 
 (:: point-label
     (->* [(Sequenceof Real)]
@@ -345,7 +335,7 @@
     [else
      (let ([v  (sequence-head-vector 'point-label v 2)])
        (match-define (vector x y) v)
-       (renderer2d (vector (ivl x x) (ivl y y)) #f #f
+       (renderer2d (vector (ivl x x) (ivl y y)) #f #f #f
                    (label-render-proc
                     label v color size face family anchor angle
                     point-color (cond [(eq? point-fill-color 'auto)  (->pen-color point-color)]
@@ -379,7 +369,7 @@
     [else 
      (let ([v (sequence-head-vector 'point-pict v 2)])
        (match-define (vector x y) v)
-       (renderer2d (vector (ivl x x) (ivl y y)) #f #f
+       (renderer2d (vector (ivl x x) (ivl y y)) #f #f #f
                    (pict-render-proc pict v anchor
                                      point-color (cond [(eq? point-fill-color 'auto)  (->pen-color point-color)]
                                                        [else  point-fill-color])
