@@ -20,7 +20,7 @@
   (cond [(list? renderer-tree)  (append* (map get-renderer-list renderer-tree))]
         [(nonrenderer? renderer-tree)
          (match-define (nonrenderer bounds-rect bounds-fun ticks-fun) renderer-tree)
-         (list (renderer3d bounds-rect bounds-fun ticks-fun #f))]
+         (list (renderer3d bounds-rect bounds-fun ticks-fun #f #f))]
         [(renderer3d? renderer-tree)
          (list renderer-tree)]
         [else
@@ -81,11 +81,14 @@
   (define legend-entries
     (flatten-legend-entries
      (for/list : (Listof (Treeof legend-entry)) ([rend  (in-list renderer-list)])
-       (match-define (renderer3d rend-bounds-rect _bf _tf render-proc) rend)
+       (match-define (renderer3d rend-bounds-rect _bf _tf label-proc render-proc) rend)
        (send area start-renderer (if rend-bounds-rect
                                      (rect-inexact->exact rend-bounds-rect)
                                      (unknown-rect 3)))
-       (if render-proc (render-proc area) empty))))
+       (when render-proc (render-proc area))
+       (if label-proc
+           (label-proc (send area get-bounds-rect))
+           empty))))
   
   (send area end-renderers)
   

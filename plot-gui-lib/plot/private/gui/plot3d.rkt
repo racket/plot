@@ -112,11 +112,14 @@
                 legend-entries-hash (plot-animating?)
                 (flatten-legend-entries
                  (for/list : (Listof (Treeof legend-entry)) ([rend  (in-list renderer-list)])
-                   (match-define (renderer3d rend-bounds-rect _bf _tf render-proc) rend)
+                   (match-define (renderer3d rend-bounds-rect _bf _tf label-proc render-proc) rend)
                    (send area start-renderer (if rend-bounds-rect
                                                  (rect-inexact->exact rend-bounds-rect)
                                                  (unknown-rect 3)))
-                   (if render-proc (render-proc area) empty))))
+                   (when render-proc (render-proc area))
+                   (if label-proc
+                       (label-proc (send area get-bounds-rect))
+                       empty))))
 
                (hash-set! render-tasks-hash (plot-animating?) (send area get-render-tasks))]
               [else

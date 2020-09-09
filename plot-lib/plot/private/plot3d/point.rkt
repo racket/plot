@@ -21,16 +21,12 @@
                             Plot-Color Plot-Color
                             Nonnegative-Real Nonnegative-Real
                             Nonnegative-Real
-                            (U String pict #f)
                             3D-Render-Proc))
-(define ((points3d-render-proc vs sym color fill-color size line-width alpha label) area)
+(define ((points3d-render-proc vs sym color fill-color size line-width alpha) area)
   (send area put-alpha alpha)
   (send area put-pen color line-width 'solid)
   (send area put-brush fill-color 'solid)
-  (send area put-glyphs vs sym size)
-  
-  (cond [label  (point-legend-entry label sym color fill-color size line-width)]
-        [else   empty]))
+  (send area put-glyphs vs sym size))
 
 (:: points3d
     (->* [(Sequenceof (Sequenceof Real))]
@@ -75,7 +71,7 @@
     [else
      (let* ([vs  (sequence->listof-vector 'points3d vs 3)]
             [vs  (filter vrational? vs)])
-       (cond [(empty? vs)  (renderer3d #f #f #f #f)]
+       (cond [(empty? vs)  empty-renderer3d]
              [else
               (unless (= 0 x-jitter y-jitter z-jitter)
                 (points-apply-jitters vs (vector x-jitter y-jitter z-jitter)
@@ -96,8 +92,9 @@
                     [fill-color  (if (eq? fill-color 'auto) (->pen-color color) fill-color)])
                 (renderer3d
                  (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) #f default-ticks-fun
+                 (and label (λ (_) (point-legend-entry label sym color fill-color size line-width)))
                  (points3d-render-proc vs sym color fill-color
-                                       size line-width alpha label)))]))]))
+                                       size line-width alpha)))]))]))
 
 ;; ===================================================================================================
 
@@ -106,59 +103,53 @@
        Positive-Integer (U Real 'auto 'normalized)
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
-       (U String pict #f)
        3D-Render-Proc))
-(define ((vector-field3d-render-fun f samples scale color line-width line-style alpha label) area)
+(define ((vector-field3d-render-fun f samples scale color line-width line-style alpha) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max))
     (send area get-bounds-rect))
   
-  (cond
-    [(and x-min x-max y-min y-max z-min z-max)
-     (define xs0 (linear-seq x-min x-max samples #:start? #t #:end? #t))
-     (define ys0 (linear-seq y-min y-max samples #:start? #t #:end? #t))
-     (define zs0 (linear-seq z-min z-max samples #:start? #t #:end? #t))
+  (when (and x-min x-max y-min y-max z-min z-max)
+    (define xs0 (linear-seq x-min x-max samples #:start? #t #:end? #t))
+    (define ys0 (linear-seq y-min y-max samples #:start? #t #:end? #t))
+    (define zs0 (linear-seq z-min z-max samples #:start? #t #:end? #t))
      
-     (define-values (vs dxs dys dzs norms mags)
-       (for*/lists ([vs : (Listof (Vectorof Real))]
-                    [dxs : (Listof Real)]
-                    [dys : (Listof Real)]
-                    [dzs : (Listof Real)]
-                    [norms : (Listof (Vectorof Real))]
-                    [mags : (Listof Nonnegative-Real)]
-                    ) ([x   (in-list xs0)]
-                       [y   (in-list ys0)]
-                       [z   (in-list zs0)]
-                       [dv  (in-value (f x y z))] #:when (vrational? dv))
-         (match-define (vector dx dy dz) dv)
-         (values (vector x y z) dx dy dz (vnormalize dv) (vmag dv))))
+    (define-values (vs dxs dys dzs norms mags)
+      (for*/lists ([vs : (Listof (Vectorof Real))]
+                   [dxs : (Listof Real)]
+                   [dys : (Listof Real)]
+                   [dzs : (Listof Real)]
+                   [norms : (Listof (Vectorof Real))]
+                   [mags : (Listof Nonnegative-Real)]
+                   ) ([x   (in-list xs0)]
+                      [y   (in-list ys0)]
+                      [z   (in-list zs0)]
+                      [dv  (in-value (f x y z))] #:when (vrational? dv))
+        (match-define (vector dx dy dz) dv)
+        (values (vector x y z) dx dy dz (vnormalize dv) (vmag dv))))
      
-     (cond [(empty? vs)  empty]
-           [else (define box-x-size (/ (- x-max x-min) samples))
-                 (define box-y-size (/ (- y-max y-min) samples))
-                 (define box-z-size (/ (- z-max z-min) samples))
+    (unless (empty? vs)
+      (define box-x-size (/ (- x-max x-min) samples))
+      (define box-y-size (/ (- y-max y-min) samples))
+      (define box-z-size (/ (- z-max z-min) samples))
                  
-                 (define new-mags
-                   (match scale
-                     [(? real?)  (map (λ ([mag : Real]) (* scale mag)) mags)]
-                     ['normalized  (make-list (length dxs) (min box-x-size box-y-size box-z-size))]
-                     ['auto  (define dx-max (real->double-flonum (apply max (map abs dxs))))
-                             (define dy-max (real->double-flonum (apply max (map abs dys))))
-                             (define dz-max (real->double-flonum (apply max (map abs dzs))))
-                             (define scale (min (/ box-x-size dx-max)
-                                                (/ box-y-size dy-max)
-                                                (/ box-z-size dz-max)))
-                             (map (λ ([mag : Real]) (* scale mag)) mags)]))
+      (define new-mags
+        (match scale
+          [(? real?)  (map (λ ([mag : Real]) (* scale mag)) mags)]
+          ['normalized  (make-list (length dxs) (min box-x-size box-y-size box-z-size))]
+          ['auto  (define dx-max (real->double-flonum (apply max (map abs dxs))))
+                  (define dy-max (real->double-flonum (apply max (map abs dys))))
+                  (define dz-max (real->double-flonum (apply max (map abs dzs))))
+                  (define scale (min (/ box-x-size dx-max)
+                                     (/ box-y-size dy-max)
+                                     (/ box-z-size dz-max)))
+                  (map (λ ([mag : Real]) (* scale mag)) mags)]))
                  
-                 (send area put-alpha alpha)
-                 (send area put-pen color line-width line-style)
-                 (for ([v     (in-list vs)]
-                       [norm  (in-list norms)]
-                       [mag   (in-list new-mags)])
-                   (send area put-arrow v (v+ v (v* norm mag))))
-                 
-                 (cond [label  (arrow-legend-entry label color line-width line-style)]
-                       [else   empty])])]
-    [else  empty]))
+      (send area put-alpha alpha)
+      (send area put-pen color line-width line-style)
+      (for ([v     (in-list vs)]
+            [norm  (in-list norms)]
+            [mag   (in-list new-mags)])
+        (send area put-arrow v (v+ v (v* norm mag)))))))
 
 (:: vector-field3d
     (->* [(U (-> Real Real Real (Sequenceof Real))
@@ -198,5 +189,6 @@
     [else
      (let ([f  (fix-vector-field3d-fun 'vector-field3d f)])
        (renderer3d (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) #f default-ticks-fun
+                   (and label (λ (_) (arrow-legend-entry label color line-width line-style)))
                    (vector-field3d-render-fun
-                    f samples scale color line-width line-style alpha label)))]))
+                    f samples scale color line-width line-style alpha)))]))

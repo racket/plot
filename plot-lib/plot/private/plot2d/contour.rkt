@@ -86,31 +86,31 @@
   (define last-sample : 2d-sample       (2d-sample '() '() #() #f #f))
   (define last-zs     : (Listof Real)   empty)
   (define last-labels : (Listof String) empty)
-
+  (define (update! [rect   : Rect]
+                   [sample : 2d-sample (2d-sample '() '() #() #f #f)]
+                   [zs     : (Listof Real) empty]
+                   [labels : (Listof String) empty])
+    (set! last-rect   rect)
+    (set! last-sample sample)
+    (set! last-zs     zs)
+    (set! last-labels labels))
+  
   (define (calculate-zs/labels [rect : Rect]) : (Values 2d-sample (Listof Real) (Listof String))
-    (cond
-      [(equal? rect last-rect) (values last-sample last-zs last-labels)]
-      [else
-       (match-define (vector x-ivl y-ivl) rect)
-       (define num (animated-samples samples))
-       (define sample (g (vector x-ivl y-ivl) (vector num num)))
-       (match-define (2d-sample xs ys zss z-min z-max) sample)
-       (set! last-rect rect)
-       (set! last-sample sample)
-       (cond
-         [(and z-min z-max)
-          (match-define (list (tick #{zs : (Listof Real)}
-                                    #{_ : (Listof Boolean)}
-                                    #{labels : (Listof String)})
-                              ...)
-            (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #f))
-          (set! last-zs zs)
-          (set! last-labels labels)
-          (values sample zs labels)]
-         [else
-          (set! last-zs     empty)
-          (set! last-labels empty)
-          (values sample empty empty)])]))
+    (unless (equal? rect last-rect)
+      (match-define (vector x-ivl y-ivl) rect)
+      (define num (animated-samples samples))
+      (define sample (g (vector x-ivl y-ivl) (vector num num)))
+      (match-define (2d-sample xs ys zss z-min z-max) sample)
+      (cond
+        [(and z-min z-max)
+         (match-define (list (tick #{zs : (Listof Real)}
+                                   #{_ : (Listof Boolean)}
+                                   #{labels : (Listof String)})
+                             ...)
+           (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #f))
+         (update! rect sample zs labels)]
+        [else (update! rect)]))
+    (values last-sample last-zs last-labels))
 
   (define label-proc
     (and label (λ ([rect : Rect])
@@ -194,48 +194,48 @@
 (define (make-contour-intervals-labels-and-renderer
          g levels samples colors styles contour-colors contour-widths contour-styles alphas label)
 
-  (define last-rect       : (U #f Rect)     #f)
-  (define last-sample     : 2d-sample       (2d-sample '() '() #() #f #f))
-  (define last-z-ivls     : (Listof ivl)    empty)
-  (define last-zs         : (Listof Real)   empty)
-  (define last-ivl-labels : (Listof String) empty)
+  (define last-rect   : (U #f Rect)     #f)
+  (define last-sample : 2d-sample       (2d-sample '() '() #() #f #f))
+  (define last-zivls  : (Listof ivl)    empty)
+  (define last-zs     : (Listof Real)   empty)
+  (define last-labels : (Listof String) empty)
+  (define (update! [rect   : Rect]
+                   [sample : 2d-sample       (2d-sample '() '() #() #f #f)]
+                   [zivls  : (Listof ivl)    empty]
+                   [zs     : (Listof Real)   empty]
+                   [labels : (Listof String) empty])
+    (set! last-rect   rect)
+    (set! last-sample sample)
+    (set! last-zivls  zivls)
+    (set! last-zs     zs)
+    (set! last-labels labels))
 
   (define (calculate-zivls/labels [rect : Rect]) : (Values 2d-sample (Listof ivl) (Listof Real) (Listof String))
-    (cond
-      [(equal? rect last-rect) (values last-sample last-z-ivls last-zs last-ivl-labels)]
-      [else
-       (match-define (vector x-ivl y-ivl) rect)
-       (define num (animated-samples samples))
-       (define sample (g (vector x-ivl y-ivl) (vector num num)))
-       (match-define (2d-sample xs ys zss z-min z-max) sample)
-       (set! last-rect rect)
-       (set! last-sample sample)
-       (cond
-         [(and z-min z-max)
-          (match-define (list (tick #{zs : (Listof Real)}
-                                    #{_ : (Listof Boolean)}
-                                    #{labels : (Listof String)})
-                              ...)
-            (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #t))
+    (unless (equal? rect last-rect)
+      (match-define (vector x-ivl y-ivl) rect)
+      (define num (animated-samples samples))
+      (define sample (g (vector x-ivl y-ivl) (vector num num)))
+      (match-define (2d-sample xs ys zss z-min z-max) sample)
+      (cond
+        [(and z-min z-max)
+         (match-define (list (tick #{zs : (Listof Real)}
+                                   #{_ : (Listof Boolean)}
+                                   #{labels : (Listof String)})
+                             ...)
+           (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #t))
 
-          (define-values (z-ivls ivl-labels)
-            (for/lists ([z-ivls : (Listof ivl)]
-                        [ivl-labels : (Listof String)]
-                        ) ([za  (in-list zs)]
-                           [zb  (in-list (rest zs))]
-                           [la  (in-list labels)]
-                           [lb  (in-list (rest labels))])
-              (values (ivl za zb) (format "[~a,~a]" la lb))))
+         (define-values (z-ivls ivl-labels)
+           (for/lists ([z-ivls : (Listof ivl)]
+                       [ivl-labels : (Listof String)]
+                       ) ([za  (in-list zs)]
+                          [zb  (in-list (rest zs))]
+                          [la  (in-list labels)]
+                          [lb  (in-list (rest labels))])
+             (values (ivl za zb) (format "[~a,~a]" la lb))))
           
-          (set! last-z-ivls     z-ivls)
-          (set! last-zs         zs)
-          (set! last-ivl-labels ivl-labels)
-          (values sample z-ivls zs ivl-labels)]
-         [else
-          (set! last-z-ivls     empty)
-          (set! last-zs         empty)
-          (set! last-ivl-labels empty)
-          (values sample empty empty empty)])]))
+         (update! rect sample z-ivls zs ivl-labels)]
+        [else (update! rect)]))
+    (values last-sample last-zivls last-zs last-labels))
 
   (define label-proc
     (and label

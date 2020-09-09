@@ -13,15 +13,11 @@
 (: lines3d-render-proc (-> (-> (Listof (Vectorof Real)))
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U String pict #f)
                            3D-Render-Proc))
-(define ((lines3d-render-proc vs-fun color width style alpha label) area)
+(define ((lines3d-render-proc vs-fun color width style alpha) area)
   (send area put-alpha alpha)
   (send area put-pen color width style)
-  (send area put-lines (vs-fun))
-  
-  (cond [label  (line-legend-entry label color width style)]
-        [else  empty]))
+  (send area put-lines (vs-fun)))
 
 (: lines3d-renderer (-> (-> (Listof (Vectorof Real)))
                         (U #f Real) (U #f Real) (U #f Real) (U #f Real) (U #f Real) (U #f Real)
@@ -32,7 +28,7 @@
 (define (lines3d-renderer
          vs-thnk x-min x-max y-min y-max z-min z-max color width style alpha label)
   (define rvs (filter vrational? (vs-thnk)))
-  (cond [(empty? rvs)  (renderer3d #f #f #f #f)]
+  (cond [(empty? rvs)  empty-renderer3d]
         [else
          (match-define (list (vector #{rxs : (Listof Real)}
                                      #{rys : (Listof Real)}
@@ -47,7 +43,8 @@
                [z-max  (if z-max z-max (apply max* rzs))])
            (renderer3d (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) #f
                        default-ticks-fun
-                       (lines3d-render-proc vs-thnk color width style alpha label)))]))
+                       (and label (λ (_) (line-legend-entry label color width style)))
+                       (lines3d-render-proc vs-thnk color width style alpha)))]))
 
 (:: lines3d
     (->* [(Sequenceof (Sequenceof Real))]

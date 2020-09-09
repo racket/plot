@@ -46,9 +46,7 @@
     ; point
     (send area put-pen point-color point-line-width 'solid)
     (send area put-brush point-fill-color 'solid)
-    (send area put-glyphs (list v) point-sym point-size plot3d-front-layer))
-  
-  empty)
+    (send area put-glyphs (list v) point-sym point-size plot3d-front-layer)))
 
 (:: point-label3d
     (->* [(Sequenceof Real)]
@@ -89,7 +87,7 @@
     [else
      (let ([v  (sequence-head-vector 'point-label3d v 3)])
        (match-define (vector x y z) v)
-       (renderer3d (vector (ivl x x) (ivl y y) (ivl z z)) #f #f
+       (renderer3d (vector (ivl x x) (ivl y y) (ivl z z)) #f #f #f
                    (label3d-render-proc
                     label v color size face family anchor angle
                     point-color (cond [(eq? point-fill-color 'auto)  (->pen-color point-color)]

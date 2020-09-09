@@ -15,18 +15,14 @@
                                 Plot-Color Plot-Brush-Style
                                 Plot-Color Nonnegative-Real Plot-Pen-Style
                                 Nonnegative-Real
-                                (U String pict #f)
                                 3D-Render-Proc))
-(define ((rectangles3d-render-proc rects color style line-color line-width line-style alpha label)
+(define ((rectangles3d-render-proc rects color style line-color line-width line-style alpha)
          area)
   (send area put-pen line-color line-width line-style)
   (send area put-brush color style)
   (send area put-alpha alpha)
   (for ([rect  (in-list rects)])
-    (send area put-rect rect))
-  
-  (cond [label  (rectangle-legend-entry label color style line-color line-width line-style)]
-        [else  empty]))
+    (send area put-rect rect)))
 
 (:: rectangles3d
     (->* [(Sequenceof (Sequenceof ivl))]
@@ -76,7 +72,7 @@
        (define rys (filter rational? (append y1s y2s)))
        (define rzs (filter rational? (append z1s z2s)))
        (cond
-         [(or (empty? rxs) (empty? rys) (empty? rzs))  (renderer3d #f #f #f #f)]
+         [(or (empty? rxs) (empty? rys) (empty? rzs))  empty-renderer3d]
          [else
           (let ([x-min  (if x-min x-min (apply min* rxs))]
                 [x-max  (if x-max x-max (apply max* rxs))]
@@ -86,8 +82,10 @@
                 [z-max  (if z-max z-max (apply max* rzs))])
             (renderer3d (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) #f
                         default-ticks-fun
+                        (and label (λ (_) (rectangle-legend-entry
+                                           label color style line-color line-width line-style)))
                         (rectangles3d-render-proc rects color style line-color line-width line-style
-                                                  alpha label)))]))]))
+                                                  alpha)))]))]))
 
 ;; ===================================================================================================
 ;; Discrete histograms
@@ -185,7 +183,7 @@
                                      (list z1 z2)]
                           [else  (list z)])))))
        (cond
-         [(empty? rzs)  (renderer3d #f #f #f #f)]
+         [(empty? rzs)  empty-renderer3d]
          [else
           (define c1s (remove-duplicates cat1s))
           (define c2s (remove-duplicates cat2s))
@@ -234,8 +232,10 @@
              (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) #f
              (discrete-histogram3d-ticks-fun c1s c2s tick-xs tick-ys
                                              add-x-ticks? add-y-ticks? x-far-ticks? y-far-ticks?)
+             (and label (λ (_) (rectangle-legend-entry
+                                           label color style line-color line-width line-style)))
              (rectangles3d-render-proc rects color style line-color line-width line-style
-                                       alpha label)))]))]))
+                                       alpha)))]))]))
 
 (:: stacked-histogram3d
     (->* [(Sequenceof (U (Vector Any Any (Sequenceof Real))

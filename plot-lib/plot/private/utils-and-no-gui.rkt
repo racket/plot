@@ -314,4 +314,5 @@
  (struct-out nonrenderer)
  (struct-out renderer2d)
  empty-renderer2d
- (struct-out renderer3d))
+ (struct-out renderer3d)
+ empty-renderer3d)
