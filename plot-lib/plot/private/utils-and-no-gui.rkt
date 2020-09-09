@@ -17,7 +17,8 @@
  Alphas
  Labels
  Contour-Levels
- Image-File-Format)
+ Image-File-Format
+ Legend-Anchor)
 
 (require "common/math.rkt")
 

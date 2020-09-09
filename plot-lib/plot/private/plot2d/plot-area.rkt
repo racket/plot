@@ -26,6 +26,7 @@
                      [rx-far-ticks (Listof tick)]
                      [ry-ticks (Listof tick)]
                      [ry-far-ticks (Listof tick)]
+                     [legend (Listof legend-entry)]
                      [dc (Instance DC<%>)]
                      [dc-x-min Real]
                      [dc-y-min Real]
@@ -72,7 +73,7 @@
 (: 2d-plot-area% 2D-Plot-Area%)
 (define 2d-plot-area%
   (class object%
-    (init-field bounds-rect rx-ticks rx-far-ticks ry-ticks ry-far-ticks)
+    (init-field bounds-rect rx-ticks rx-far-ticks ry-ticks ry-far-ticks legend)
     (init-field dc dc-x-min dc-y-min dc-x-size dc-y-size)
     (super-new)
 
@@ -657,6 +658,8 @@
     (define/public (start-plot)
       (send pd reset-drawing-params)
       (send pd clear)
+      (when (and (not (empty? legend)) (outside-anchor (plot-legend-anchor)))
+        (draw-legend legend))
       (draw-title)
       (draw-axes)
       (draw-ticks)
@@ -672,13 +675,21 @@
 
     (define/public (end-renderers)
       (clear-clip-rect)
-      (send pd reset-drawing-params))
+      (send pd reset-drawing-params)
+      (when (and (not (empty? legend)) (inside-anchor (plot-legend-anchor)))
+        (draw-legend legend)))
 
     (define/public (draw-legend legend-entries)
       (define gap-size (+ (pen-gap) tick-radius))
+      (define-values (x-min x-max y-min y-max)
+        (if (outside-anchor (plot-legend-anchor))
+            (match-let ([(vector x-min y-min) (view->dc #(0. 0.))]
+                        [(vector x-max y-max) (view->dc #(1. 1.))])
+              (values x-min x-max y-min y-max))
+            (values area-x-min area-x-max area-y-min area-y-max)))
       (send pd draw-legend legend-entries
-            (vector (ivl (+ area-x-min gap-size) (- area-x-max gap-size))
-                    (ivl (+ area-y-min gap-size) (- area-y-max gap-size)))))
+            (vector (ivl (+ x-min gap-size) (- x-max gap-size))
+                    (ivl (+ y-min gap-size) (- y-max gap-size)))))
 
     (define/public (end-plot)
       (send pd restore-drawing-params))

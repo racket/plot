@@ -75,7 +75,7 @@
 (defparam plot-legend-font-size size (U Nonnegative-Real #f) #f)
 (defparam plot-legend-font-face face (U String #f) #f)
 (defparam plot-legend-font-family family (U Font-Family #f) #f)
-(defparam plot-legend-anchor anchor Anchor 'top-left)
+(defparam plot-legend-anchor anchor Legend-Anchor 'top-left)
 (defparam2 plot-legend-box-alpha alpha Real Nonnegative-Real 2/3 (unit-ivl 'plot-legend-box-alpha))
 (defparam plot-animating? Boolean #f)
 

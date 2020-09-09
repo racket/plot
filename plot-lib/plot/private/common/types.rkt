@@ -17,6 +17,7 @@
      'left        'center 'right
      'bottom-left 'bottom 'bottom-right
      'auto))
+(define-predicate anchor? Anchor)
 
 (deftype Color
   (U (List Real Real Real)
@@ -92,6 +93,15 @@
 
 (struct legend-entry ([label : (U String pict)] [draw : Legend-Draw-Proc]) #:transparent)
 
+(deftype Legend-Anchor (U #f Anchor (List (U 'inside 'outside) Anchor)))
+(define (inside-anchor [a : Legend-Anchor])
+  (and a
+       (if (list? a)
+           (and (eq? (car a) 'inside) (cadr a))
+           a)))
+(define (outside-anchor [a : Legend-Anchor])
+  (and a (list? a) (eq? (car a) 'outside) (cadr a)))
+
 (define-type Plot-Device%
   (Class
    (init-field [dc (Instance DC<%>)]
@@ -133,5 +143,5 @@
    [draw-arrow-glyph (-> (Vectorof Real) Real Real Void)]
    [draw-glyphs (-> (Listof (Vectorof Real)) Point-Sym Nonnegative-Real Void)]
    [draw-pict (->* [pict (Vectorof Real)] (Anchor Real) Void)]
-   [calculate-legend-rect (-> (Listof legend-entry) Rect Rect)]
+   [calculate-legend-rect (-> (Listof legend-entry) Rect Anchor Rect)]
    [draw-legend (-> (Listof legend-entry) Rect Void)]))

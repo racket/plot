@@ -12,7 +12,7 @@
          "utils.rkt"
          typed/racket/unsafe)
 
-(provide get-renderer-list get-bounds-rect get-ticks)
+(provide get-renderer-list get-bounds-rect get-ticks get-legend-list)
 (unsafe-provide plot-area)
 
 (: get-renderer-list (-> Any (Listof renderer2d)))
@@ -68,23 +68,44 @@
 (define (plot-area area renderer-list)
   (send area start-plot)
   
-  (define legend-entries
-    (flatten-legend-entries
-     (for/list : (Listof (Treeof legend-entry)) ([rend  (in-list renderer-list)])
-       (match-define (renderer2d rend-bounds-rect _bf _tf label-proc render-proc) rend)
-       (send area start-renderer (if rend-bounds-rect
-                                     (rect-inexact->exact rend-bounds-rect)
-                                     (unknown-rect 2)))
-       (when render-proc (render-proc area))
-       (cond
-         [(and render-proc label-proc)
-          (define rect (send area get-bounds-rect))
-          (label-proc rect)]
-         [else empty]))))
+  (for ([rend  (in-list renderer-list)])
+    (match-define (renderer2d rend-bounds-rect _bf _tf label-proc render-proc) rend)
+    (when render-proc
+      (send area start-renderer (if rend-bounds-rect
+                                    (rect-inexact->exact rend-bounds-rect)
+                                    (unknown-rect 2)))
+      (render-proc area)))
   
   (send area end-renderers)
-  
-  (when (not (empty? legend-entries))
-    (send area draw-legend legend-entries))
-  
   (send area end-plot))
+
+(: get-legend-list (-> (Listof renderer2d) Rect (Listof legend-entry)))
+(define (get-legend-list renderer-list outer-rect)
+  (match-define (vector (ivl  x-min  x-max) (ivl  y-min  y-max)) outer-rect)
+
+  (cond
+    [(and x-min x-max y-min y-max)
+
+     (: clip (-> Rect Rect))
+     (define (clip rect)
+       (match-define (vector (ivl rx-min rx-max) (ivl ry-min ry-max)) rect)
+       (define cx-min (if rx-min (max* x-min rx-min) x-min))
+       (define cx-max (if rx-max (min* x-max rx-max) x-max))
+       (define cy-min (if ry-min (max* y-min ry-min) y-min))
+       (define cy-max (if ry-max (min* y-max ry-max) y-max))
+       (let ([cx-min  (min* cx-min cx-max)]
+             [cx-max  (max* cx-min cx-max)]
+             [cy-min  (min* cy-min cy-max)]
+             [cy-max  (max* cy-min cy-max)])
+         (vector (ivl cx-min cx-max)
+                 (ivl cy-min cy-max))))
+
+     (flatten-legend-entries
+      (for*/list : (Listof (Treeof legend-entry))
+        ([rend  (in-list renderer-list)]
+         [rect (in-value (let ([r (plot-element-bounds-rect rend)])
+                           (or (and r (clip r)) outer-rect)))]
+         [label-proc (in-value (renderer2d-label rend))]
+         #:when label-proc)
+        (label-proc rect)))]
+    [else '()]))

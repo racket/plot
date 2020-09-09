@@ -66,7 +66,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Snip%)))
 (define (plot-snip renderer-tree
                    #:x-min [x-min #f] #:x-max [x-max #f]
@@ -112,9 +112,10 @@
         (define dc (make-object bitmap-dc% bm))
         (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
           (get-ticks renderer-list bounds-rect))
+        (define legend (get-legend-list renderer-list bounds-rect))
         (define new-area
           (make-object 2d-plot-area%
-                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks
+                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks legend
                        dc 0 0 width height))
         (set! area new-area)
         (plot-area new-area renderer-list))
@@ -136,7 +137,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Frame%)))
 (define (plot-frame renderer-tree
                     #:x-min [x-min #f] #:x-max [x-max #f]
