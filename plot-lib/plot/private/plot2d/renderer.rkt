@@ -1,7 +1,6 @@
 #lang typed/racket/base
 
-(require typed/racket/class racket/match
-         "../common/plot-element.rkt"
+(require "../common/plot-element.rkt"
          "../common/types.rkt"
          "../common/type-doc.rkt"
          "../common/math.rkt"
