@@ -610,22 +610,18 @@
     ;; ===============================================================================================
     ;; Legend
 
-    (define/public (draw-legend legend-entries rect)
+    ;; the folowing functions take a (Listof legend-entry) and a Rect as argument.
+    ;; the understanding is that Rect will be the complete dc for a legend outside the plot-area
+    ;; and the plot-area otherwise
+
+    (: calculate-legend-parameters (-> (Listof legend-entry) Rect
+                                       (Values Rect Exact-Rational Exact-Rational Exact-Rational
+                                               Nonnegative-Exact-Rational Real Real
+                                               Nonnegative-Exact-Rational Real)))
+    (define/private (calculate-legend-parameters [legend-entries : (Listof legend-entry)][rect : Rect])
       (define n (length legend-entries))
-      (match-define (list (legend-entry #{labels : (Listof (U String pict))}
-                                        #{draw-procs : (Listof Legend-Draw-Proc)})
-                          ...)
-        legend-entries)
-
+      (define labels (map legend-entry-label legend-entries))
       (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) rect)
-
-      (define old-size (send (send dc get-font) get-point-size))
-      (define old-face (send (send dc get-font) get-face))
-      (define old-family (send (send dc get-font) get-family))
-      (set-font-attribs
-       (or (plot-legend-font-size) old-size)
-       (or (plot-legend-font-face) old-face)
-       (or (plot-legend-font-family) old-family))
 
       (define-values (max-label-width max-label-height)
         (for/fold ([width : Exact-Rational 0]
@@ -678,6 +674,50 @@
 
       (define label-x-min (+ legend-x-min horiz-gap))
       (define draw-x-min (+ legend-x-min (* 2 horiz-gap) labels-x-size horiz-gap))
+
+      (values legend-rect top-gap baseline-skip max-label-height
+              draw-x-size label-x-min draw-x-min
+              draw-y-size legend-y-min))
+
+    (define/public (calculate-legend-rect legend-entries rect)
+      ;; Change font for correct size calculation in calculate-legend-parameters
+      (define old-size (send (send dc get-font) get-point-size))
+      (define old-face (send (send dc get-font) get-face))
+      (define old-family (send (send dc get-font) get-family))
+      (set-font-attribs
+       (or (plot-legend-font-size) old-size)
+       (or (plot-legend-font-face) old-face)
+       (or (plot-legend-font-family) old-family))
+
+      (define-values (legend-rect top-gap baseline-skip max-label-height
+                                  draw-x-size label-x-min draw-x-min
+                                  draw-y-size legend-y-min)
+        (calculate-legend-parameters legend-entries rect))
+
+      ;; Undo change font
+      (set-font-attribs old-size old-face old-family)
+
+      legend-rect)
+
+    (define/public (draw-legend legend-entries rect)
+      (match-define (list (legend-entry #{labels : (Listof (U String pict))}
+                                        #{draw-procs : (Listof Legend-Draw-Proc)})
+                          ...)
+        legend-entries)
+
+      ;; Change font early for correct size calculation in calculate-legend-parameters
+      (define old-size (send (send dc get-font) get-point-size))
+      (define old-face (send (send dc get-font) get-face))
+      (define old-family (send (send dc get-font) get-family))
+      (set-font-attribs
+       (or (plot-legend-font-size) old-size)
+       (or (plot-legend-font-face) old-face)
+       (or (plot-legend-font-family) old-family))
+
+      (define-values (legend-rect top-gap baseline-skip max-label-height
+                                  draw-x-size label-x-min draw-x-min
+                                  draw-y-size legend-y-min)
+        (calculate-legend-parameters legend-entries rect))
 
       ;; legend background
       (set-pen (plot-foreground) 1 'transparent)
