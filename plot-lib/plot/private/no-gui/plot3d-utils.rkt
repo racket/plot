@@ -96,25 +96,6 @@
 
   (cond
     [(and x-min x-max y-min y-max z-min z-max)
-
-    (: clip (-> Rect Rect))
-    (define (clip rect)
-      (match-define (vector (ivl rx-min rx-max) (ivl ry-min ry-max) (ivl rz-min rz-max)) rect)
-      (define cx-min (if rx-min (max* x-min rx-min) x-min))
-      (define cx-max (if rx-max (min* x-max rx-max) x-max))
-      (define cy-min (if ry-min (max* y-min ry-min) y-min))
-      (define cy-max (if ry-max (min* y-max ry-max) y-max))
-      (define cz-min (if rz-min (max* z-min rz-min) z-min))
-      (define cz-max (if rz-max (min* z-max rz-max) z-max))
-      (let ([cx-min  (min* cx-min cx-max)]
-            [cx-max  (max* cx-min cx-max)]
-            [cy-min  (min* cy-min cy-max)]
-            [cy-max  (max* cy-min cy-max)]
-            [cz-min  (min* cz-min cz-max)]
-            [cz-max  (max* cz-min cz-max)])
-        (vector (ivl cx-min cx-max)
-                (ivl cy-min cy-max)
-                (ivl cz-min cz-max))))
     (flatten-legend-entries
      (for*/list : (Listof (Treeof legend-entry))
        ([rend  (in-list renderer-list)]
