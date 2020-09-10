@@ -1,6 +1,6 @@
 #lang typed/racket/base
 
-(require typed/racket/draw typed/racket/class
+(require typed/racket/draw typed/racket/class racket/match
          (only-in typed/pict pict)
          "../common/type-doc.rkt"
          "../common/types.rkt"
@@ -12,6 +12,8 @@
          "../common/nonrenderer.rkt"
          "../common/file-type.rkt"
          "../common/utils.rkt"
+         "../common/plot-device.rkt"
+         "../common/math.rkt"
          "../plot2d/plot-area.rkt"
          "../plot2d/renderer.rkt"
          "plot2d-utils.rkt"
@@ -20,7 +22,7 @@
 
 (unsafe-provide plot/dc
                 plot-bitmap
-                plot-pict
+                plot-pict legend-pict plot+legend-picts
                 plot-file)
 
 ;; ===================================================================================================
@@ -131,6 +133,78 @@
                    #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor)))
       width height))
 
+(:: legend-pict
+    (->* [(Treeof (U renderer2d nonrenderer))]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:y-min (U Real #f) #:y-max (U Real #f)]
+         Pict))
+(define (legend-pict renderer-tree
+                     #:x-min [x-min #f] #:x-max [x-max #f]
+                     #:y-min [y-min #f] #:y-max [y-max #f])
+  (define fail/kw (make-raise-keyword-error 'plot/dc))
+  (cond
+    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
+    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
+    [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
+    [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [else
+     (define saved-values (plot-parameters))
+  
+     (define renderer-list (get-renderer-list renderer-tree))
+     (define bounds-rect (get-bounds-rect renderer-list x-min x-max y-min y-max))
+     (define legend (get-legend-entry-list renderer-list bounds-rect))
+     
+     (define-values (width height)
+       (parameterize/group ([plot-parameters saved-values])
+        (define width : Nonnegative-Real 0)
+        (define height : Nonnegative-Real 0)
+        (dc (λ (dc x y)
+              (define dummy (make-object plot-device% dc x y 1 1))
+              (send dummy reset-drawing-params)
+              (match-define (vector (ivl x- x+) (ivl y- y+))
+                (send dummy calculate-legend-rect legend (vector (ivl x 1) (ivl y 1)) 'top-left))
+              (send dummy restore-drawing-params)
+              (when (and x- x+) (let ([w (- x+ x-)]) (when (< 0 w) (set! width w))))
+              (when (and y- y+) (let ([h (- y+ y-)]) (when (< 0 h) (set! height h)))))
+            1 1)
+        (values width height)))
+     
+     (dc (λ (dc x y)
+           (parameterize/group ([plot-parameters  saved-values])
+             (define pd (make-object plot-device% dc x y width height))
+             (send pd reset-drawing-params)
+             (send pd clear)
+             (send pd draw-legend legend (vector (ivl x (+ x width)) (ivl y (+ y height))))
+             (send pd restore-drawing-params)))
+         width height)]))
+
+(:: plot+legend-picts
+    (->* [(Treeof (U renderer2d nonrenderer))]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:y-min (U Real #f) #:y-max (U Real #f)
+          #:width Positive-Integer
+          #:height Positive-Integer
+          #:title (U String pict #f)
+          #:x-label (U String pict #f)
+          #:y-label (U String pict #f)]
+         (Values Pict Pict)))
+(define (plot+legend-picts renderer-tree
+                           #:x-min [x-min #f] #:x-max [x-max #f]
+                           #:y-min [y-min #f] #:y-max [y-max #f]
+                           #:width [width (plot-width)]
+                           #:height [height (plot-height)]
+                           #:title [title (plot-title)]
+                           #:x-label [x-label (plot-x-label)]
+                           #:y-label [y-label (plot-y-label)])
+  (define saved-values (plot-parameters))
+  (values
+   (dc (λ (dc x y)
+         (parameterize/group ([plot-parameters  saved-values])
+           (plot/dc renderer-tree dc x y width height
+                    #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
+                    #:title title #:x-label x-label #:y-label y-label #:legend-anchor #f)))
+       width height)
+   (legend-pict renderer-tree #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max)))
 ;; ===================================================================================================
 ;; Plot to a file
 

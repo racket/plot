@@ -41,7 +41,7 @@
 (provide
  plot/dc
  plot-bitmap
- plot-pict
+ plot-pict legend-pict plot+legend-picts
  plot-file)
 
 (require "private/plot2d/point.rkt")
@@ -125,7 +125,7 @@
 (provide
  plot3d/dc
  plot3d-bitmap
- plot3d-pict
+ plot3d-pict legend3d-pict plot+legend3d-picts
  plot3d-file)
 
 (require "private/plot3d/surface.rkt")
