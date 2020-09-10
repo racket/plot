@@ -80,10 +80,11 @@
   
   (for ([rend  (in-list renderer-list)])
     (match-define (renderer3d rend-bounds-rect _bf _tf label-proc render-proc) rend)
+    ;; next step could be moved into (when render-proc, but this generates different step files)
+    (send area start-renderer (if rend-bounds-rect
+                                  (rect-inexact->exact rend-bounds-rect)
+                                  (unknown-rect 3)))
     (when render-proc
-      (send area start-renderer (if rend-bounds-rect
-                                    (rect-inexact->exact rend-bounds-rect)
-                                    (unknown-rect 3)))
       (render-proc area)))
   
   (send area end-renderers)
@@ -117,9 +118,7 @@
     (flatten-legend-entries
      (for*/list : (Listof (Treeof legend-entry))
        ([rend  (in-list renderer-list)]
-        [rect (in-value (let ([r (plot-element-bounds-rect rend)])
-                          (or (and r (clip r)) outer-rect)))]
         [label-proc (in-value (renderer3d-label rend))]
         #:when label-proc)
-       (label-proc rect)))]
+       (label-proc outer-rect)))]
     [else '()]))
