@@ -89,38 +89,26 @@
                                         (Values (U #f (-> Rect (Treeof legend-entry)))
                                                 3D-Render-Proc)))
 (define (make-contours3d-label-and-render f levels samples colors widths styles alphas label)
-  (define last-rect   : (U #f Rect)     #f)
-  (define last-zs     : (Listof Real)   empty)
-  (define last-sample : 2d-sample       (2d-sample '() '() #() #f #f))
-  (define last-labels : (Listof String) empty)
-  (define (update! [rect   : Rect]
-                   [sample : 2d-sample       (2d-sample '() '() #() #f #f)]
-                   [zs     : (Listof Real)   empty]
-                   [labels : (Listof String) empty])
-    (set! last-rect   rect)
-    (set! last-sample sample)
-    (set! last-zs     zs)
-    (set! last-labels labels))
-  
+  ;; g is a 2D-sampler, which is a memoized proc. Recalculation here should be cheap.
+  ;; if we memoize here based on rect, smooth interactions are disabled (because of the call to `plot-z-ticks`)
   (define (calculate-zs/labels [rect : Rect]) : (Values 2d-sample (Listof Real) (Listof String))
-    (unless (equal? rect last-rect)
-      (match-define (vector x-ivl y-ivl z-ivl) rect)
-      (match-define (ivl x-min x-max) x-ivl)
-      (match-define (ivl y-min y-max) y-ivl)
-      (match-define (ivl z-min z-max) z-ivl)
-      (cond
-        [(and z-min z-max)
-         (define num (animated-samples samples))
-         (define sample (f (vector x-ivl y-ivl) (vector num num)))
-         ;; can't use the actual z ticks because some or all could be collapsed
-         (match-define (list (tick #{zs : (Listof Real)}
-                                   #{_ : (Listof Boolean)}
-                                   #{labels : (Listof String)})
-                             ...)
-           (contour-ticks (plot-z-ticks) z-min z-max levels #f))
-         (update! rect sample zs labels)]
-        [else (update! rect)]))
-    (values last-sample last-zs last-labels))
+    (match-define (vector x-ivl y-ivl z-ivl) rect)
+    (match-define (ivl x-min x-max) x-ivl)
+    (match-define (ivl y-min y-max) y-ivl)
+    (match-define (ivl z-min z-max) z-ivl)
+    (cond
+      [(and z-min z-max)
+       (define num (animated-samples samples))
+       (define sample (f (vector x-ivl y-ivl) (vector num num)))
+       ;; can't use the actual z ticks because some or all could be collapsed
+       (match-define (list (tick #{zs : (Listof Real)}
+                                 #{_ : (Listof Boolean)}
+                                 #{labels : (Listof String)})
+                           ...)
+         (contour-ticks (plot-z-ticks) z-min z-max levels #f))
+       (values sample zs labels)]
+      [else
+       (values (2d-sample '() '() #() #f #f) empty empty)]))
 
   (define label-proc
     (and label
@@ -227,51 +215,36 @@
 (define (make-contour-intervals3d-label-and-renderer
           f levels samples colors styles line-colors line-widths line-styles
           contour-colors contour-widths contour-styles alphas label)
-  (define last-rect   : (U #f Rect)     #f)
-  (define last-zs     : (Listof Real)   empty)
-  (define last-zivls  : (Listof ivl)    empty)
-  (define last-sample : 2d-sample       (2d-sample '() '() #() #f #f))
-  (define last-labels : (Listof String) empty)
-  (define (update! [rect   : Rect]
-                   [sample : 2d-sample       (2d-sample '() '() #() #f #f)]
-                   [zivls  : (Listof ivl)    empty]
-                   [zs     : (Listof Real)   empty]
-                   [labels : (Listof String) empty])
-    (set! last-rect   rect)
-    (set! last-sample sample)
-    (set! last-zivls  zivls)
-    (set! last-zs     zs)
-    (set! last-labels labels))
-  
+  ;; g is a 2D-sampler, which is a memoized proc. Recalculation here should be cheap.
+  ;; if we memoize here based on rect, smooth interactions are disabled (because of the call to `plot-z-ticks`)
   (define (calculate-zivls/labels [rect : Rect]) : (Values 2d-sample (Listof ivl) (Listof Real) (Listof String))
-    (unless (equal? rect last-rect)
-      (match-define (vector x-ivl y-ivl z-ivl) rect)
-      (match-define (ivl x-min x-max) x-ivl)
-      (match-define (ivl y-min y-max) y-ivl)
-      (match-define (ivl z-min z-max) z-ivl)
-      (cond
-        [(and z-min z-max)
-         (define num (animated-samples samples))
-         (define sample (f (vector x-ivl y-ivl) (vector num num)))
-         ;; can't use the actual z ticks because some or all could be collapsed
-         (match-define (list (tick #{zs : (Listof Real)}
-                                   #{_ : (Listof Boolean)}
-                                   #{labels : (Listof String)})
-                             ...)
-           (contour-ticks (plot-z-ticks) z-min z-max levels #t))
+    (match-define (vector x-ivl y-ivl z-ivl) rect)
+    (match-define (ivl x-min x-max) x-ivl)
+    (match-define (ivl y-min y-max) y-ivl)
+    (match-define (ivl z-min z-max) z-ivl)
+    (cond
+      [(and z-min z-max)
+       (define num (animated-samples samples))
+       (define sample (f (vector x-ivl y-ivl) (vector num num)))
+       ;; can't use the actual z ticks because some or all could be collapsed
+       (match-define (list (tick #{zs : (Listof Real)}
+                                 #{_ : (Listof Boolean)}
+                                 #{labels : (Listof String)})
+                           ...)
+         (contour-ticks (plot-z-ticks) z-min z-max levels #t))
      
-         (define-values (z-ivls ivl-labels)
-           (for/lists ([z-ivls : (Listof ivl)]
-                       [ivl-labels : (Listof String)]
-                       ) ([za  (in-list zs)]
-                          [zb  (in-list (rest zs))]
-                          [la  (in-list labels)]
-                          [lb  (in-list (rest labels))])
-             (values (ivl za zb) (format "[~a,~a]" la lb))))
+       (define-values (z-ivls ivl-labels)
+         (for/lists ([z-ivls : (Listof ivl)]
+                     [ivl-labels : (Listof String)]
+                     ) ([za  (in-list zs)]
+                        [zb  (in-list (rest zs))]
+                        [la  (in-list labels)]
+                        [lb  (in-list (rest labels))])
+           (values (ivl za zb) (format "[~a,~a]" la lb))))
           
-         (update! rect sample z-ivls zs ivl-labels)]
-        [else (update! rect)]))
-    (values last-sample last-zivls last-zs last-labels))
+       (values sample z-ivls zs ivl-labels)]
+      [else
+       (values (2d-sample '() '() #() #f #f) empty empty empty)]))
 
   (define label-proc
     (and label

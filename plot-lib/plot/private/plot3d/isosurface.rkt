@@ -96,41 +96,28 @@
                3D-Render-Proc)))
 (define (make-isosurfaces3d-label-and-renderer f rd-min rd-max levels samples colors styles
                                     line-colors line-widths line-styles alphas label)
-  (define last-rect   : (U #f Rect)     #f)
-  (define last-ds     : (Listof Real)   empty)
-  (define last-sample : 3d-sample       (3d-sample '() '() '() #() #f #f))
-  (define last-labels : (Listof String) empty)
-  (define (update! [rect   : Rect]
-                   [sample : 3d-sample       (3d-sample '() '() '() #() #f #f)]
-                   [ds     : (Listof Real)   empty]
-                   [labels : (Listof String) empty])
-    (set! last-rect   rect)
-    (set! last-sample sample)
-    (set! last-ds     ds)
-    (set! last-labels labels))
-  
+  ;; g is a 3D-sampler, which is a memoized proc. Recalculation here should be cheap.
+  ;; if we memoize here based on rect, smooth interactions are disabled (because of the call to `plot-z-ticks`)
   (define (calculate-ds/labels [rect : Rect]) : (Values 3d-sample (Listof Real) (Listof String))
-    (unless (equal? rect last-rect)
-      (match-define (vector x-ivl y-ivl z-ivl) rect)
-      (match-define (ivl x-min x-max) x-ivl)
-      (match-define (ivl y-min y-max) y-ivl)
-      (match-define (ivl z-min z-max) z-ivl)
-      (define num (animated-samples samples))
-      (define sample (f (vector x-ivl y-ivl z-ivl) (vector num num num)))
-      (match-define (3d-sample xs ys zs dsss fd-min fd-max) sample)
+    (match-define (vector x-ivl y-ivl z-ivl) rect)
+    (match-define (ivl x-min x-max) x-ivl)
+    (match-define (ivl y-min y-max) y-ivl)
+    (match-define (ivl z-min z-max) z-ivl)
+    (define num (animated-samples samples))
+    (define sample (f (vector x-ivl y-ivl z-ivl) (vector num num num)))
+    (match-define (3d-sample xs ys zs dsss fd-min fd-max) sample)
   
-      (define d-min (if rd-min rd-min fd-min))
-      (define d-max (if rd-max rd-max fd-max))
+    (define d-min (if rd-min rd-min fd-min))
+    (define d-max (if rd-max rd-max fd-max))
   
-      (match-define (list (tick #{ds : (Listof Real)}
-                                #{_ : (Listof Bolean)}
-                                #{labels : (Listof String)})
-                          ...)
-        (cond [(and d-min d-max)  (contour-ticks (plot-d-ticks) d-min d-max levels #f)]
-              [else  empty]))
+    (match-define (list (tick #{ds : (Listof Real)}
+                              #{_ : (Listof Bolean)}
+                              #{labels : (Listof String)})
+                        ...)
+      (cond [(and d-min d-max)  (contour-ticks (plot-d-ticks) d-min d-max levels #f)]
+            [else  empty]))
        
-      (update! rect sample ds labels))
-    (values last-sample last-ds last-labels))
+    (values sample ds labels))
 
   (define label-proc
     (and label
