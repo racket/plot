@@ -50,7 +50,7 @@
                 plot)
 
 (require/typed plot/utils
-  (anchor/c (-> Any Boolean))
+  (legend-anchor/c (-> Any Boolean))
   (plot-color/c (-> Any Boolean))
   (plot-file-format/c (-> Any Boolean)))
 
@@ -89,7 +89,7 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   (parameterize ([plot-title          title]
                  [plot-x-label        x-label]
@@ -160,7 +160,7 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   ;; make-snip will be called in a separate thread, make sure the
   ;; parameters have the correct values in that thread as well.
@@ -226,7 +226,7 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)]
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)]
     [(and out-kind (not (plot-file-format/c out-kind))) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(not (plot-file-format/c out-kind)) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(and fgcolor (not (plot-color/c fgcolor))) (fail/kw "plot-color/c" '#:fgcolor fgcolor)]

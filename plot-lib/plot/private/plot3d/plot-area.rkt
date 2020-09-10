@@ -1286,9 +1286,8 @@
       (define gap-size (+ (pen-gap) tick-radius))
       (define-values (x-min x-max y-min y-max)
         (if (outside-anchor (plot-legend-anchor))
-            (match-let ([(vector x-min y-min) (view->dc (flvector 0. 0.))]
-                        [(vector x-max y-max) (view->dc (flvector 1. 1.))])
-              (values x-min x-max y-min y-max))
+            (values dc-x-min (+ dc-x-min dc-x-size)
+                    dc-y-min (+ dc-y-min dc-y-size))
             (values area-x-min area-x-max area-y-min area-y-max)))
       (send pd draw-legend legend-entries
             (vector (ivl (+ x-min gap-size) (- x-max gap-size))
