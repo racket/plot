@@ -32,7 +32,7 @@
          #:x-label (or/c string? pict? #f)
          #:y-label (or/c string? pict? #f)
          #:z-label (or/c string? pict? #f)
-         #:legend-anchor anchor/c]
+         #:legend-anchor legend-anchor/c]
         void?)]))
 
 (define-syntax untyped-plot3d/dc
