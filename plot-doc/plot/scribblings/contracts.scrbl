@@ -50,6 +50,14 @@ The @racket['auto] anchor is only valid for placement of text labels, for all
 other use cases, the @racket['auto] anchor is always the same as
 @racket['bottom-left].}
 
+@defthing[legend-anchor/c contract? #:value (or/c #f anchor/c
+                                                  (list/c (one-of/c 'inside 'outside) anchor/c))]{
+The contract for the @(racket plot-legend-anchor) parameter.
+
+This will place the legend inside or outside the plot-area, or not draw it at all in case of @racket[#f].
+A single @racket[anchor] will be interpreted the same as @racket[(list 'inside anchor)] 
+An @racket['auto] anchor will be interpreted as @racket['top-left].}
+
 @defthing[color/c contract? #:value (or/c (list/c real? real? real?)
                                           string? symbol?
                                           (is-a?/c color%))]{

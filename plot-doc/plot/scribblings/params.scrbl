@@ -101,7 +101,7 @@ The font size (in drawing units), face, and family of the title, axis labels, ti
 The font size (in drawing units), face, and family to prefer for the legend text. If set to @racket[#f], then the corresponding @racket[plot-font-X] parameter is used.
 }
 
-@deftogether[((defparam plot-legend-anchor anchor anchor/c #:value 'top-left)
+@deftogether[((defparam plot-legend-anchor legend-anchor legend-anchor/c #:value 'top-left)
               (defparam plot-legend-box-alpha alpha (real-in 0 1) #:value 2/3))]{
 The placement of the legend and the opacity of its background.
 }
