@@ -3,7 +3,6 @@
 (require typed/racket/class racket/match racket/math racket/list racket/sequence
          plot/utils
          (only-in typed/pict pict)
-         (only-in math/statistics stddev)
          "../common/type-doc.rkt"
          "../common/utils.rkt")
 
@@ -18,26 +17,22 @@
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
        (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real
-       (U String pict #f)
        2D-Render-Proc))
 (define ((arrows-render-fun vs
                             color line-width line-style
                             alpha
-                            arrow-head-size-or-scale arrow-head-angle
-                            label) area)
+                            arrow-head-size-or-scale arrow-head-angle) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
-  
-  (cond
-    [(and x-min x-max y-min y-max)  
-     (send area put-alpha alpha)
-     (send area put-pen color line-width line-style)
-     (send area put-arrow-head arrow-head-size-or-scale arrow-head-angle)
-     (for ([x (in-list vs)])
-       (match-define (cons (vector v1x v1y) (vector v2x v2y)) x)
-       (define (f [x : Real][y : Real])
-         (- (* (- v2x v1x) (- y v1y))
-            (* (- v2y v1y) (- x v1x))))
-       (cond
+  (when (and x-min x-max y-min y-max)
+    (send area put-alpha alpha)
+    (send area put-pen color line-width line-style)
+    (send area put-arrow-head arrow-head-size-or-scale arrow-head-angle)
+    (for ([x (in-list vs)])
+      (match-define (cons (vector v1x v1y) (vector v2x v2y)) x)
+      (define (f [x : Real][y : Real])
+        (- (* (- v2x v1x) (- y v1y))
+           (* (- v2y v1y) (- x v1x))))
+      (cond
         ;only draw the arrow head if the endpoint is visible
         ;other option makes little sense since size and angle can be/is plot units-absolute
         [(and (<= x-min v2x x-max) (<= y-min v2y y-max))
@@ -45,11 +40,7 @@
         ;only draw the vector line if it is visible
         [(or (<= (* (f x-min y-min) (f x-max y-max)) 0)
              (<= (* (f x-min y-max) (f x-max y-min)) 0))
-         (send area put-lines (list (car x) (cdr x)))]))
-     (cond [label  (arrow-legend-entry label color line-width line-style)]
-           [else   empty])]
-    [else  empty])
-  )
+         (send area put-lines (list (car x) (cdr x)))]))))
 
 ;(Sequenceof (Sequence (Sequenceof Real))) does not work because (sequence? 5) = #t
 ;and so the contract can not know if '((2 2)) is three or two nested sequences
@@ -132,14 +123,14 @@
          (filter vrational? (append p1 p2))))
 
      (cond
-       [(empty? rvs) (renderer2d #f #f #f #f)]
+       [(empty? rvs) empty-renderer2d]
        [else
         (define-values (x- x+ y- y+) (get-bounds x-min x-max y-min y-max rvs))
         (renderer2d (vector (ivl x- x+) (ivl y- y+)) #f default-ticks-fun
+                    (and label (λ (_) (arrow-legend-entry label color width style)))
                     (arrows-render-fun vs*
                                        color width style alpha
-                                       arrow-head-size-or-scale arrow-head-angle
-                                       label))])]))
+                                       arrow-head-size-or-scale arrow-head-angle))])]))
 
 (define (get-bounds [x-min : (Option Real)][x-max : (Option Real)]
                     [y-min : (Option Real)][y-max : (Option Real)]

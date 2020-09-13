@@ -17,15 +17,11 @@
 (: lines-render-proc (-> (Listof (Vectorof Real))
                          Plot-Color Nonnegative-Real Plot-Pen-Style
                          Nonnegative-Real
-                         (U String pict #f)
                          2D-Render-Proc))
-(define ((lines-render-proc vs color width style alpha label) area)
+(define ((lines-render-proc vs color width style alpha) area)
   (send area put-alpha alpha)
   (send area put-pen color width style)
-  (send area put-lines vs)
-  
-  (cond [label  (line-legend-entry label color width style)]
-        [else   empty]))
+  (send area put-lines vs))
 
 (:: lines
     (->* [(Sequenceof (Sequenceof Real))]
@@ -56,7 +52,7 @@
     [else
      (let ([vs  (sequence->listof-vector 'lines vs 2)])
        (define rvs (filter vrational? vs))
-       (cond [(empty? rvs)  (renderer2d #f #f #f #f)]
+       (cond [(empty? rvs)  empty-renderer2d]
              [else
               (match-define (list (vector #{rxs : (Listof Real)} #{rys : (Listof Real)}) ...) rvs)
               (let ([x-min  (if x-min x-min (apply min* rxs))]
@@ -64,7 +60,8 @@
                     [y-min  (if y-min y-min (apply min* rys))]
                     [y-max  (if y-max y-max (apply max* rys))])
                 (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
-                            (lines-render-proc vs color width style alpha label)))]))]))
+                            (and label (λ (_) (line-legend-entry label color width style)))
+                            (lines-render-proc vs color width style alpha)))]))]))
 
 (:: parametric
     (->* [(-> Real (Sequenceof Real)) Real Real]
@@ -154,9 +151,8 @@
                         Nonnegative-Real
                         Plot-Pen-Style
                         Nonnegative-Real
-                        (U String pict #f)
                         2D-Render-Proc))
-(define ((rule-render-proc v v-min v-max h/v color width style alpha label) area)
+(define ((rule-render-proc v v-min v-max h/v color width style alpha) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) (send area get-bounds-rect))
   ;; This is the error that `get-bounds-rect` should raise
   (unless (and x-min x-max y-min y-max)
@@ -167,10 +163,7 @@
   (send area put-pen color width style 'butt)
   (case h/v
     [(h) (send area put-line (vector (or v-min x-min) v) (vector (or v-max x-max) v))]
-    [(v) (send area put-line (vector v (or v-min y-min)) (vector v (or v-max y-max)))])
-
-  (cond [label  (line-legend-entry label color width style)]
-        [else   empty]))
+    [(v) (send area put-line (vector v (or v-min y-min)) (vector v (or v-max y-max)))]))
 
 (:: vrule
     (->* [Real]
@@ -196,7 +189,8 @@
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
       (renderer2d #f #f default-ticks-fun
-                  (rule-render-proc x y-min y-max 'v color width style alpha label))]))
+                  (and label (λ (_) (line-legend-entry label color width style)))
+                  (rule-render-proc x y-min y-max 'v color width style alpha))]))
 
 (:: hrule
     (->* [Real]
@@ -222,7 +216,8 @@
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
       (renderer2d #f #f default-ticks-fun
-                  (rule-render-proc y x-min x-max 'h color width style alpha label))]))
+                  (and label (λ (_) (line-legend-entry label color width style)))
+                  (rule-render-proc y x-min x-max 'h color width style alpha))]))
 
 ;; ===================================================================================================
 ;; Function
@@ -230,18 +225,14 @@
 (: function-render-proc (-> Sampler Positive-Integer
                             Plot-Color Nonnegative-Real Plot-Pen-Style
                             Nonnegative-Real
-                            (U String pict #f)
                             2D-Render-Proc))
-(define ((function-render-proc f samples color width style alpha label) area)
+(define ((function-render-proc f samples color width style alpha) area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
   (match-define (sample xs ys y-min y-max) (f x-ivl samples))
   
   (send area put-alpha alpha)
   (send area put-pen color width style)
-  (send area put-lines (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys))
-  
-  (cond [label  (line-legend-entry label color width style)]
-        [else   empty]))
+  (send area put-lines (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys)))
 
 (:: function
     (->* [(-> Real Real)]
@@ -279,7 +270,8 @@
        (renderer2d (vector x-ivl y-ivl)
                    (function-bounds-fun f samples)
                    default-ticks-fun
-                   (function-render-proc f samples color width style alpha label)))]))
+                   (and label (λ (_) (line-legend-entry label color width style)))
+                   (function-render-proc f samples color width style alpha)))]))
 
 ;; ===================================================================================================
 ;; Inverse function
@@ -287,18 +279,14 @@
 (: inverse-render-proc (-> Sampler Positive-Integer
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U String pict #f)
                            2D-Render-Proc))
-(define ((inverse-render-proc f samples color width style alpha label) area)
+(define ((inverse-render-proc f samples color width style alpha) area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
   (match-define (sample ys xs x-min x-max) (f y-ivl samples))
   
   (send area put-alpha alpha)
   (send area put-pen color width style)
-  (send area put-lines (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys))
-  
-  (cond [label  (line-legend-entry label color width style)]
-        [else   empty]))
+  (send area put-lines (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys)))
 
 (: inverse
    (->* [(-> Real Real)]
@@ -336,7 +324,8 @@
      (renderer2d (vector x-ivl y-ivl)
                  (inverse-bounds-fun g samples)
                  default-ticks-fun
-                 (inverse-render-proc g samples color width style alpha label))]))
+                 (and label (λ (_) (line-legend-entry label color width style)))
+                 (inverse-render-proc g samples color width style alpha))]))
 
 ;; ===================================================================================================
 ;; Kernel density estimation

@@ -16,9 +16,8 @@
                               Plot-Color Plot-Brush-Style
                               Plot-Color Nonnegative-Real Plot-Pen-Style
                               Nonnegative-Real
-                              (U String pict #f)
                               2D-Render-Proc))
-(define ((rectangles-render-proc rects color style line-color line-width line-style alpha label)
+(define ((rectangles-render-proc rects color style line-color line-width line-style alpha)
          area)
   (match-define (vector (ivl bx-min bx-max) (ivl by-min by-max)) (send area get-bounds-rect))
   (send area put-pen line-color line-width line-style)
@@ -30,10 +29,7 @@
     (define x-max (if (and vx-max (infinite? vx-max)) bx-max vx-max))
     (define y-min (if (and vy-min (infinite? vy-min)) by-min vy-min))
     (define y-max (if (and vy-max (infinite? vy-max)) by-max vy-max))
-    (send area put-rect (vector (ivl x-min x-max) (ivl y-min y-max))))
-  
-  (cond [label  (rectangle-legend-entry label color style line-color line-width line-style)]
-        [else  empty]))
+    (send area put-rect (vector (ivl x-min x-max) (ivl y-min y-max)))))
 
 (:: rectangles
     (->* [(Sequenceof (Sequenceof ivl))]
@@ -78,7 +74,7 @@
        (define rxs (filter valid? (append x1s x2s)))
        (define rys (filter valid? (append y1s y2s)))
        (cond
-         [(or (empty? rxs) (empty? rys))  (renderer2d #f #f #f #f)]
+         [(or (empty? rxs) (empty? rys))  empty-renderer2d]
          [else
           (let ([x-min  (if x-min x-min (apply min* rxs))]
                 [x-max  (if x-max x-max (apply max* rxs))]
@@ -95,8 +91,10 @@
                    (rational? y-min) (rational? y-max)
                    (vector (ivl x-min x-max) (ivl y-min y-max))))
             (renderer2d bounds #f default-ticks-fun
+                        (and label (λ (_) (rectangle-legend-entry label color style
+                                                                  line-color line-width line-style)))
                         (rectangles-render-proc rects color style line-color line-width line-style
-                                                alpha label)))]))]))
+                                                alpha)))]))]))
 
 ;; ===================================================================================================
 ;; Real histograms (or histograms on the real line)
@@ -139,7 +137,7 @@
             [bin-bounds  (filter rational? bin-bounds)]
             [bin-bounds  (sort bin-bounds <)])
        (cond
-         [((length bin-bounds) . < . 2)  (renderer2d #f #f #f #f)]
+         [((length bin-bounds) . < . 2)  empty-renderer2d]
          [else
           (define xs (linear-seq (apply min* bin-bounds) (apply max* bin-bounds) samples
                                  #:start? #f #:end? #f))
@@ -248,7 +246,7 @@
                                      (list y1 y2)]
                           [else  (list y)])))))
        (cond
-         [(empty? rys)  (renderer2d #f #f #f #f)]
+         [(empty? rys)  empty-renderer2d]
          [else
           (define n (length cats))
           (let* ([x-min  (if x-min x-min 0)]
@@ -265,10 +263,12 @@
             (renderer2d
              (maybe-invert (ivl x-min x-max) (ivl y-min y-max)) #f
              (discrete-histogram-ticks-fun cats tick-xs add-ticks? far-ticks? maybe-invert)
+             (and label (λ (_) (rectangle-legend-entry label color style
+                                                       line-color line-width line-style)))
              (rectangles-render-proc (map (λ ([x-ivl : ivl] [y-ivl : ivl])
                                             (maybe-invert x-ivl y-ivl))
                                           x-ivls y-ivls)
-                                     color style line-color line-width line-style alpha label)))]))]))
+                                     color style line-color line-width line-style alpha)))]))]))
 
 (:: stacked-histogram
     (->* [(Sequenceof (U (Vector Any (Sequenceof Real))

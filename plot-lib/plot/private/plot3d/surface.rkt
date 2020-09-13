@@ -15,9 +15,8 @@
                              Plot-Color Plot-Brush-Style
                              Plot-Color Nonnegative-Real Plot-Pen-Style
                              Nonnegative-Real
-                             (U String pict #f)
                              3D-Render-Proc))
-(define ((surface3d-render-proc f samples color style line-color line-width line-style alpha label)
+(define ((surface3d-render-proc f samples color style line-color line-width line-style alpha)
          area)
   (match-define (vector x-ivl y-ivl z-ivl) (send area get-bounds-rect))
   (define num (animated-samples samples))
@@ -30,9 +29,7 @@
    (xa xb ya yb z1 z2 z3 z4) sample
    (define vs (list (vector xa ya z1) (vector xb ya z2) (vector xb yb z3) (vector xa yb z4)))
    (send area put-polygon vs))
-  
-  (cond [label  (rectangle-legend-entry label color style line-color line-width line-style)]
-        [else   empty]))
+  (void))
 
 (:: surface3d
     (->* [(-> Real Real Real)]
@@ -75,5 +72,6 @@
      (renderer3d (vector x-ivl y-ivl z-ivl)
                  (surface3d-bounds-fun g samples)
                  default-ticks-fun
+                 (and label (λ (_) (rectangle-legend-entry label color style line-color line-width line-style)))
                  (surface3d-render-proc g samples color style
-                                        line-color line-width line-style alpha label))]))
+                                        line-color line-width line-style alpha))]))

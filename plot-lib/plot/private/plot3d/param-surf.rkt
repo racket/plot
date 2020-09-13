@@ -13,18 +13,14 @@
                              Plot-Color Plot-Brush-Style
                              Plot-Color Nonnegative-Real Plot-Pen-Style
                              Nonnegative-Real
-                             (U String pict #f)
                              3D-Render-Proc))
-(define ((polygons3d-render-proc vs-fun color style line-color line-width line-style alpha label)
+(define ((polygons3d-render-proc vs-fun color style line-color line-width line-style alpha)
          area)
   (send area put-alpha alpha)
   (send area put-brush color style)
   (send area put-pen line-color line-width line-style)
   (for ([v (in-list (vs-fun))])
-    (send area put-polygon v))
-  
-  (cond [label  (rectangle-legend-entry label color style line-color line-width line-style)]
-        [else   empty]))
+    (send area put-polygon v)))
 
 (: polygons3d-renderer (-> (-> (Listof (Listof (Vectorof Real))))
                            (U #f Real) (U #f Real) (U #f Real) (U #f Real) (U #f Real) (U #f Real)
@@ -37,7 +33,7 @@
                              color style line-color line-width line-style alpha label)
   (define rvs (filter vrational? (apply append (vs-thnk))))
   (cond
-    [(empty? rvs) (renderer3d #f #f #f #f)]
+    [(empty? rvs) empty-renderer3d]
     [else
      (match-define (list (vector #{rxs : (Listof Real)}
                                  #{rys : (Listof Real)}
@@ -53,8 +49,9 @@
        (renderer3d (vector (ivl x-min x-max)(ivl y-min y-max)(ivl z-min z-max))
                    #f ;surface3d-bounds-fun
                    default-ticks-fun
+                   (and label (λ (_) (rectangle-legend-entry label color style line-color line-width line-style)))
                    (polygons3d-render-proc vs-thnk
-                                           color style line-color line-width line-style alpha label)))]))
+                                           color style line-color line-width line-style alpha)))]))
 (:: polygons3d
     (->* [(Sequenceof (Sequenceof (Sequenceof Real)))]
          [#:x-min (U #f Real) #:x-max (U #f Real)

@@ -16,12 +16,9 @@
 (: isoline-render-proc (-> 2D-Sampler Real Positive-Integer
                            Plot-Color Nonnegative-Real Plot-Pen-Style
                            Nonnegative-Real
-                           (U String pict #f)
                            2D-Render-Proc))
-(define ((isoline-render-proc g z samples color width style alpha label) area)
+(define ((isoline-render-proc g z samples color width style alpha) area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
-  (match-define (ivl x-min x-max) x-ivl)
-  (match-define (ivl y-min y-max) y-ivl)
   (define num (animated-samples samples))
   (define sample (g (vector x-ivl y-ivl) (vector num num)))
   (match-define (2d-sample xs ys zss z-min z-max) sample)
@@ -34,9 +31,7 @@
      (for ([line  (in-list (heights->lines xa xb ya yb z z1 z2 z3 z4))])
        (match-define (list v1 v2) (map (λ ([v : (Vectorof Real)]) (vector-take v 2)) line))
        (send area put-line v1 v2))))
-  
-  (cond [label  (line-legend-entry label color width style)]
-        [else   empty]))
+  (void))
 
 (:: isoline
     (->* [(-> Real Real Real) Real]
@@ -72,54 +67,67 @@
      (define y-ivl (ivl y-min y-max))
      (define g (2d-function->sampler f (vector x-ivl y-ivl)))
      (renderer2d (vector x-ivl y-ivl) #f default-ticks-fun
-                 (isoline-render-proc g z samples color width style alpha label))]))
+                 (and label (λ (_) (line-legend-entry label color width style)))
+                 (isoline-render-proc g z samples color width style alpha))]))
 
 ;; ===================================================================================================
 ;; Contour lines
 
-(: contours-render-proc (-> 2D-Sampler Contour-Levels Positive-Integer
-                            (Plot-Colors (Listof Real))
-                            (Pen-Widths (Listof Real))
-                            (Plot-Pen-Styles (Listof Real))
-                            (Alphas (Listof Real))
-                            (U String pict #f)
-                            2D-Render-Proc))
-(define ((contours-render-proc g levels samples colors widths styles alphas label) area)
-  (let/ec return : (Treeof legend-entry)
-    (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
-    (match-define (ivl x-min x-max) x-ivl)
-    (match-define (ivl y-min y-max) y-ivl)
+(: make-contour-labels-and-renderer (-> 2D-Sampler Contour-Levels Positive-Integer
+                                (Plot-Colors (Listof Real))
+                                (Pen-Widths (Listof Real))
+                                (Plot-Pen-Styles (Listof Real))
+                                (Alphas (Listof Real))
+                                (U String pict #f)
+                                (Values (U #f (-> Rect (Treeof legend-entry)))
+                                        2D-Render-Proc)))
+(define (make-contour-labels-and-renderer g levels samples colors widths styles alphas label)
+  ;; g is a 2D-sampler, which is a memoized proc. Recalculation here should be cheap
+  (define (calculate-zs/labels [rect : Rect]) : (Values 2d-sample (Listof Real) (Listof String))
+    (match-define (vector x-ivl y-ivl) rect)
     (define num (animated-samples samples))
     (define sample (g (vector x-ivl y-ivl) (vector num num)))
     (match-define (2d-sample xs ys zss z-min z-max) sample)
-    
-    (unless (and z-min z-max) (return empty))
-    
-    (match-define (list (tick #{zs : (Listof Real)}
-                              #{_ : (Listof Boolean)}
-                              #{labels : (Listof String)})
-                        ...)
-      (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #f))
-    
-    (let* ([colors  (generate-list colors zs)]
-           [widths  (generate-list widths zs)]
-           [styles  (generate-list styles zs)]
-           [alphas  (generate-list alphas zs)])
-      (for ([z      (in-list zs)]
-            [color  (in-cycle* colors)]
-            [width : Nonnegative-Real  (in-cycle* widths)]
-            [style  (in-cycle* styles)]
-            [alpha : Nonnegative-Real  (in-cycle* alphas)])
-        (send area put-alpha alpha)
-        (send area put-pen color width style)
-        (for-2d-sample
-         (xa xb ya yb z1 z2 z3 z4) sample
-         (for ([line  (in-list (heights->lines xa xb ya yb z z1 z2 z3 z4))])
-           (match-define (list v1 v2) (map (λ ([v : (Vectorof Real)]) (vector-take v 2)) line))
-           (send area put-line v1 v2)))))
-    
-    (cond [(and label (not (empty? zs)))  (line-legend-entries label zs labels colors widths styles)]
-          [else  empty])))
+    (cond
+      [(and z-min z-max)
+       (match-define (list (tick #{zs : (Listof Real)}
+                                 #{_ : (Listof Boolean)}
+                                 #{labels : (Listof String)})
+                           ...)
+         (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #f))
+       (values sample zs labels)]
+      [else
+       (values (2d-sample '() '() #() #f #f) empty empty)]))
+
+  (define label-proc
+    (and label (λ ([rect : Rect])
+                 (define-values (_ zs labels) (calculate-zs/labels rect))
+                 (if (empty? zs)
+                     '()
+                     (line-legend-entries label zs labels colors widths styles)))))
+  
+  (: render-proc 2D-Render-Proc)
+  (define (render-proc area)
+    (define-values (sample zs _) (calculate-zs/labels (send area get-bounds-rect)))
+    (unless (empty? zs)
+      (let* ([colors  (generate-list colors zs)]
+             [widths  (generate-list widths zs)]
+             [styles  (generate-list styles zs)]
+             [alphas  (generate-list alphas zs)])
+        (for ([z      (in-list zs)]
+              [color  (in-cycle* colors)]
+              [width : Nonnegative-Real  (in-cycle* widths)]
+              [style  (in-cycle* styles)]
+              [alpha : Nonnegative-Real  (in-cycle* alphas)])
+          (send area put-alpha alpha)
+          (send area put-pen color width style)
+          (for-2d-sample
+           (xa xb ya yb z1 z2 z3 z4) sample
+           (for ([line  (in-list (heights->lines xa xb ya yb z z1 z2 z3 z4))])
+             (match-define (list v1 v2) (map (λ ([v : (Vectorof Real)]) (vector-take v 2)) line))
+             (send area put-line v1 v2)))))))
+  
+  (values label-proc render-proc))
 
 (:: contours
     (->* [(-> Real Real Real)]
@@ -153,81 +161,107 @@
      (define x-ivl (ivl x-min x-max))
      (define y-ivl (ivl y-min y-max))
      (define g (2d-function->sampler f (vector x-ivl y-ivl)))
+     (define-values (label-proc render-proc)
+       (make-contour-labels-and-renderer
+        g levels samples colors widths styles alphas label))
      (renderer2d (vector x-ivl y-ivl) #f default-ticks-fun
-                 (contours-render-proc g levels samples colors widths styles alphas label))]))
+                 label-proc render-proc)]))
 
 ;; ===================================================================================================
 ;; Contour intervals
 
-(: contour-intervals-render-proc
+(: make-contour-intervals-labels-and-renderer
    (-> 2D-Sampler Contour-Levels Positive-Integer
        (Plot-Colors (Listof ivl)) (Plot-Brush-Styles (Listof ivl))
        (Plot-Colors (Listof Real)) (Pen-Widths (Listof Real)) (Plot-Pen-Styles (Listof Real))
        (Alphas (Listof ivl))
        (U String pict #f)
-       2D-Render-Proc))
-(define ((contour-intervals-render-proc
-          g levels samples colors styles contour-colors contour-widths contour-styles alphas label)
-         area)
-  (let/ec return : (Treeof legend-entry)
-    (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
-    (match-define (ivl x-min x-max) x-ivl)
-    (match-define (ivl y-min y-max) y-ivl)
+       (Values (U #f (-> Rect (Treeof legend-entry)))
+               2D-Render-Proc)))
+(define (make-contour-intervals-labels-and-renderer
+         g levels samples colors styles contour-colors contour-widths contour-styles alphas label)
+  ;; g is a 2D-sampler, which is a memoized proc. Recalculation here should be cheap
+  (define (calculate-zivls/labels [rect : Rect]) : (Values 2d-sample (Listof ivl) (Listof Real) (Listof String))
+    (match-define (vector x-ivl y-ivl) rect)
     (define num (animated-samples samples))
     (define sample (g (vector x-ivl y-ivl) (vector num num)))
     (match-define (2d-sample xs ys zss z-min z-max) sample)
-    
-    (unless (and z-min z-max) (return empty))
-    
-    (match-define (list (tick #{zs : (Listof Real)}
-                              #{_ : (Listof Boolean)}
-                              #{labels : (Listof String)})
-                        ...)
-      (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #t))
-    
-    (define-values (z-ivls ivl-labels)
-      (for/lists ([z-ivls : (Listof ivl)]
-                  [ivl-labels : (Listof String)]
-                  ) ([za  (in-list zs)]
-                     [zb  (in-list (rest zs))]
-                     [la  (in-list labels)]
-                     [lb  (in-list (rest labels))])
-        (values (ivl za zb) (format "[~a,~a]" la lb))))
-    
-    (send area put-pen 0 1 'transparent)
-    (let* ([colors  (map ->brush-color (generate-list colors z-ivls))]
-           [styles  (map ->brush-style (generate-list styles z-ivls))]
-           [alphas  (generate-list alphas z-ivls)])
-      (for ([za     (in-list zs)]
-            [zb     (in-list (rest zs))]
-            [color : (List Real Real Real)  (in-cycle* colors)]
-            [style : Plot-Brush-Style  (in-cycle* styles)]
-            [alpha : Nonnegative-Real  (in-cycle* alphas)])
-        (send area put-brush color style)
-        (send area put-alpha alpha)
-        (for-2d-sample
-         (xa xb ya yb z1 z2 z3 z4) sample
-         (for ([poly  (in-list (heights->polys xa xb ya yb za zb z1 z2 z3 z4))])
-           (send area put-polygon (map (λ ([v : (Vectorof Real)]) (vector-take v 2)) poly)))))
-      
-      ((contours-render-proc g levels samples contour-colors contour-widths contour-styles alphas #f)
-       area)
-      
-      (define n (- (length zs) 2))
-      (define contour-colors*
-        (append (list 0) (sequence-take (in-cycle* (generate-list contour-colors zs)) 0 n) (list 0)))
-      (define contour-widths*
-        (append (list 0) (sequence-take (in-cycle* (generate-list contour-widths zs)) 0 n) (list 0)))
-      (define contour-styles*
-        (append '(transparent) (sequence-take (in-cycle* (generate-list contour-styles zs)) 0 n)
-                '(transparent)))
-      
-      (cond [label  (interval-legend-entries
-                     label z-ivls ivl-labels
-                     colors styles colors '(1) '(transparent)
-                     contour-colors* contour-widths* contour-styles*
-                     (rest contour-colors*) (rest contour-widths*) (rest contour-styles*))]
-            [else   empty]))))
+    (cond
+      [(and z-min z-max)
+       (match-define (list (tick #{zs : (Listof Real)}
+                                 #{_ : (Listof Boolean)}
+                                 #{labels : (Listof String)})
+                           ...)
+         (contour-ticks (plot-z-ticks) (assert z-min values) (assert z-max values) levels #t))
+
+       (define-values (z-ivls ivl-labels)
+         (for/lists ([z-ivls : (Listof ivl)]
+                     [ivl-labels : (Listof String)]
+                     ) ([za  (in-list zs)]
+                        [zb  (in-list (rest zs))]
+                        [la  (in-list labels)]
+                        [lb  (in-list (rest labels))])
+           (values (ivl za zb) (format "[~a,~a]" la lb))))
+          
+       (values sample z-ivls zs ivl-labels)]
+      [else
+       (values (2d-sample '() '() #() #f #f) empty empty empty)]))
+
+  (define label-proc
+    (and label
+         (λ ([rect : Rect])
+           (define-values (_ z-ivls zs ivl-labels)
+             (calculate-zivls/labels rect))
+          
+           (cond
+             [(empty? zs) empty]
+             [else
+              (let* ([colors  (map ->brush-color (generate-list colors z-ivls))]
+                     [styles  (map ->brush-style (generate-list styles z-ivls))])
+                (define n (- (length zs) 2))
+                (define contour-colors*
+                  (append (list 0) (sequence-take (in-cycle* (generate-list contour-colors zs)) 0 n) (list 0)))
+                (define contour-widths*
+                  (append (list 0) (sequence-take (in-cycle* (generate-list contour-widths zs)) 0 n) (list 0)))
+                (define contour-styles*
+                  (append '(transparent) (sequence-take (in-cycle* (generate-list contour-styles zs)) 0 n)
+                          '(transparent)))
+          
+                (interval-legend-entries
+                 label z-ivls ivl-labels
+                 colors styles colors '(1) '(transparent)
+                 contour-colors* contour-widths* contour-styles*
+                 (rest contour-colors*) (rest contour-widths*) (rest contour-styles*)))]))))
+
+  (: render-proc 2D-Render-Proc)
+  (define (render-proc area)
+    (define-values (sample z-ivls zs _)
+      (calculate-zivls/labels (send area get-bounds-rect)))
+    (unless (empty? zs)
+      (let* ([colors  (map ->brush-color (generate-list colors z-ivls))]
+             [styles  (map ->brush-style (generate-list styles z-ivls))]
+             [alphas  (generate-list alphas z-ivls)])
+         
+        (send area put-pen 0 1 'transparent)
+        (for ([za     (in-list zs)]
+              [zb     (in-list (rest zs))]
+              [color : (List Real Real Real)  (in-cycle* colors)]
+              [style : Plot-Brush-Style  (in-cycle* styles)]
+              [alpha : Nonnegative-Real  (in-cycle* alphas)])
+          (send area put-brush color style)
+          (send area put-alpha alpha)
+          (for-2d-sample
+           (xa xb ya yb z1 z2 z3 z4) sample
+           (for ([poly  (in-list (heights->polys xa xb ya yb za zb z1 z2 z3 z4))])
+             (send area put-polygon (map (λ ([v : (Vectorof Real)]) (vector-take v 2)) poly)))))
+
+        (define-values (_ contour-render-proc)
+          (make-contour-labels-and-renderer
+           g levels samples contour-colors contour-widths contour-styles alphas #f))
+
+        (contour-render-proc area))))
+
+  (values label-proc render-proc))
 
 (:: contour-intervals
     (->* [(-> Real Real Real)]
@@ -266,7 +300,9 @@
      (define x-ivl (ivl x-min x-max))
      (define y-ivl (ivl y-min y-max))
      (define g (2d-function->sampler f (vector x-ivl y-ivl)))
+     (define-values (label-proc render-proc)
+       (make-contour-intervals-labels-and-renderer
+        g levels samples colors styles
+        contour-colors contour-widths contour-styles alphas label))
      (renderer2d (vector x-ivl y-ivl) #f default-ticks-fun
-                 (contour-intervals-render-proc g levels samples colors styles
-                                                contour-colors contour-widths contour-styles
-                                                alphas label))]))
+                 label-proc render-proc)]))

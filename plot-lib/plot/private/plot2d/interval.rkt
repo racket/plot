@@ -18,12 +18,11 @@
                                   Plot-Color Nonnegative-Real Plot-Pen-Style
                                   Plot-Color Nonnegative-Real Plot-Pen-Style
                                   Nonnegative-Real
-                                  (U String pict #f)
                                   2D-Render-Proc))
 (define ((lines-interval-render-proc v1s v2s color style
                                      line1-color line1-width line1-style
                                      line2-color line2-width line2-style
-                                     alpha label)
+                                     alpha)
          area)
   (send area put-alpha alpha)
   (send area put-pen 0 0 'transparent)
@@ -34,12 +33,7 @@
   (send area put-lines v1s)
   
   (send area put-pen line2-color line2-width line2-style)
-  (send area put-lines v2s)
-  
-  (cond [label  (interval-legend-entry label color style 0 0 'transparent
-                                       line1-color line1-width line1-style
-                                       line2-color line2-width line2-style)]
-        [else  empty]))
+  (send area put-lines v2s))
 
 (:: lines-interval
     (->* [(Sequenceof (Sequenceof Real))
@@ -84,7 +78,7 @@
            [v2s  (sequence->listof-vector 'lines-interval v2s 2)])
        (define rvs (filter vrational? (append v1s v2s)))
        (cond
-         [(empty? rvs)  (renderer2d #f #f #f #f)]
+         [(empty? rvs)  empty-renderer2d]
          [else
           (match-define (list (vector #{rxs : (Listof Real)} #{rys : (Listof Real)}) ...) rvs)
           (let ([x-min  (if x-min x-min (apply min* rxs))]
@@ -92,10 +86,14 @@
                 [y-min  (if y-min y-min (apply min* rys))]
                 [y-max  (if y-max y-max (apply max* rys))])
             (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+                        (and label (λ (_)
+                                     (interval-legend-entry label color style 0 0 'transparent
+                                                            line1-color line1-width line1-style
+                                                            line2-color line2-width line2-style)))
                         (lines-interval-render-proc v1s v2s color style
                                                     line1-color line1-width line1-style
                                                     line2-color line2-width line2-style
-                                                    alpha label)))]))]))
+                                                    alpha)))]))]))
 
 (:: parametric-interval
     (->* [(-> Real (Sequenceof Real)) (-> Real (Sequenceof Real)) Real Real]
@@ -217,12 +215,11 @@
                                      Plot-Color Nonnegative-Real Plot-Pen-Style
                                      Plot-Color Nonnegative-Real Plot-Pen-Style
                                      Nonnegative-Real
-                                     (U String pict #f)
                                      2D-Render-Proc))
 (define ((function-interval-render-proc f1 f2 samples color style
                                         line1-color line1-width line1-style
                                         line2-color line2-width line2-style
-                                        alpha label)
+                                        alpha)
          area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
   (match-define (sample x1s y1s _ _) (f1 x-ivl samples))
@@ -233,7 +230,7 @@
   ((lines-interval-render-proc v1s v2s color style
                                line1-color line1-width line1-style
                                line2-color line2-width line2-style
-                               alpha label)
+                               alpha)
    area))
 
 (:: function-interval
@@ -285,10 +282,14 @@
      (renderer2d (vector x-ivl y-ivl)
                  (function-interval-bounds-fun g1 g2 samples)
                  default-ticks-fun
+                 (and label (λ (_)
+                              (interval-legend-entry label color style 0 0 'transparent
+                                                     line1-color line1-width line1-style
+                                                     line2-color line2-width line2-style)))
                  (function-interval-render-proc g1 g2 samples color style
                                                 line1-color line1-width line1-style
                                                 line2-color line2-width line2-style
-                                                alpha label))]))
+                                                alpha))]))
 
 ;; ===================================================================================================
 ;; Inverse function
@@ -298,12 +299,11 @@
                                     Plot-Color Nonnegative-Real Plot-Pen-Style
                                     Plot-Color Nonnegative-Real Plot-Pen-Style
                                     Nonnegative-Real
-                                    (U String pict #f)
                                     2D-Render-Proc))
 (define ((inverse-interval-render-proc f1 f2 samples color style
                                        line1-color line1-width line1-style
                                        line2-color line2-width line2-style
-                                       alpha label)
+                                       alpha)
          area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
   (match-define (sample y1s x1s _ _) (f1 y-ivl samples))
@@ -314,7 +314,7 @@
   ((lines-interval-render-proc v1s v2s color style
                                line1-color line1-width line1-style
                                line2-color line2-width line2-style
-                               alpha label)
+                               alpha)
    area))
 
 (:: inverse-interval
@@ -366,7 +366,11 @@
      (renderer2d (vector x-ivl y-ivl)
                  (inverse-interval-bounds-fun g1 g2 samples)
                  default-ticks-fun
+                 (and label (λ (_)
+                              (interval-legend-entry label color style 0 0 'transparent
+                                                     line1-color line1-width line1-style
+                                                     line2-color line2-width line2-style)))
                  (inverse-interval-render-proc g1 g2 samples color style
                                                line1-color line1-width line1-style
                                                line2-color line2-width line2-style
-                                               alpha label))]))
+                                               alpha))]))

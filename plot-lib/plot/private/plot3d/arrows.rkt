@@ -16,26 +16,19 @@
        Plot-Color Nonnegative-Real Plot-Pen-Style
        Nonnegative-Real
        (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real
-       (U String pict #f)
        3D-Render-Proc))
 (define ((arrows3d-render-fun vs
                               color line-width line-style
                               alpha
-                              arrow-head-size-or-scale arrow-head-angle
-                              label) area)
+                              arrow-head-size-or-scale arrow-head-angle) area)
   (match-define (vector (ivl x-min x-max) (ivl y-min y-max) (ivl z-min z-max)) (send area get-bounds-rect))
   
-  (cond
-    [(and x-min x-max y-min y-max z-min z-max)  
+  (when (and x-min x-max y-min y-max z-min z-max)  
      (send area put-alpha alpha)
      (send area put-pen color line-width line-style)
      (send area put-arrow-head arrow-head-size-or-scale arrow-head-angle)
      (for ([x (in-list vs)])
-       (send area put-arrow (car x) (cdr x) #t))
-     (cond [label  (arrow-legend-entry label color line-width line-style)]
-           [else   empty])]
-    [else  empty])
-  )
+       (send area put-arrow (car x) (cdr x) #t))))
 
 
 (define-type LVof (All (A) (U (Listof A)(Vectorof A))))
@@ -120,14 +113,14 @@
          (filter vrational? (append p1 p2))))
 
      (cond
-       [(empty? rvs) (renderer3d #f #f #f #f)]
+       [(empty? rvs) empty-renderer3d]
        [else
         (define-values (x- x+ y- y+ z- z+) (get-bounds x-min x-max y-min y-max z-min z-max rvs))
         (renderer3d (vector (ivl x- x+) (ivl y- y+) (ivl z- z+)) #f default-ticks-fun
+                    (and label (λ (_) (arrow-legend-entry label color width style)))
                     (arrows3d-render-fun vs*
                                          color width style alpha
-                                         arrow-head-size-or-scale arrow-head-angle
-                                         label))])]))
+                                         arrow-head-size-or-scale arrow-head-angle))])]))
 
 
 (define (get-bounds [x-min : (Option Real)][x-max : (Option Real)]
