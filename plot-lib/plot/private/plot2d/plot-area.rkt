@@ -552,7 +552,7 @@
     (define: top : Real  0)
     (define: bottom : Real  0)
     (let-values ([(left-val right-val top-val bottom-val)
-                  (margin-fixpoint 0 dc-x-size init-top-margin dc-y-size 0 0 init-top-margin 0
+                  (margin-fixpoint 0 dc-x-size 0 dc-y-size 0 0 init-top-margin 0
                                    (λ ([left : Real] [right : Real] [top : Real] [bottom : Real])
                                      (get-param-vs/set-view->dc! left right top bottom)))])
       (set! left left-val)
