@@ -8,7 +8,7 @@
 
 (define (do-plot-margin-calc output-fn)
   (output-fn (function values 0 1)
-             #:title (text "a realy realy realy realy realy realy realy realy ridiculously high title" null 12 1.55)))
+             #:title (standard-fish 700 350)))
 
 (define-runtime-path pr75-data "./test-data/pr75.dat")
 
