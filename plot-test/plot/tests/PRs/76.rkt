@@ -10,7 +10,7 @@
 (define (do-plot-title output-fn)
   (output-fn
    (surface3d (λ (x y) 1) 0 1 0 1)
-   #:title (text "a high title" null 12 1.55)))
+   #:title (standard-fish 100 50)))
 
 (define-runtime-path pr76-data "./test-data/pr76.dat")
 
