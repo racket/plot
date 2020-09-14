@@ -242,6 +242,10 @@
 (define (margin-fixpoint x-min x-max y-min y-max
                          init-left init-right init-top init-bottom
                          get-vs)
+  (define x- (+ x-min init-left))
+  (define x+ (- x-max init-right 1))
+  (define y- (+ y-min init-top))
+  (define y+ (- y-max init-bottom 1))
   (let/ec return : (Values Real Real Real Real)
     (for/fold ([left   : Real  init-left]
                [right  : Real  init-right]
@@ -250,15 +254,15 @@
               ([i  (in-range 3)])
       (match-define (list (vector #{xs : (Listof Real)} #{ys : (Listof Real)}) ...)
         (get-vs left right top bottom))
-      (define param-x-min (apply min x-min xs))
-      (define param-x-max (apply max (sub1 x-max) xs))
-      (define param-y-min (apply min y-min ys))
-      (define param-y-max (apply max (sub1 y-max) ys))
+      (define param-x-min (apply min x- xs))
+      (define param-x-max (apply max x+ xs))
+      (define param-y-min (apply min y- ys))
+      (define param-y-max (apply max y+ ys))
       
-      (define new-left (round (+ left (- x-min param-x-min))))
-      (define new-right (round (- right (- (sub1 x-max) param-x-max))))
-      (define new-top (round (+ top (- y-min param-y-min))))
-      (define new-bottom (round (- bottom (- (sub1 y-max) param-y-max))))
+      (define new-left   (round (+ left   (- x- param-x-min))))
+      (define new-right  (round (- right  (- x+ param-x-max))))
+      (define new-top    (round (+ top    (- y- param-y-min))))
+      (define new-bottom (round (- bottom (- y+ param-y-max))))
       
       ;; Not enough space?
       (define area-x-min (+ x-min new-left))
