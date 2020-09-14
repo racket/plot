@@ -2,7 +2,7 @@
 
 (require typed/racket/class typed/racket/draw racket/match racket/list racket/math racket/flonum
          (only-in math fl vector->flvector)
-         (only-in typed/pict pict?)
+         (only-in typed/pict pict? pict-height)
          "../common/type-doc.rkt"
          "../common/types.rkt"
          "../common/math.rkt"
@@ -372,7 +372,13 @@
                  (fl- area-y-mid (fl* z area-per-view-z))))))
     
     (: init-top-margin Real)
-    (define init-top-margin (if (and (plot-decorations?) (plot-title)) (* 3/2 char-height) 0))
+    (define init-top-margin
+      (let ([title (plot-title)])
+        (cond [(and (plot-decorations?) title)
+               (if (pict? title)
+                   (+ (pict-height title) (* 1/2 char-height))
+                   (* 3/2 char-height))]
+              [else  0])))
     
     ;; Initial view->dc
     (: view->dc (-> FlVector (Vectorof Real)))
