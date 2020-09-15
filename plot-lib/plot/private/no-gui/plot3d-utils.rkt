@@ -12,7 +12,7 @@
          "utils.rkt"
          typed/racket/unsafe)
 
-(provide get-renderer-list get-bounds-rect get-ticks)
+(provide get-renderer-list get-bounds-rect get-ticks get-legend-entry-list)
 (unsafe-provide plot-area)
 
 (: get-renderer-list (-> Any (Listof renderer3d)))
@@ -78,21 +78,28 @@
 (define (plot-area area renderer-list)
   (send area start-plot)
   
-  (define legend-entries
-    (flatten-legend-entries
-     (for/list : (Listof (Treeof legend-entry)) ([rend  (in-list renderer-list)])
-       (match-define (renderer3d rend-bounds-rect _bf _tf label-proc render-proc) rend)
-       (send area start-renderer (if rend-bounds-rect
-                                     (rect-inexact->exact rend-bounds-rect)
-                                     (unknown-rect 3)))
-       (when render-proc (render-proc area))
-       (if label-proc
-           (label-proc (send area get-bounds-rect))
-           empty))))
+  (for ([rend  (in-list renderer-list)])
+    (match-define (renderer3d rend-bounds-rect _bf _tf label-proc render-proc) rend)
+    ;; next step could be moved into (when render-proc, but this generates different step files)
+    (send area start-renderer (if rend-bounds-rect
+                                  (rect-inexact->exact rend-bounds-rect)
+                                  (unknown-rect 3)))
+    (when render-proc
+      (render-proc area)))
   
   (send area end-renderers)
-  
-  (when (not (empty? legend-entries))
-    (send area draw-legend legend-entries))
-  
   (send area end-plot))
+
+(: get-legend-entry-list (-> (Listof renderer3d) Rect (Listof legend-entry)))
+(define (get-legend-entry-list renderer-list outer-rect)
+  (match-define (vector (ivl  x-min  x-max) (ivl  y-min  y-max) (ivl  z-min  z-max)) outer-rect)
+
+  (cond
+    [(and x-min x-max y-min y-max z-min z-max)
+    (flatten-legend-entries
+     (for*/list : (Listof (Treeof legend-entry))
+       ([rend  (in-list renderer-list)]
+        [label-proc (in-value (renderer3d-label rend))]
+        #:when label-proc)
+       (label-proc outer-rect)))]
+    [else '()]))

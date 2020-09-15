@@ -25,7 +25,7 @@
                 plot3d)
 
 (require/typed plot/utils
-  (anchor/c (-> Any Boolean))
+  (legend-anchor/c (-> Any Boolean))
   (plot-color/c (-> Any Boolean))
   (plot-file-format/c (-> Any Boolean)))
 
@@ -44,7 +44,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Snip%)))
 (define (plot3d-snip renderer-tree
                      #:x-min [x-min #f] #:x-max [x-max #f]
@@ -76,7 +76,7 @@
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
     [(and z-label (not (or (string? z-label) (pict? z-label)))) (fail/kw "#f, string or pict" '#:y-label z-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "anchor/c" '#:legend-anchor legend-anchor)])
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   (parameterize ([plot-title          title]
                  [plot-x-label        x-label]
@@ -90,7 +90,8 @@
       (get-ticks renderer-list bounds-rect))
 
     (define render-tasks-hash ((inst make-hash Boolean render-tasks)))
-    (define legend-entries-hash ((inst make-hash Boolean (Listof legend-entry))))
+    ;; For 3D legend can be calculated once since we don't change the bounding box
+    (define legend (get-legend-entry-list renderer-list bounds-rect))
 
     (: make-bm (-> Boolean Real Real Positive-Integer Positive-Integer (Instance Bitmap%)))
     (define (make-bm anim? angle altitude width height)
@@ -102,35 +103,26 @@
                      width height #t
                      #:backing-scale (or (get-display-backing-scale) 1.0)))
         (define dc (make-object bitmap-dc% bm))
+        
         (define area (make-object 3d-plot-area%
-                                  bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks
+                                  bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks legend
                                   dc 0 0 width height))
         (send area start-plot)
 
         (cond [(not (hash-ref render-tasks-hash (plot-animating?) #f))
-               (hash-set!
-                legend-entries-hash (plot-animating?)
-                (flatten-legend-entries
-                 (for/list : (Listof (Treeof legend-entry)) ([rend  (in-list renderer-list)])
-                   (match-define (renderer3d rend-bounds-rect _bf _tf label-proc render-proc) rend)
+               (for ([rend  (in-list renderer-list)])
+                 (match-define (renderer3d rend-bounds-rect _bf _tf label-proc render-proc) rend)
+                 (when render-proc
                    (send area start-renderer (if rend-bounds-rect
                                                  (rect-inexact->exact rend-bounds-rect)
                                                  (unknown-rect 3)))
-                   (when render-proc (render-proc area))
-                   (if label-proc
-                       (label-proc (send area get-bounds-rect))
-                       empty))))
+                   (render-proc area)))
 
                (hash-set! render-tasks-hash (plot-animating?) (send area get-render-tasks))]
               [else
                (send area set-render-tasks (hash-ref render-tasks-hash (plot-animating?)))])
 
         (send area end-renderers)
-
-        (define legend-entries (hash-ref legend-entries-hash (plot-animating?) #f))
-        (when (and legend-entries (not (empty? legend-entries)))
-          (send area draw-legend legend-entries))
-
         (send area end-plot)
         bm))
 
@@ -153,7 +145,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Frame%)))
 (define (plot3d-frame renderer-tree
                       #:x-min [x-min #f] #:x-max [x-max #f]
@@ -185,7 +177,7 @@
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
     [(and z-label (not (or (string? z-label) (pict? z-label)))) (fail/kw "#f, string or pict" '#:y-label z-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "anchor/c" '#:legend-anchor legend-anchor)])
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   ;; make-snip will be called in a separate thread, make sure the
   ;; parameters have the correct values in that thread as well.
@@ -216,7 +208,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
-          #:legend-anchor Anchor
+          #:legend-anchor Legend-Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)
           #:fgcolor Plot-Color
@@ -272,7 +264,7 @@
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
     [(and z-label (not (or (string? z-label) (pict? z-label)))) (fail/kw "#f, string or pict" '#:y-label z-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "anchor/c" '#:legend-anchor legend-anchor)]
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)]
     [(and out-kind (not (plot-file-format/c out-kind))) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(not (plot-file-format/c out-kind)) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(and fgcolor (not (plot-color/c fgcolor))) (fail/kw "plot-color/c" '#:fgcolor fgcolor)]

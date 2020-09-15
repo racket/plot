@@ -40,7 +40,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          Void))
 (define (plot3d/dc renderer-tree dc x y width height
                    #:x-min [x-min #f] #:x-max [x-max #f]
@@ -73,6 +73,7 @@
      (define bounds-rect (get-bounds-rect renderer-list x-min x-max y-min y-max z-min z-max))
      (define-values (x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks)
        (get-ticks renderer-list bounds-rect))
+     (define legend-list (get-legend-entry-list renderer-list bounds-rect))
      
      (parameterize ([plot3d-angle        angle]
                     [plot3d-altitude     altitude]
@@ -83,6 +84,7 @@
                     [plot-legend-anchor  legend-anchor])
        (define area (make-object 3d-plot-area%
                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks
+                      legend-list
                       dc x y width height))
        (plot-area area renderer-list))]))
 
@@ -107,7 +109,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Bitmap%)))
 (define (plot3d-bitmap renderer-tree 
                        #:x-min [x-min #f] #:x-max [x-max #f]
@@ -145,7 +147,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          Pict))
 (define (plot3d-pict renderer-tree 
                      #:x-min [x-min #f] #:x-max [x-max #f]
@@ -186,7 +188,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          Void))
 (define (plot3d-file renderer-tree output [kind 'auto]
                      #:x-min [x-min #f] #:x-max [x-max #f]

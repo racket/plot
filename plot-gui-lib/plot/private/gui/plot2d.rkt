@@ -50,7 +50,7 @@
                 plot)
 
 (require/typed plot/utils
-  (anchor/c (-> Any Boolean))
+  (legend-anchor/c (-> Any Boolean))
   (plot-color/c (-> Any Boolean))
   (plot-file-format/c (-> Any Boolean)))
 
@@ -66,7 +66,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Snip%)))
 (define (plot-snip renderer-tree
                    #:x-min [x-min #f] #:x-max [x-max #f]
@@ -89,7 +89,7 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "anchor/c" '#:legend-anchor legend-anchor)])
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   (parameterize ([plot-title          title]
                  [plot-x-label        x-label]
@@ -112,9 +112,10 @@
         (define dc (make-object bitmap-dc% bm))
         (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
           (get-ticks renderer-list bounds-rect))
+        (define legend (get-legend-entry-list renderer-list bounds-rect))
         (define new-area
           (make-object 2d-plot-area%
-                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks
+                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks legend
                        dc 0 0 width height))
         (set! area new-area)
         (plot-area new-area renderer-list))
@@ -136,7 +137,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Frame%)))
 (define (plot-frame renderer-tree
                     #:x-min [x-min #f] #:x-max [x-max #f]
@@ -159,7 +160,7 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "anchor/c" '#:legend-anchor legend-anchor)])
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   ;; make-snip will be called in a separate thread, make sure the
   ;; parameters have the correct values in that thread as well.
@@ -185,7 +186,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor
+          #:legend-anchor Legend-Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)
           #:fgcolor Plot-Color
@@ -225,7 +226,7 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
-    [(not (anchor/c legend-anchor)) (fail/kw "anchor/c" '#:legend-anchor legend-anchor)]
+    [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)]
     [(and out-kind (not (plot-file-format/c out-kind))) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(not (plot-file-format/c out-kind)) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(and fgcolor (not (plot-color/c fgcolor))) (fail/kw "plot-color/c" '#:fgcolor fgcolor)]

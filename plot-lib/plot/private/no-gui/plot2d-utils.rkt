@@ -12,7 +12,7 @@
          "utils.rkt"
          typed/racket/unsafe)
 
-(provide get-renderer-list get-bounds-rect get-ticks)
+(provide get-renderer-list get-bounds-rect get-ticks get-legend-entry-list)
 (unsafe-provide plot-area)
 
 (: get-renderer-list (-> Any (Listof renderer2d)))
@@ -68,23 +68,29 @@
 (define (plot-area area renderer-list)
   (send area start-plot)
   
-  (define legend-entries
-    (flatten-legend-entries
-     (for/list : (Listof (Treeof legend-entry)) ([rend  (in-list renderer-list)])
-       (match-define (renderer2d rend-bounds-rect _bf _tf label-proc render-proc) rend)
-       (send area start-renderer (if rend-bounds-rect
-                                     (rect-inexact->exact rend-bounds-rect)
-                                     (unknown-rect 2)))
-       (when render-proc (render-proc area))
-       (cond
-         [(and render-proc label-proc)
-          (define rect (send area get-bounds-rect))
-          (label-proc rect)]
-         [else empty]))))
+  (for ([rend  (in-list renderer-list)])
+    (match-define (renderer2d rend-bounds-rect _bf _tf label-proc render-proc) rend)
+    ;; next step could be moved into (when render-proc, but this generates different step files)
+    (send area start-renderer (if rend-bounds-rect
+                                  (rect-inexact->exact rend-bounds-rect)
+                                  (unknown-rect 2)))
+    (when render-proc
+      (render-proc area)))
   
   (send area end-renderers)
-  
-  (when (not (empty? legend-entries))
-    (send area draw-legend legend-entries))
-  
   (send area end-plot))
+
+(: get-legend-entry-list (-> (Listof renderer2d) Rect (Listof legend-entry)))
+(define (get-legend-entry-list renderer-list outer-rect)
+  (match-define (vector (ivl  x-min  x-max) (ivl  y-min  y-max)) outer-rect)
+
+  (cond
+    [(and x-min x-max y-min y-max)
+     (flatten-legend-entries
+      (for*/list : (Listof (Treeof legend-entry))
+        ([rend  (in-list renderer-list)]
+         [label-proc (in-value (renderer2d-label rend))]
+         #:when label-proc)
+        ;; clipping not necessary, levels are always calculated on the complete bounds-rect
+        (label-proc outer-rect)))]
+    [else '()]))

@@ -35,7 +35,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          Void))
 (define (plot/dc renderer-tree dc x y width height
                  #:x-min [x-min #f] #:x-max [x-max #f]
@@ -60,13 +60,14 @@
      (define bounds-rect (get-bounds-rect renderer-list x-min x-max y-min y-max))
      (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
        (get-ticks renderer-list bounds-rect))
+     (define legend (get-legend-entry-list renderer-list bounds-rect))
      
      (parameterize ([plot-title          title]
                     [plot-x-label        x-label]
                     [plot-y-label        y-label]
                     [plot-legend-anchor  legend-anchor])
        (define area (make-object 2d-plot-area%
-                      bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks dc x y width height))
+                      bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks legend dc x y width height))
        (plot-area area renderer-list))]))
 
 ;; ===================================================================================================
@@ -81,7 +82,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          (Instance Bitmap%)))
 (define (plot-bitmap renderer-tree
                      #:x-min [x-min #f] #:x-max [x-max #f]
@@ -111,7 +112,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          Pict))
 (define (plot-pict renderer-tree
                    #:x-min [x-min #f] #:x-max [x-max #f]
@@ -144,7 +145,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
-          #:legend-anchor Anchor]
+          #:legend-anchor Legend-Anchor]
          Void))
 (define (plot-file renderer-tree output [kind 'auto]
                    #:x-min [x-min #f] #:x-max [x-max #f]

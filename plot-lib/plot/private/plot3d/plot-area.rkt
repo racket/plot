@@ -97,7 +97,8 @@
                      [ry-ticks (Listof tick)]
                      [ry-far-ticks (Listof tick)]
                      [rz-ticks (Listof tick)]
-                     [rz-far-ticks (Listof tick)])
+                     [rz-far-ticks (Listof tick)]
+                     [legend (Listof legend-entry)])
          (init-field [dc (Instance DC<%>)]
                      [dc-x-min Real]
                      [dc-y-min Real]
@@ -145,7 +146,7 @@
 (: 3d-plot-area% 3D-Plot-Area%)
 (define 3d-plot-area%
   (class object%
-    (init-field bounds-rect rx-ticks rx-far-ticks ry-ticks ry-far-ticks rz-ticks rz-far-ticks)
+    (init-field bounds-rect rx-ticks rx-far-ticks ry-ticks ry-far-ticks rz-ticks rz-far-ticks legend)
     (init-field dc dc-x-min dc-y-min dc-x-size dc-y-size)
     (super-new)
     
@@ -1262,6 +1263,8 @@
     (define/public (start-plot)
       (send pd reset-drawing-params)
       (send pd clear)
+      (when (and (not (empty? legend)) (outside-anchor (plot-legend-anchor)))
+        (draw-legend legend))
       (draw-title)
       (draw-labels (get-back-label-params))
       (draw-ticks (get-back-tick-params))
@@ -1281,13 +1284,20 @@
       (send pd reset-drawing-params)
       (draw-front-axes)
       (draw-ticks (get-front-tick-params))
-      (draw-labels (get-front-label-params)))
+      (draw-labels (get-front-label-params))
+      (when (and (not (empty? legend)) (inside-anchor (plot-legend-anchor)))
+        (draw-legend legend)))
     
     (define/public (draw-legend legend-entries)
       (define gap-size (+ (pen-gap) tick-radius))
+      (define-values (x-min x-max y-min y-max)
+        (if (outside-anchor (plot-legend-anchor))
+            (values dc-x-min (+ dc-x-min dc-x-size)
+                    dc-y-min (+ dc-y-min dc-y-size))
+            (values area-x-min area-x-max area-y-min area-y-max)))
       (send pd draw-legend legend-entries
-            (vector (ivl (+ area-x-min gap-size) (- area-x-max gap-size))
-                    (ivl (+ area-y-min gap-size) (- area-y-max gap-size)))))
+            (vector (ivl (+ x-min gap-size) (- x-max gap-size))
+                    (ivl (+ y-min gap-size) (- y-max gap-size)))))
     
     (define/public (end-plot)
       (send pd restore-drawing-params))
