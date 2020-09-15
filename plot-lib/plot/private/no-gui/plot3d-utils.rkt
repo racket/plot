@@ -12,7 +12,7 @@
          "utils.rkt"
          typed/racket/unsafe)
 
-(provide get-renderer-list get-bounds-rect get-ticks get-legend-list)
+(provide get-renderer-list get-bounds-rect get-ticks get-legend-entry-list)
 (unsafe-provide plot-area)
 
 (: get-renderer-list (-> Any (Listof renderer3d)))
@@ -90,8 +90,8 @@
   (send area end-renderers)
   (send area end-plot))
 
-(: get-legend-list (-> (Listof renderer3d) Rect (Listof legend-entry)))
-(define (get-legend-list renderer-list outer-rect)
+(: get-legend-entry-list (-> (Listof renderer3d) Rect (Listof legend-entry)))
+(define (get-legend-entry-list renderer-list outer-rect)
   (match-define (vector (ivl  x-min  x-max) (ivl  y-min  y-max) (ivl  z-min  z-max)) outer-rect)
 
   (cond

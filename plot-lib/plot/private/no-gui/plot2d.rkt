@@ -60,7 +60,7 @@
      (define bounds-rect (get-bounds-rect renderer-list x-min x-max y-min y-max))
      (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
        (get-ticks renderer-list bounds-rect))
-     (define legend (get-legend-list renderer-list bounds-rect))
+     (define legend (get-legend-entry-list renderer-list bounds-rect))
      
      (parameterize ([plot-title          title]
                     [plot-x-label        x-label]

@@ -112,7 +112,7 @@
         (define dc (make-object bitmap-dc% bm))
         (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
           (get-ticks renderer-list bounds-rect))
-        (define legend (get-legend-list renderer-list bounds-rect))
+        (define legend (get-legend-entry-list renderer-list bounds-rect))
         (define new-area
           (make-object 2d-plot-area%
                        bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks legend

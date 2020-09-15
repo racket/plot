@@ -73,7 +73,7 @@
      (define bounds-rect (get-bounds-rect renderer-list x-min x-max y-min y-max z-min z-max))
      (define-values (x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks)
        (get-ticks renderer-list bounds-rect))
-     (define legend-list (get-legend-list renderer-list bounds-rect))
+     (define legend-list (get-legend-entry-list renderer-list bounds-rect))
      
      (parameterize ([plot3d-angle        angle]
                     [plot3d-altitude     altitude]

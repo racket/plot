@@ -91,7 +91,7 @@
 
     (define render-tasks-hash ((inst make-hash Boolean render-tasks)))
     ;; For 3D legend can be calculated once since we don't change the bounding box
-    (define legend (get-legend-list renderer-list bounds-rect))
+    (define legend (get-legend-entry-list renderer-list bounds-rect))
 
     (: make-bm (-> Boolean Real Real Positive-Integer Positive-Integer (Instance Bitmap%)))
     (define (make-bm anim? angle altitude width height)
