@@ -17,20 +17,26 @@
 (define 3d-plot-snip%
   (class plot-snip%
     (init init-bm saved-plot-parameters)
-    (init-field make-bm angle altitude width height)
+    (init-field make-bm angle altitude area width height)
     
     (inherit set-bitmap get-bitmap
              get-saved-plot-parameters
-             set-message stop-message set-message-center reset-message-timeout
+             set-message stop-message reset-message-timeout
              update-thread-running? set-update
              get-left-down-here?)
     
     (super-make-object init-bm saved-plot-parameters)
     
+    (define (set-message-center)
+      (match-define (vector x-mid y-mid) (rect-center (send area get-area-bounds-rect)))
+      (send this set-message-center x-mid y-mid))
+    
+    (set-message-center)
+
     (define/override (copy)
       (make-object this%
         (get-bitmap) (get-saved-plot-parameters)
-        make-bm angle altitude width height))
+        make-bm angle altitude area width height))
     
     (define mouse-x 0)
     (define mouse-y 0)
@@ -58,8 +64,10 @@
                       (make-bm animating? angle altitude width height)])))
             (λ (animating?) (draw-command animating? angle altitude width height))
             (λ (rth)
-              (define new-bm (worker-thread-try-get rth))
+              (define-values (new-bm new-area)
+                (worker-thread-try-get rth (λ () (values #f #f))))
               (cond [(is-a? new-bm bitmap%)
+                     (set! area new-area)
                      (set-bitmap new-bm)
                      (when (not (and (= last-angle angle)
                                      (= last-altitude altitude)))
@@ -126,7 +134,7 @@
       (when (not (and (= w width) (= h height)))
         (set! width w)
         (set! height h)
-        (set-message-center (* 1/2 w) (* 1/2 h))
+        (set-message-center)
         (stop-message)
         (when (not (update-thread-running?))
           (start-update-thread #t))
@@ -136,7 +144,7 @@
 
 (define (make-3d-plot-snip
          init-bm saved-plot-parameters
-         make-bm angle altitude width height)
+         make-bm angle altitude area width height)
   (make-object 3d-plot-snip%
     init-bm saved-plot-parameters
-    make-bm angle altitude width height))
+    make-bm angle altitude area width height))

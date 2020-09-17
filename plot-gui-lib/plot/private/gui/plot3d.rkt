@@ -93,7 +93,7 @@
     ;; For 3D legend can be calculated once since we don't change the bounding box
     (define legend (get-legend-entry-list renderer-list bounds-rect))
 
-    (: make-bm (-> Boolean Real Real Positive-Integer Positive-Integer (Instance Bitmap%)))
+    (: make-bm (-> Boolean Real Real Positive-Integer Positive-Integer (Values (Instance Bitmap%) (U #f (Instance 3D-Plot-Area%)))))
     (define (make-bm anim? angle altitude width height)
       (parameterize/group ([plot-parameters  saved-plot-parameters]
                            [plot-animating?  (if anim? #t (plot-animating?))]
@@ -124,11 +124,12 @@
 
         (send area end-renderers)
         (send area end-plot)
-        bm))
+        (values bm area)))
 
+    (define-values (bm area) (make-bm #f angle altitude width height))
     (make-3d-plot-snip
-     (make-bm #f angle altitude width height) saved-plot-parameters
-     make-bm angle altitude width height)))
+     bm saved-plot-parameters
+     make-bm angle altitude area width height)))
 
 ;; ===================================================================================================
 ;; Plot to a frame
