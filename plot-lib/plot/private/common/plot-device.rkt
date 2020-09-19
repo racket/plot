@@ -719,7 +719,7 @@
         (define-values (legend-rect top-gap baseline-skip max-label-height
                                     draw-x-size label-x-min draw-x-min
                                     draw-y-size legend-y-min)
-          (calculate-legend-parameters legend-entries rect (if (list? legend-anchor) (cadr legend-anchor) legend-anchor)))
+          (calculate-legend-parameters legend-entries rect (legend-anchor->anchor legend-anchor)))
 
         ;; legend background
         (set-pen (plot-foreground) 1 'transparent)

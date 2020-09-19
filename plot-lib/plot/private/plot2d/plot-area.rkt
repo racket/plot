@@ -243,14 +243,14 @@
     (: init-top-margin Real)
     (: init-bottom-margin Real)
     (define-values (legend-print init-left-margin init-right-margin init-top-margin init-bottom-margin)
-      (let* ([legend-anchor (outside-anchor (plot-legend-anchor))]
-             [legend-rect (and legend-anchor
+      (let* ([legend-anchor (plot-legend-anchor)]
+             [legend-rect (and (outside-anchor? legend-anchor)
                                (not (empty? legend))
                                (send pd calculate-legend-rect
                                      legend
                                      (vector (ivl dc-x-min (+ dc-x-min dc-x-size))
                                              (ivl dc-y-min (+ dc-y-min dc-y-size)))
-                                     legend-anchor))]
+                                     (legend-anchor->anchor legend-anchor)))]
              [gap (pen-gap)]
              [make-print
               (λ ([get-bounds : (-> (Listof Real))])
@@ -274,8 +274,8 @@
            (define height (if (and y- y+) (+ 2*gap (- y+ y-)) 0))
 
            ;; the maximum width/height for the plot+axis-labels
-           (define x-size-left (- dc-x-size width))
-           (define y-size-left (- dc-y-size title-margin height))
+           (define remaining-x-size (- dc-x-size width))
+           (define remaining-y-size (- dc-y-size title-margin height))
 
            ;; the print-functions try to align with the plot-area, but if they are to wide
            ;; they fall back to the complete dc
@@ -294,27 +294,22 @@
                     (list (- area-x-min gap) (+ area-x-max gap) (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap)
                     (list dc-x-min (+ dc-x-min dc-x-size) (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap)))))
            
-           (define (top)    (if (< y-size-left 0) (none) (values h-print 0 0 (+ title-margin height 3*gap) 0)))
-           (define (bottom) (if (< y-size-left 0) (none) (values h-print 0 0 title-margin (+ height 3*gap))))
-           (define (left)   (if (< x-size-left 0) (none) (values v-print (+ width 3*gap) 0 title-margin 0)))
-           (define (right)  (if (< x-size-left 0) (none) (values v-print 0 (+ width 3*gap)  title-margin 0)))
+           (define (top)    (if (< remaining-y-size 0) (none) (values h-print 0 0 (+ title-margin height 3*gap) 0)))
+           (define (bottom) (if (< remaining-y-size 0) (none) (values h-print 0 0 title-margin (+ height 3*gap))))
+           (define (left)   (if (< remaining-x-size 0) (none) (values v-print (+ width 3*gap) 0 title-margin 0)))
+           (define (right)  (if (< remaining-x-size 0) (none) (values v-print 0 (+ width 3*gap)  title-margin 0)))
            (case legend-anchor
-             [(top-left auto) (if (< y-size-left x-size-left) (left)  (top))]
-             [(left)          (left)]
-             [(bottom-left)   (if (< y-size-left x-size-left) (left)  (bottom))]
-             [(bottom)        (bottom)]
-             [(bottom-right)  (if (< y-size-left x-size-left) (right) (bottom))]
-             [(right)         (right)]
-             [(top-right)     (if (< y-size-left x-size-left) (right) (top))]
-             [(top)           (top)]
-             ; center : no space reservation
-             [else
+             [(outside-top-left outside-top outside-top-right)          (top)]
+             [(outside-left-top outside-left outside-left-bottom)       (left)]
+             [(outside-right-top outside-right outside-right-bottom)    (right)]
+             [(outside-bottom-left outside-bottom outside-bottom-right) (bottom)]
+             [else ;; unreachable code, but TR complains about 1 vs 5 values if not present
               (make-none
                (λ ()
-                 (append (if (< x-size-left 0)
+                 (append (if (< remaining-x-size 0)
                              (list dc-x-min (+ dc-x-min dc-x-size))
                              (list area-x-min area-x-max))
-                         (if (< y-size-left 0)
+                         (if (< remaining-y-size 0)
                              (list (+ dc-y-min title-margin) (+ dc-y-min dc-y-size) gap)
                              (list area-y-min area-y-max (+ gap tick-radius))))))])]
           [else (none)])))
@@ -745,7 +740,7 @@
     (define/public (start-plot)
       (send pd reset-drawing-params)
       (send pd clear)
-      (when (and (not (empty? legend)) (outside-anchor (plot-legend-anchor)))
+      (when (and (not (empty? legend)) (outside-anchor? (plot-legend-anchor)))
         (draw-legend legend))
       (draw-title)
       (draw-axes)
@@ -763,7 +758,7 @@
     (define/public (end-renderers)
       (clear-clip-rect)
       (send pd reset-drawing-params)
-      (when (and (not (empty? legend)) (inside-anchor (plot-legend-anchor)))
+      (when (and (not (empty? legend)) (inside-anchor? (plot-legend-anchor)))
         (draw-legend legend)))
 
     (define/public (draw-legend legend-entries)
