@@ -403,15 +403,15 @@
            (define height (if (and y- y+) (+ gap (- y+ y-)) 0))
            (define remaining-x-size (- dc-x-size width))
            (define remaining-y-size (- dc-y-size title-margin height))
-           (define (left)   (if (< remaining-x-size 0) (none) (values width 0 title-margin 0)))
-           (define (top)    (if (< remaining-y-size 0) (none) (values 0 0 (+ title-margin height) 0)))
-           (define (bottom) (if (< remaining-y-size 0) (none) (values 0 0 title-margin height)))
-           (define (right)  (if (< remaining-x-size 0) (none) (values 0 width  title-margin 0)))
            (case legend-anchor
-             [(outside-top-left outside-top outside-top-right)          (top)]
-             [(outside-left-top outside-left outside-left-bottom)       (left)]
-             [(outside-right-top outside-right outside-right-bottom)    (right)]
-             [(outside-bottom-left outside-bottom outside-bottom-right) (bottom)]
+             [(outside-top-left outside-top outside-top-right outside-top-center-dc)
+              (if (< remaining-y-size 0) (none) (values 0 0 (+ title-margin height) 0))]
+             [(outside-left-top outside-left outside-left-bottom)
+              (if (< remaining-x-size 0) (none) (values width 0 title-margin 0))]
+             [(outside-right-top outside-right outside-right-bottom)
+              (if (< remaining-x-size 0) (none) (values 0 width  title-margin 0))]
+             [(outside-bottom-left outside-bottom outside-bottom-right)
+              (if (< remaining-y-size 0) (none) (values 0 0 title-margin height))]
              ;; unreachable code ...
              [else  (none)])]
           [else (none)])))

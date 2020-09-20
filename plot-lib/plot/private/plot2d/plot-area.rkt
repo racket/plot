@@ -265,53 +265,54 @@
                                                 (+ gap tick-radius)))))])
         (cond
           [legend-rect
-           (define 2*gap (* 2 gap))
-           (define 3*gap (* 3 gap))
+           (define double-gap (* 2 gap))
+           (define tripple-gap (* 3 gap))
 
            ;; legend with and height
            (match-define (vector (ivl x- x+) (ivl y- y+)) legend-rect)
-           (define width  (if (and x- x+) (+ 2*gap (- x+ x-)) 0))
-           (define height (if (and y- y+) (+ 2*gap (- y+ y-)) 0))
+           (define width  (if (and x- x+) (+ double-gap (- x+ x-)) 0))
+           (define height (if (and y- y+) (+ double-gap (- y+ y-)) 0))
 
            ;; the maximum width/height for the plot+axis-labels
            (define remaining-x-size (- dc-x-size width))
            (define remaining-y-size (- dc-y-size title-margin height))
 
-           ;; the print-functions try to align with the plot-area, but if they are to wide
-           ;; they fall back to the complete dc
+           ;; Align with dc/title
+           (define t-print
+             (make-print
+              (λ ()
+                (list dc-x-min (+ dc-x-min dc-x-size)
+                      (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap))))
+           ;; Align with plot-area
            (define v-print
              (make-print
               (λ ()
-                (define area-height (- area-y-max area-y-min))
-                (if (< height area-height)
-                    (list dc-x-min (+ dc-x-min dc-x-size) (- area-y-min gap) (+ area-y-max gap) gap)
-                    (list dc-x-min (+ dc-x-min dc-x-size) (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap)))))
+                (list dc-x-min (+ dc-x-min dc-x-size)
+                      (- area-y-min gap) (+ area-y-max gap) gap))))
            (define h-print
              (make-print
               (λ ()
-                (define area-width (- area-x-max area-x-min))
-                (if (< width area-width)
-                    (list (- area-x-min gap) (+ area-x-max gap) (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap)
-                    (list dc-x-min (+ dc-x-min dc-x-size) (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap)))))
+                (list (- area-x-min gap) (+ area-x-max gap)
+                      (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap))))
            
-           (define (top)    (if (< remaining-y-size 0) (none) (values h-print 0 0 (+ title-margin height 3*gap) 0)))
-           (define (bottom) (if (< remaining-y-size 0) (none) (values h-print 0 0 title-margin (+ height 3*gap))))
-           (define (left)   (if (< remaining-x-size 0) (none) (values v-print (+ width 3*gap) 0 title-margin 0)))
-           (define (right)  (if (< remaining-x-size 0) (none) (values v-print 0 (+ width 3*gap)  title-margin 0)))
            (case legend-anchor
-             [(outside-top-left outside-top outside-top-right)          (top)]
-             [(outside-left-top outside-left outside-left-bottom)       (left)]
-             [(outside-right-top outside-right outside-right-bottom)    (right)]
-             [(outside-bottom-left outside-bottom outside-bottom-right) (bottom)]
-             [else ;; unreachable code, but TR complains about 1 vs 5 values if not present
-              (make-none
-               (λ ()
-                 (append (if (< remaining-x-size 0)
-                             (list dc-x-min (+ dc-x-min dc-x-size))
-                             (list area-x-min area-x-max))
-                         (if (< remaining-y-size 0)
-                             (list (+ dc-y-min title-margin) (+ dc-y-min dc-y-size) gap)
-                             (list area-y-min area-y-max (+ gap tick-radius))))))])]
+             [(outside-top-center-dc)
+              (values t-print 0 0
+                      (+ title-margin (if (< remaining-y-size 0) 0 height) tripple-gap) 0)]
+             [(outside-top-left outside-top outside-top-right)
+              (values h-print 0 0
+                      (+ title-margin (if (< remaining-y-size 0) 0 height) tripple-gap) 0)]
+             [(outside-left-top outside-left outside-left-bottom)
+              (values v-print (+ (if (< remaining-x-size 0) 0 width) tripple-gap) 0
+                      title-margin 0)]
+             [(outside-right-top outside-right outside-right-bottom)
+              (values v-print 0 (+ (if (< remaining-x-size 0) 0 width) tripple-gap)
+                      title-margin 0)]
+             [(outside-bottom-left outside-bottom outside-bottom-right)
+              (values h-print 0 0
+                      title-margin (+ (if (< remaining-y-size 0) 0 height) tripple-gap))]
+             ;; unreachable code, but TR complains about 1 vs 5 values if not present
+             [else (none)])]
           [else (none)])))
 
     (: view->dc (-> (Vectorof Real) (Vectorof Real)))
