@@ -372,19 +372,55 @@
          (vector (fl+ area-x-mid (fl* x area-per-view-x))
                  (fl- area-y-mid (fl* z area-per-view-z))))))
     
-    (: init-top-margin Real)
-    (define init-top-margin
+    (: title-margin Real)
+    (define title-margin
       (let ([title (plot-title)])
         (cond [(and (plot-decorations?) title)
                (if (pict? title)
                    (+ (pict-height title) (* 1/2 char-height))
                    (* 3/2 char-height))]
               [else  0])))
-    
+
+    (: init-left-margin Real)
+    (: init-right-margin Real)
+    (: init-top-margin Real)
+    (: init-bottom-margin Real)
+    (define-values (init-left-margin init-right-margin init-top-margin init-bottom-margin)
+      (let* ([legend-anchor (plot-legend-anchor)]
+             [legend-rect (and (outside-anchor? legend-anchor)
+                               (not (empty? legend))
+                               (send pd calculate-legend-rect
+                                     legend
+                                     (vector (ivl dc-x-min (+ dc-x-min dc-x-size))
+                                             (ivl dc-y-min (+ dc-y-min dc-y-size)))
+                                     (legend-anchor->anchor legend-anchor)))]
+             [none (λ () (values 0 0 title-margin 0))])
+        (cond
+          [legend-rect
+           (match-define (vector (ivl x- x+) (ivl y- y+)) legend-rect)
+           (define gap (* 2 (pen-gap)))
+           (define width  (if (and x- x+) (+ gap (- x+ x-)) 0))
+           (define height (if (and y- y+) (+ gap (- y+ y-)) 0))
+           (define remaining-x-size (- dc-x-size width))
+           (define remaining-y-size (- dc-y-size title-margin height))
+           (case legend-anchor
+             [(outside-top-left outside-top outside-top-right outside-global-top)
+              (if (< remaining-y-size 0) (none) (values 0 0 (+ title-margin height) 0))]
+             [(outside-left-top outside-left outside-left-bottom)
+              (if (< remaining-x-size 0) (none) (values width 0 title-margin 0))]
+             [(outside-right-top outside-right outside-right-bottom)
+              (if (< remaining-x-size 0) (none) (values 0 width  title-margin 0))]
+             [(outside-bottom-left outside-bottom outside-bottom-right)
+              (if (< remaining-y-size 0) (none) (values 0 0 title-margin height))]
+             ;; unreachable code ...
+             [else  (none)])]
+          [else (none)])))
+
     ;; Initial view->dc
     (: view->dc (-> FlVector (Vectorof Real)))
-    (define view->dc (make-view->dc 0 0 init-top-margin 0))
-    
+    (define view->dc (make-view->dc init-left-margin init-right-margin
+                                    init-top-margin init-bottom-margin))
+
     (: x-axis-angle (-> Real))
     (define (x-axis-angle)
       (match-define (vector dx dy) (v- (norm->dc (flvector 0.5 0.0 0.0))
@@ -914,7 +950,9 @@
     (define: top : Real  0)
     (define: bottom : Real  0)
     (let-values ([(left-val right-val top-val bottom-val)
-                  (margin-fixpoint 0 dc-x-size 0 dc-y-size 0 0 init-top-margin 0
+                  (margin-fixpoint 0 dc-x-size 0 dc-y-size
+                                   init-left-margin  init-right-margin
+                                   init-top-margin   init-bottom-margin
                                    (λ ([left : Real] [right : Real] [top : Real] [bottom : Real])
                                      (get-param-vs/set-view->dc! left right top bottom)))])
       (set! left left-val)
@@ -1263,7 +1301,7 @@
     (define/public (start-plot)
       (send pd reset-drawing-params)
       (send pd clear)
-      (when (and (not (empty? legend)) (outside-anchor (plot-legend-anchor)))
+      (when (and (not (empty? legend)) (outside-anchor? (plot-legend-anchor)))
         (draw-legend legend))
       (draw-title)
       (draw-labels (get-back-label-params))
@@ -1285,15 +1323,16 @@
       (draw-front-axes)
       (draw-ticks (get-front-tick-params))
       (draw-labels (get-front-label-params))
-      (when (and (not (empty? legend)) (inside-anchor (plot-legend-anchor)))
+      (when (and (not (empty? legend)) (inside-anchor? (plot-legend-anchor)))
         (draw-legend legend)))
     
     (define/public (draw-legend legend-entries)
-      (define gap-size (+ (pen-gap) tick-radius))
+      (define outside? (outside-anchor? (plot-legend-anchor)))
+      (define gap-size (+ (pen-gap) (if outside? 0 tick-radius)))
       (define-values (x-min x-max y-min y-max)
-        (if (outside-anchor (plot-legend-anchor))
+        (if outside?
             (values dc-x-min (+ dc-x-min dc-x-size)
-                    dc-y-min (+ dc-y-min dc-y-size))
+                    (+ title-margin dc-y-min) (+ dc-y-min dc-y-size))
             (values area-x-min area-x-max area-y-min area-y-max)))
       (send pd draw-legend legend-entries
             (vector (ivl (+ x-min gap-size) (- x-max gap-size))

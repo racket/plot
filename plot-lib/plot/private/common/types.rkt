@@ -93,14 +93,29 @@
 
 (struct legend-entry ([label : (U String pict)] [draw : Legend-Draw-Proc]) #:transparent)
 
-(deftype Legend-Anchor (U #f Anchor (List (U 'inside 'outside) Anchor)))
-(define (inside-anchor [a : Legend-Anchor])
-  (and a
-       (if (list? a)
-           (and (eq? (car a) 'inside) (cadr a))
-           a)))
-(define (outside-anchor [a : Legend-Anchor])
-  (and a (list? a) (eq? (car a) 'outside) (cadr a)))
+(deftype Legend-Anchor (U Anchor
+                          'no-legend
+                          'outside-global-top
+                          'outside-top-left 'outside-top 'outside-top-right
+                          'outside-left-top 'outside-left 'outside-left-bottom
+                          'outside-right-top 'outside-right 'outside-right-bottom
+                          'outside-bottom-left 'outside-bottom 'outside-bottom-right))
+(define (inside-anchor? [a : Legend-Anchor]) (anchor? a))
+(define (outside-anchor? [a : Legend-Anchor])
+  (and (not (anchor? a)) (not (eq? a 'no-legend))))
+(define (legend-anchor->anchor [a : Legend-Anchor]) : Anchor
+  (if (anchor? a)
+      a
+      (case a
+        [(outside-top-left outside-left-top) 'top-left]
+        [(outside-top outside-global-top) 'top]
+        [(outside-top-right outside-right-top) 'top-right]
+        [(outside-right) 'right]
+        [(outside-bottom-right outside-right-bottom) 'bottom-right]
+        [(outside-bottom) 'bottom]
+        [(outside-bottom-left outside-left-bottom) 'bottom-left]
+        [(outside-left) 'left]
+        [else 'auto])))
 
 (define-type Plot-Device%
   (Class

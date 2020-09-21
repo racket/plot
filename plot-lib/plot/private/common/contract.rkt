@@ -34,8 +34,14 @@
 (define anchor/c (one-of/c 'top-left    'top    'top-right
                            'left        'center 'right
                            'bottom-left 'bottom 'bottom-right))
-(define legend-anchor/c (or/c #f anchor/c
-                              (list/c (one-of/c 'inside 'outside) anchor/c)))
+(define legend-anchor/c (or/c anchor/c
+                              (one-of/c
+                               'no-legend
+                               'outside-global-top
+                               'outside-top-left 'outside-top 'outside-top-right
+                               'outside-left-top 'outside-left 'outside-left-bottom
+                               'outside-right-top 'outside-right 'outside-right-bottom
+                               'outside-bottom-left 'outside-bottom 'outside-bottom-right)))
 
 (define color/c (or/c (list/c real? real? real?)
                       string? symbol?
