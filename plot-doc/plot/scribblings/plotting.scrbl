@@ -61,7 +61,7 @@ Here, the renderer draws in [-1,1] × [-1,1], but the plot area is [-1.5,1.5] ×
 Please set the @(racket plot-foreground) and @(racket plot-background) parameters instead of using these keyword arguments.
 The @(racket #:lncolor) keyword argument is also accepted for backward compatibility but deprecated. It does nothing.
 
-@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label"]
+@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label. And to plot the legend outside the plot-area with #:legend-anchor"]
 }
 
 @defproc[(plot3d [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
@@ -94,7 +94,7 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
 
 The @(racket #:az) and @(racket #:alt) keyword arguments are backward-compatible, deprecated aliases for @(racket #:angle) and @(racket #:altitude), respectively.
 
-@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label, #:y-label and #:z-label"]
+@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label. And to plot the legend outside the plot-area with #:legend-anchor"]
 }
 
 @defproc[(plot-snip [<plot-argument> <plot-argument-contract>] ...)
@@ -185,20 +185,6 @@ Plot to an arbitrary device context, in the rectangle with width @(racket width)
 These procedures accept the same arguments as @(racket plot) and @(racket plot3d), except deprecated keywords, and @racket[#:out-file] and @racket[#:out-kind].
 
 Use these if you need to continually update a plot on a @(racket canvas%), or to create other @(racket plot)-like functions with different backends.
-}
-
-@deftogether[((defproc (legend-pict [renderer-tree (treeof (or/c renderer2d? nonrenderer?))]
-                                    [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
-                                    [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f])
-                pict?)
-              (defproc (legend3d-pict [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
-                                      [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
-                                      [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
-                                      [#:z-min z-min (or/c rational? #f) #f] [#:z-max z-max (or/c rational? #f) #f])
-                pict?)
-              (defproc (plot+legend-picts [<plot-argument> <plot-argument-contract>] ...) (values pict? pict?))
-              (defproc (plot+legend3d-picts [<plot3d-argument> <plot-argument-contract>] ...) (values pict? pict?)))]{
-Plot the legend to a separate pict. The plot+legend form will not accept the @racket[#:legend-anchor] keyword.
 }
 
 @section{Pict-Plotting Work-a-Likes}
