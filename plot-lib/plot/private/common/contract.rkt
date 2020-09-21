@@ -37,7 +37,7 @@
 (define legend-anchor/c (or/c anchor/c
                               (one-of/c
                                'no-legend
-                               'outside-top-center-dc
+                               'outside-global-top
                                'outside-top-left 'outside-top 'outside-top-right
                                'outside-left-top 'outside-left 'outside-left-bottom
                                'outside-right-top 'outside-right 'outside-right-bottom

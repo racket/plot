@@ -404,7 +404,7 @@
            (define remaining-x-size (- dc-x-size width))
            (define remaining-y-size (- dc-y-size title-margin height))
            (case legend-anchor
-             [(outside-top-left outside-top outside-top-right outside-top-center-dc)
+             [(outside-top-left outside-top outside-top-right outside-global-top)
               (if (< remaining-y-size 0) (none) (values 0 0 (+ title-margin height) 0))]
              [(outside-left-top outside-left outside-left-bottom)
               (if (< remaining-x-size 0) (none) (values width 0 title-margin 0))]

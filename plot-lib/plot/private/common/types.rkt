@@ -95,7 +95,7 @@
 
 (deftype Legend-Anchor (U Anchor
                           'no-legend
-                          'outside-top-center-dc
+                          'outside-global-top
                           'outside-top-left 'outside-top 'outside-top-right
                           'outside-left-top 'outside-left 'outside-left-bottom
                           'outside-right-top 'outside-right 'outside-right-bottom
@@ -108,7 +108,7 @@
       a
       (case a
         [(outside-top-left outside-left-top) 'top-left]
-        [(outside-top outside-top-center-dc) 'top]
+        [(outside-top outside-global-top) 'top]
         [(outside-top-right outside-right-top) 'top-right]
         [(outside-right) 'right]
         [(outside-bottom-right outside-right-bottom) 'bottom-right]

@@ -296,7 +296,7 @@
                       (+ title-margin dc-y-min) (+ dc-y-min dc-y-size) gap))))
            
            (case legend-anchor
-             [(outside-top-center-dc)
+             [(outside-global-top)
               (values t-print 0 0
                       (+ title-margin (if (< remaining-y-size 0) 0 height) tripple-gap) 0)]
              [(outside-top-left outside-top outside-top-right)
