@@ -51,28 +51,34 @@ other use cases, the @racket['auto] anchor is always the same as
 @racket['bottom-left].}
 
 @defthing[legend-anchor/c contract? #:value (or/c anchor/c
-                                                  (one-of/c 'no-legend
-                                                            'outside-top-left    'outside-top    'outside-top-right
+                                                  (one-of/c 'outside-top-left    'outside-top    'outside-top-right
                                                             'outside-left-top    'outside-left   'outside-left-bottom
                                                             'outside-right-top   'outside-right  'outside-right-bottom
                                                             'outside-bottom-left 'outside-bottom 'outside-bottom-right
-                                                            'outside-global-top))]{
-The contract for the @(racket plot-legend-anchor) parameter.
+                                                            'outside-global-top
+                                                            'no-legend))]{
+The contract for the @racket[plot-legend-anchor] parameter and the
+@racket[#:legend-anchor] parameters for the various plot procedures.
 
-When the @racket[legend-anchor] is an @racket[anchor/c] this will place the legend inside the plot area. For @racket['auto] the legend will be drawn as if it was @racket['top-left].
+When @racket[legend-anchor] is one of the symbols from @racket[anchor/c], the
+legend will be placed inside the plot area.
 
-If the @racket[legend-anchor] is @racket['no-legend], the legend will be omitted from the plot.
+@racket[legend-anchor/c] values which start with "outside" will place the
+legend outside the plot area, for 2D plots the legend will be aligned with the
+plot area, while for 3D plots the legend will be relative to the overall
+@racket[plot-width] and @racket[plot-height].
 
-For @racket['outside-top-left] to @racket['outside-bottom-right] the legend will be drawn outside the
- plot-area. For 2D plots the alignment will be with the plot-area. For 3D plots the alignment is with
- the overall width and height. The difference between @racket['outside-top-left] and
- @racket['outside-left-top] is that the first will place the legend above the plot-area, with their
- left sides aligned. Whereas the second is plotted on the left side of the plot-area with the top
- border of the legend and the plot-area aligned.
+The @racket['outside-global-top] value will place the legend above the plot-area,
+centered on the complete @racket[plot-width]. For 3D plots there is no
+difference between this value and @racket['outside-top].
 
-When the @racket[legend-anchor] is @racket['outside-global-top] the legend will be printed above the
- plot-area, but centered on the complete width. Note that for 3D plots there is no difference between
- this and @racket['outside-top]
+The value @racket['no-legend], will omit the legend from the plot, the legend
+will also be omitted if none of the renderers have a @racket[#:label]
+specified, regardless of the value used for @racket[#:legend-anchor].
+
+The value @racket['auto], will place the legend in the top-left corner of the
+plot area, this is not usefull for plot legends, this anchor value is used for
+renderers such as @racket[point-label].
 
 @history[#:added "7.9"]}
 
