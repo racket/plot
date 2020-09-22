@@ -28,7 +28,7 @@ Each 3D plotting procedure behaves the same way as its corresponding 2D procedur
                [#:title title (or/c string? pict? #f) (plot-title)]
                [#:x-label x-label (or/c string? pict? #f) (plot-x-label)]
                [#:y-label y-label (or/c string? pict? #f) (plot-y-label)]
-               [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
+               [#:legend-anchor legend-anchor legend-anchor/c (plot-legend-anchor)]
                [#:out-file out-file (or/c path-string? output-port? #f) #f]
                [#:out-kind out-kind plot-file-format/c 'auto]
                ) (or/c (is-a?/c snip%) void?)]{
@@ -61,7 +61,7 @@ Here, the renderer draws in [-1,1] × [-1,1], but the plot area is [-1.5,1.5] ×
 Please set the @(racket plot-foreground) and @(racket plot-background) parameters instead of using these keyword arguments.
 The @(racket #:lncolor) keyword argument is also accepted for backward compatibility but deprecated. It does nothing.
 
-@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label"]
+@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label. And to plot the legend outside the plot-area with #:legend-anchor"]
 }
 
 @defproc[(plot3d [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
@@ -76,7 +76,7 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
                  [#:x-label x-label (or/c string? pict? #f) (plot-x-label)]
                  [#:y-label y-label (or/c string? pict? #f) (plot-y-label)]
                  [#:z-label z-label (or/c string? pict? #f) (plot-z-label)]
-                 [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]
+                 [#:legend-anchor legend-anchor legend-anchor/c (plot-legend-anchor)]
                  [#:out-file out-file (or/c path-string? output-port? #f) #f]
                  [#:out-kind out-kind plot-file-format/c 'auto]
                  ) (or/c (is-a?/c snip%) void?)]{
@@ -94,7 +94,7 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
 
 The @(racket #:az) and @(racket #:alt) keyword arguments are backward-compatible, deprecated aliases for @(racket #:angle) and @(racket #:altitude), respectively.
 
-@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label, #:y-label and #:z-label"]
+@history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label. And to plot the legend outside the plot-area with #:legend-anchor"]
 }
 
 @defproc[(plot-snip [<plot-argument> <plot-argument-contract>] ...)

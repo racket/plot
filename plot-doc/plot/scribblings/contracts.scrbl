@@ -34,7 +34,7 @@ Identifies values that meet the contract @racket[elem-contract], lists of such v
                                                'left        'center 'right
                                                'bottom-left 'bottom 'bottom-right
                                                'auto)]{
-The contract for @(racket anchor) arguments and parameters, such as @(racket plot-legend-anchor).
+The contract for @(racket anchor) arguments and parameters.
 
 The @racket['auto] anchor will place labels so they are visible on the plot
 area.  This anchor type is useful for @(racket point-label) and similar
@@ -49,6 +49,38 @@ completely visible.
 The @racket['auto] anchor is only valid for placement of text labels, for all
 other use cases, the @racket['auto] anchor is always the same as
 @racket['bottom-left].}
+
+@defthing[legend-anchor/c contract? #:value (or/c anchor/c
+                                                  (one-of/c 'outside-top-left    'outside-top    'outside-top-right
+                                                            'outside-left-top    'outside-left   'outside-left-bottom
+                                                            'outside-right-top   'outside-right  'outside-right-bottom
+                                                            'outside-bottom-left 'outside-bottom 'outside-bottom-right
+                                                            'outside-global-top
+                                                            'no-legend))]{
+The contract for the @racket[plot-legend-anchor] parameter and the
+@racket[#:legend-anchor] parameters for the various plot procedures.
+
+When @racket[legend-anchor] is one of the symbols from @racket[anchor/c], the
+legend will be placed inside the plot area.
+
+@racket[legend-anchor/c] values which start with "outside" will place the
+legend outside the plot area, for 2D plots the legend will be aligned with the
+plot area, while for 3D plots the legend will be relative to the overall
+@racket[plot-width] and @racket[plot-height].
+
+The @racket['outside-global-top] value will place the legend above the plot-area,
+centered on the complete @racket[plot-width]. For 3D plots there is no
+difference between this value and @racket['outside-top].
+
+The value @racket['no-legend], will omit the legend from the plot, the legend
+will also be omitted if none of the renderers have a @racket[#:label]
+specified, regardless of the value used for @racket[#:legend-anchor].
+
+The value @racket['auto], will place the legend in the top-left corner of the
+plot area, this is not usefull for plot legends, this anchor value is used for
+renderers such as @racket[point-label].
+
+@history[#:added "7.9"]}
 
 @defthing[color/c contract? #:value (or/c (list/c real? real? real?)
                                           string? symbol?
