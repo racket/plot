@@ -610,7 +610,7 @@
     ;; ===============================================================================================
     ;; Legend
 
-    ;; the folowing functions take a (Listof legend-entry) and a Rect as argument.
+    ;; the folowing functions take a (Listof legend-entry), a Rect and Anchor as argument.
     ;; the understanding is that Rect will be the complete dc for a legend outside the plot-area
     ;; and the plot-area otherwise
 
