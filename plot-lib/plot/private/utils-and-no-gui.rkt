@@ -89,6 +89,7 @@
  plot-legend-font-family
  plot-legend-anchor
  plot-legend-box-alpha
+ plot-legend-layout
  plot-decorations?
  plot-animating?
  plot-pen-color-map
