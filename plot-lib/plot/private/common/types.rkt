@@ -117,7 +117,7 @@
         [(outside-left) 'left]
         [else 'auto])))
 
-(deftype Legend-Layout (U 'rows 'columns (List (U 'rows 'columns) Positive-Integer)))
+(deftype Legend-Layout (List (U 'rows 'columns) Positive-Integer))
 
 (define-type Plot-Device%
   (Class
