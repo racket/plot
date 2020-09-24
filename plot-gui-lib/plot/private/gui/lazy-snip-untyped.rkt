@@ -20,10 +20,10 @@
 
 (define (-make-3d-plot-snip
          init-bm saved-plot-parameters
-         make-bm angle altitude width height)
+         make-bm angle altitude area width height)
   (make-3d-plot-snip
    init-bm saved-plot-parameters
-   make-bm angle altitude width height))
+   make-bm angle altitude area width height))
 
 (define (-make-snip-frame snip width height label)
   (make-snip-frame snip width height label))

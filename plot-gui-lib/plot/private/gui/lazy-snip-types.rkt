@@ -19,9 +19,11 @@
 (define-type Make-3D-Plot-Snip
   (-> (Instance Bitmap%)
       Plot-Parameters
-      (-> Boolean Real Real Positive-Integer Positive-Integer (Instance Bitmap%))
+      (-> Boolean Real Real Positive-Integer Positive-Integer
+          (Values (Instance Bitmap%) (U #f (Instance 3D-Plot-Area%))))
       Real
       Real
+      (U #f (Instance 3D-Plot-Area%))
       Positive-Integer
       Positive-Integer
       (Instance Snip%)))

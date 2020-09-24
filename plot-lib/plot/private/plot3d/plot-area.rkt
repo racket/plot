@@ -114,6 +114,7 @@
          [get-z-far-ticks (-> (Listof tick))]
          [get-bounds-rect (-> Rect)]
          [get-clip-rect (-> Rect)]
+         [get-area-bounds-rect (-> Rect)]
          [get-render-tasks  (-> render-tasks)]
          [set-render-tasks  (-> render-tasks Void)]
          [start-plot (-> Void)]
@@ -969,6 +970,9 @@
     (define area-y-min top)
     (define area-y-max (- dc-y-size bottom))
     
+    (define/public (get-area-bounds-rect)
+      (vector (ivl area-x-min area-x-max) (ivl area-y-min area-y-max)))
+
     ;; ===============================================================================================
     ;; Plot decoration
     
