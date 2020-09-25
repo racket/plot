@@ -257,7 +257,7 @@
               (define overlay-area
                 (make-object 2d-plot-area%
                              overlay-plot-bounds
-                             '() '() '() '()
+                             '() '() '() '() '()
                              dc
                              dc-x-min dc-y-min
                              (- dc-x-max dc-x-min) (- dc-y-max dc-y-min)))
