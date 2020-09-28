@@ -615,9 +615,9 @@
     ;; and the plot-area otherwise
 
     (: calculate-legend-parameters (-> (Listof legend-entry) Rect Anchor
-                                       (Values Rect Exact-Rational
-                                               Nonnegative-Exact-Rational Real Real Exact-Rational 
-                                               Nonnegative-Exact-Rational Real Exact-Rational
+                                       (Values Rect (Listof Exact-Rational)
+                                               Nonnegative-Exact-Rational (Listof Real) (Listof Real)
+                                               Nonnegative-Exact-Rational (Listof Real)
                                                Boolean Nonnegative-Integer)))
     (define/private (calculate-legend-parameters legend-entries rect legend-anchor)
       (define n (length legend-entries))
@@ -633,12 +633,28 @@
               (values #t (ceiling (/ n i)) (min n i))]))
          (define div (if cols? rows cols))
 
-         (define-values (max-label-width max-label-height)
-           (for/fold ([width : Exact-Rational 0]
-                      [max-height : Exact-Rational 0])
-                     ([label (in-list labels)])
+         (define-values (max-label-widths max-label-heights)
+           (for/fold ([width  : (HashTable Integer Exact-Rational) #hash()]
+                      [height : (HashTable Integer Exact-Rational) #hash()]
+                      #:result (values
+                                ((inst map Exact-Rational (Pairof Integer Exact-Rational))
+                                 cdr ((inst sort (Pairof Integer Exact-Rational))
+                                      (hash->list width) < #:key car))
+                                ((inst map Exact-Rational (Pairof Integer Exact-Rational))
+                                 cdr ((inst sort (Pairof Integer Exact-Rational))
+                                      (hash->list height) < #:key car))))
+                     ([label (in-list labels)]
+                      [k (in-naturals)])
+             (define-values (i j)
+               (let-values ([(i j) (quotient/remainder k div)])
+                 (if cols? (values j i) (values i j))))
              (define-values (w h b a) (get-text-extent label))
-             (values (max w width) (max h max-height))))
+             (values
+              (hash-update width  j (λ ([v : Exact-Rational]) (max w v)) (λ () 0))
+              (hash-update height i (λ ([v : Exact-Rational]) (max h v)) (λ () 0)))))
+
+         (define max-label-width (apply max max-label-widths))
+         (define max-label-height (apply max max-label-heights))
 
          (define-values (horiz-gap min-label-height baseline _1)
            (get-text-extent " "))
@@ -653,14 +669,17 @@
          (define draw-y-size (max 0 (- min-label-height baseline)))
          (define draw-x-size (* 4 draw-y-size))
 
-         (define item-x-size (+ labels-x-size in-label-gap draw-x-size))
-         (define x-skip (+ item-x-size column-gap))
-         (define y-skip (+ max-label-height baseline))
-
-          (define legend-x-size (+ horiz-gap
-                                  (* cols (+ item-x-size column-gap)) (- column-gap)
-                                  horiz-gap))
-         (define legend-y-size (+ top-gap (* rows y-skip) bottom-gap))
+         (define x-skips (for/list : (Listof Exact-Rational)
+                           ([w (in-list max-label-widths)])
+                           (+ w in-label-gap draw-x-size column-gap)))
+         (define y-skips (for/list : (Listof Exact-Rational)
+                           ([h (in-list max-label-heights)])
+                           (+ h baseline)))
+         
+         (define legend-x-size (+ horiz-gap (- column-gap) horiz-gap
+                                  (for/sum : Exact-Rational ([w (in-list x-skips)]) w)))
+         (define legend-y-size (+ top-gap bottom-gap
+                                  (for/sum : Exact-Rational ([h (in-list y-skips)]) h)))
 
 
          (define legend-x-min
@@ -680,13 +699,25 @@
          (define legend-rect (vector (ivl legend-x-min (+ legend-x-min legend-x-size))
                                      (ivl legend-y-min (+ legend-y-min legend-y-size))))
 
-         (define label-x-min (+ legend-x-min horiz-gap))
-         (define label-y-min (+ legend-y-min top-gap))
-         (define draw-x-min (+ legend-x-min horiz-gap labels-x-size in-label-gap))
-
-         (values legend-rect max-label-height
-                 draw-x-size label-x-min draw-x-min x-skip
-                 draw-y-size label-y-min            y-skip
+         (define label-x-mins (for/fold ([mins : (Listof Real) (list (+ legend-x-min horiz-gap))]
+                                         [prev : Real (+ legend-x-min horiz-gap)]
+                                         #:result (reverse mins))
+                                ([x (in-list x-skips)])
+                                (define nxt (+ prev x))
+                                (values (cons nxt mins) nxt)))
+         (define label-y-mins (for/fold ([mins : (Listof Real) (list (+ legend-y-min top-gap))]
+                                         [prev : Real (+ legend-y-min top-gap)]
+                                         #:result (reverse mins))
+                                        ([y (in-list y-skips)])
+                                (define nxt (+ prev y))
+                                (values (cons nxt mins) nxt)))
+         (define draw-x-mins (for/list : (Listof Real)
+                               ([x (in-list label-x-mins)]
+                                [w (in-list max-label-widths)]) (+ x w in-label-gap)))
+         
+         (values legend-rect max-label-heights
+                 draw-x-size label-x-mins draw-x-mins
+                 draw-y-size label-y-mins
                  cols? div)]
         [else
          (raise-argument-error 'draw-legend "rect-known?" 1 legend-entries rect)]))
@@ -701,9 +732,9 @@
        (or (plot-legend-font-face) old-face)
        (or (plot-legend-font-family) old-family))
 
-      (define-values (legend-rect max-label-height
-                                  draw-x-size label-x-min draw-x-min x-skip
-                                  draw-y-size label-y-min            y-skip
+      (define-values (legend-rect max-label-heights
+                                  draw-x-size label-x-mins draw-x-mins
+                                  draw-y-size label-y-mins
                                   cols? div)
         (calculate-legend-parameters legend-entries rect legend-anchor))
 
@@ -729,9 +760,9 @@
          (or (plot-legend-font-face) old-face)
          (or (plot-legend-font-family) old-family))
 
-        (define-values (legend-rect max-label-height
-                                    draw-x-size entry-x-min0 draw-x-min0 x-skip0
-                                    draw-y-size entry-y-min0             y-skip0
+        (define-values (legend-rect max-label-heights
+                                    draw-x-size label-x-mins draw-x-mins
+                                    draw-y-size label-y-mins
                                     cols? div)
           (calculate-legend-parameters legend-entries rect (legend-anchor->anchor legend-anchor)))
 
@@ -753,20 +784,20 @@
           (define-values (i j)
             (let-values ([(i j) (quotient/remainder k div)])
               (if cols? (values j i) (values i j))))
-          (define x-skip (* j x-skip0))
-          (define y-skip (* i y-skip0))
 
           (define-values (_1 label-height _2 _3) (get-text-extent label))
-          (define legend-entry-y-min (+ entry-y-min0 y-skip))
-          (define label-y-min (+ legend-entry-y-min (* 1/2 (- max-label-height label-height))))
-          (define label-x-min (+ entry-x-min0 x-skip))
+          (define label-x-min (list-ref label-x-mins j))
+          (define legend-entry-y-min (list-ref label-y-mins i))
+          (define max-label-height (list-ref max-label-heights i))
+          (define label-y-min (+ legend-entry-y-min
+                                 (* 1/2 (- max-label-height label-height))))
           
           (if (pict? label)
               (draw-pict label (vector label-x-min label-y-min) 'top-left 0)
               (draw-text label (vector label-x-min label-y-min) 'top-left 0 0 #t))
 
           (define draw-y-min (+ legend-entry-y-min (* 1/2 (- max-label-height draw-y-size))))
-          (define draw-x-min (+ draw-x-min0 x-skip))
+          (define draw-x-min (list-ref draw-x-mins j))
 
           (define entry-pd (make-object plot-device% dc draw-x-min draw-y-min draw-x-size draw-y-size))
           (send entry-pd reset-drawing-params #f)
