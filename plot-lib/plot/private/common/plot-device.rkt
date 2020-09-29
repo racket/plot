@@ -625,37 +625,45 @@
       (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) rect)
       (cond
         [(and x-min x-max y-min y-max)
-         (define-values (cols? rows cols)
+         (define-values (cols? rows cols compact?)
            (match (plot-legend-layout)
-             [(list 'rows i)
-              (values #f (min n i) (ceiling (/ n i)))]
-             [(list 'columns i)
-              (values #t (ceiling (/ n i)) (min n i))]))
+             [(list 'rows i compact)
+              (values #f (min n i) (ceiling (/ n i)) (equal? compact 'compact))]
+             [(list 'columns i compact)
+              (values #t (ceiling (/ n i)) (min n i) (equal? compact 'compact))]))
          (define div (if cols? rows cols))
 
+         ;; get max widths and heights per row/column
          (define-values (max-label-widths max-label-heights)
-           (for/fold ([width  : (HashTable Integer Exact-Rational) #hash()]
-                      [height : (HashTable Integer Exact-Rational) #hash()]
-                      #:result (values
-                                ((inst map Exact-Rational (Pairof Integer Exact-Rational))
-                                 cdr ((inst sort (Pairof Integer Exact-Rational))
-                                      (hash->list width) < #:key car))
-                                ((inst map Exact-Rational (Pairof Integer Exact-Rational))
-                                 cdr ((inst sort (Pairof Integer Exact-Rational))
-                                      (hash->list height) < #:key car))))
-                     ([label (in-list labels)]
-                      [k (in-naturals)])
-             (define-values (i j)
-               (let-values ([(i j) (quotient/remainder k div)])
-                 (if cols? (values j i) (values i j))))
-             (define-values (w h b a) (get-text-extent label))
-             (values
-              (hash-update width  j (λ ([v : Exact-Rational]) (max w v)) (λ () 0))
-              (hash-update height i (λ ([v : Exact-Rational]) (max h v)) (λ () 0)))))
+           (let-values ([(width height)
+                        (for/fold ([width  : (HashTable Integer Exact-Rational) #hash()]
+                                   [height : (HashTable Integer Exact-Rational) #hash()])
+                                  ([label (in-list labels)]
+                                   [k (in-naturals)])
+                          (define-values (i j)
+                            (let-values ([(i j) (quotient/remainder k div)])
+                              (if cols? (values j i) (values i j))))
+                          (define-values (w h b a) (get-text-extent label))
+                          (values
+                           (hash-update width  j (λ ([v : Exact-Rational]) (max w v)) (λ () 0))
+                           (hash-update height i (λ ([v : Exact-Rational]) (max h v)) (λ () 0))))])
+             (define widths
+               ((inst map Exact-Rational (Pairof Integer Exact-Rational))
+                cdr ((inst sort (Pairof Integer Exact-Rational))
+                     (hash->list width) < #:key car)))
+             (define heights
+               ((inst map Exact-Rational (Pairof Integer Exact-Rational))
+                cdr ((inst sort (Pairof Integer Exact-Rational))
+                     (hash->list height) < #:key car)))
+             (cond
+               [compact? (values widths heights)]
+               [else
+                (define max-width (apply max widths))
+                (define max-heights (apply max heights))
+                (values (map (λ (_) max-width) widths)
+                        (map (λ (_) max-heights) heights))])))
 
-         (define max-label-width (apply max max-label-widths))
-         (define max-label-height (apply max max-label-heights))
-
+         ;; different gaps
          (define-values (horiz-gap min-label-height baseline _1)
            (get-text-extent " "))
       
@@ -664,24 +672,25 @@
          (define in-label-gap (* 3 horiz-gap))
          (define column-gap (* 3 in-label-gap))
 
-         (define labels-x-size max-label-width)
-
+         ;; size of legend line/square
          (define draw-y-size (max 0 (- min-label-height baseline)))
          (define draw-x-size (* 4 draw-y-size))
 
+         ;; size of complete legend-entry
          (define x-skips (for/list : (Listof Exact-Rational)
                            ([w (in-list max-label-widths)])
                            (+ w in-label-gap draw-x-size column-gap)))
          (define y-skips (for/list : (Listof Exact-Rational)
                            ([h (in-list max-label-heights)])
                            (+ h baseline)))
-         
+
+         ;; size of complete legend
          (define legend-x-size (+ horiz-gap (- column-gap) horiz-gap
                                   (for/sum : Exact-Rational ([w (in-list x-skips)]) w)))
          (define legend-y-size (+ top-gap bottom-gap
                                   (for/sum : Exact-Rational ([h (in-list y-skips)]) h)))
 
-
+         ;; top-left corner of legend
          (define legend-x-min
            (case legend-anchor
              [(top-left left bottom-left auto)     x-min]
@@ -699,6 +708,7 @@
          (define legend-rect (vector (ivl legend-x-min (+ legend-x-min legend-x-size))
                                      (ivl legend-y-min (+ legend-y-min legend-y-size))))
 
+         ;; per entry x/y left/top corners
          (define label-x-mins (for/fold ([mins : (Listof Real) (list (+ legend-x-min horiz-gap))]
                                          [prev : Real (+ legend-x-min horiz-gap)]
                                          #:result (reverse mins))
