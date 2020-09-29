@@ -105,6 +105,14 @@ The font size (in drawing units), face, and family to prefer for the legend text
               (defparam plot-legend-box-alpha alpha (real-in 0 1) #:value 2/3))]{
 The placement of the legend and the opacity of its background.
 }
+@defparam[plot-legend-layout layout (list/c (or/c 'columns 'rows) positive-integer? (or/c 'equal-size 'compact)) #:value '(columns 1 equal-size)]{
+The layout of the legend can be in @racket[n] rows or columns. @racket['columns] will sort the legend entries top
+ down, left to right, whereas @racket['rows] will do it left to right, top down. If the third part of
+ @racket[layout] is @racket['equal-size], all legend entries will be the same size.
+ With @racket['compact] the minimum width/heigth per column/row is used.
+
+@history[#:added "7.9"]
+}
 
 @defparam[plot-tick-size size (>=/c 0) #:value 10]{
 The length of tick lines, in drawing units.
