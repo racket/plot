@@ -33,7 +33,7 @@
      plot-line-width plot-tick-size
      plot-font-size plot-font-face plot-font-family
      plot-legend-font-size plot-legend-font-face plot-legend-font-family
-     plot-legend-anchor plot-legend-box-alpha
+     plot-legend-anchor plot-legend-box-alpha plot-legend-layout
      plot-axes? plot-tick-labels
      plot-decorations?
      plot-animating?
@@ -102,6 +102,7 @@
       (U False Font-Family)
       Legend-Anchor
       Nonnegative-Real
+      Legend-Layout
       (List Boolean Boolean Boolean Boolean Boolean Boolean)
       (List Boolean Anchor Real (U Boolean 'auto) Anchor Real Boolean Anchor Real (U Boolean 'auto) Anchor Real)
       Boolean

@@ -117,6 +117,8 @@
         [(outside-left) 'left]
         [else 'auto])))
 
+(deftype Legend-Layout (List (U 'rows 'columns) Positive-Integer (U 'equal-size 'compact)))
+
 (define-type Plot-Device%
   (Class
    (init-field [dc (Instance DC<%>)]
