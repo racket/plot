@@ -106,11 +106,18 @@ The font size (in drawing units), face, and family to prefer for the legend text
 The placement of the legend and the opacity of its background.
 }
 @defparam[plot-legend-layout layout (list/c (or/c 'columns 'rows) positive-integer? (or/c 'equal-size 'compact)) #:value '(columns 1 equal-size)]{
-The layout of the legend can be in @racket[n] rows or columns. @racket['columns] will sort the legend entries top
- down, left to right, whereas @racket['rows] will do it left to right, top down. If the third part of
- @racket[layout] is @racket['equal-size], all legend entries will be the same size.
- With @racket['compact] the minimum width/heigth per column/row is used.
+Defines the way in which individual entries are placed in the legend. This is a list of three
+ elements:
+@itemlist[@item{the placement direction (@racket['columns] or @racket['rows])}
+          @item{the number of columns or rows}
+          @item{whether all the entries will have the same size (@racket['equal-size]),
+                or the entries will only occupy the minimum size (@racket['compact])}]
 
+For example, the value @racket['(columns 1 equal-size)] will place the legend entries vertically from
+ top to bottom and all entries will have the same height. A value of @racket['(rows 2 'compact)] will
+ place legend entries horizontally on two rows -- this type of layout is useful when the legend is
+ placed at the top or bottom of the plot.
+ 
 @history[#:added "7.9"]
 }
 
