@@ -264,8 +264,12 @@ For example, a parabola, an inverse parabola, and the reflection line:
                 [#:alpha alpha (real-in 0 1) (line-alpha)]
                 [#:label label (or/c string? pict? #f) #f]
                 ) renderer2d?]{
-Returns a renderer that draws lines.
-This is directly useful for plotting a time series, such as a random walk:
+
+  Returns a renderer that draws lines connecting the points in the input
+  sequence @(racket vs).
+  
+  This is directly useful for plotting a time series, such as a random walk:
+  
 @interaction[#:eval plot-eval
                     (plot (lines
                            (reverse
@@ -276,7 +280,12 @@ This is directly useful for plotting a time series, such as a random walk:
 
 The @(racket parametric) and @(racket polar) functions are defined using @(racket lines).
 
-@history[#:changed "7.9" "Added support for pictures for #:label"]
+  If any of the points in @(racket vs) is @(racket +nan.0), no line segment
+  will be drawn at that position.  This can be used to draw several
+  independent data sets with one @(racket lines) renderer, improving rendering
+  performence if the datasets contain a large number of points.
+
+  @history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
 @defproc[(parametric [f (real? . -> . (sequence/c real?))]
