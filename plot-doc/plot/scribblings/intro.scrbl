@@ -105,7 +105,7 @@ Clearly, the blue-colored interval between sine waves is drawn first.
 
 @section{Renderer and Plot Bounds}
 
-In the preceeding example, the @italic{x}-axis @tech{bounds} are passed to @(racket plot) using the keyword arguments @(racket #:x-min) and @(racket x-max).
+In the preceeding example, the @italic{x}-axis @tech{bounds} are passed to @(racket plot) using the keyword arguments @(racket #:x-min) and @(racket #:x-max).
 The bounds could easily have been passed in either call to @(racket function-interval) instead.
 In both cases, @(racket plot) and @(racket function-interval) work together to determine @italic{y}-axis @tech{bounds} large enough for both renderers.
 
