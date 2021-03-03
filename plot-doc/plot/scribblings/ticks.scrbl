@@ -296,16 +296,19 @@ To format ticks, @racket[linear-ticks-format] uses @racket[real->plot-label] pas
 @deftogether[(@defproc[(log-ticks-layout [#:number number exact-positive-integer? (ticks-default-number)]
                                          [#:base base (and/c exact-integer? (>=/c 2)) 10])
                        ticks-layout/c]
-              @defproc[(log-ticks-format [#:base base (and/c exact-integer? (>=/c 2)) 10])
+              @defproc[(log-ticks-format [#:base base (and/c exact-integer? (>=/c 2)) 10]
+                                         [#:scientific? scientific? #t])
                        ticks-format/c]
               @defproc[(log-ticks [#:number number exact-positive-integer? (ticks-default-number)]
-                                  [#:base base (and/c exact-integer? (>=/c 2)) 10])
+                                  [#:base base (and/c exact-integer? (>=/c 2)) 10]
+                                  [#:scientific? scientific? #t])
                        ticks?])]{
 The layout function, format function, and combined @racket[ticks] for exponentially spaced major ticks.
 (The minor ticks between are uniformly spaced.)
 Use these ticks for @racket[log-transform]ed axes, because when exponentially spaced tick positions are @racket[log-transform]ed, they become uniformly spaced.
 
 The @racket[#:base] keyword argument is the logarithm base.
+The @racket[#:scientific] keyword argument disables scientific formatting, similarly to @racket[linear-ticks].
 See @racket[plot-z-far-ticks] for an example of use.
 }
 
