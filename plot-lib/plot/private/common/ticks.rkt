@@ -216,8 +216,8 @@
                                              (and (zero? i) (zero? m))))]
                     [else  (list (pre-tick x (zero? m)))]))))]))]))
 
-(:: log-ticks-format (->* [] [#:base Positive-Integer] Ticks-Format))
-(define (log-ticks-format #:base [base 10])
+(:: log-ticks-format (->* [] [#:base Positive-Integer #:scientific? Boolean] Ticks-Format))
+(define (log-ticks-format #:base [base 10] #:scientific? [scientific? #t])
   (cond
     [(< base 2)  (error 'log-ticks-format "expected base >= 2; given ~e" base)]
     [else
@@ -231,6 +231,8 @@
            (cond [(<= x 0)  (raise-argument-error 'log-ticks-format
                                                   "(Listof pre-tick) with positive positions"
                                                   2 x-min x-max ts)]
+                 [(not scientific?)
+                  (real->plot-label x base-digits scientific?)]
                  [else
                   (define log-x (floor-log/base base x))
                   (define (major-str)
@@ -241,12 +243,12 @@
                                        (real->plot-label (/ x (expt base log-x)) base-digits)
                                        (major-str))])]))))]))
 
-(:: log-ticks (->* [] [#:number Positive-Integer #:base Positive-Integer] ticks))
-(define (log-ticks #:number [number (ticks-default-number)] #:base [base 10])
+(:: log-ticks (->* [] [#:number Positive-Integer #:base Positive-Integer #:scientific? Boolean] ticks))
+(define (log-ticks #:number [number (ticks-default-number)] #:base [base 10] #:scientific? [scientific? #t])
   (cond
     [(< base 2)  (error 'log-ticks "expected base >= 2; given ~e" base)]
     [else  (ticks (log-ticks-layout #:number number #:base base)
-                  (log-ticks-format #:base base))]))
+                  (log-ticks-format #:base base #:scientific? scientific?))]))
 
 ;; ===================================================================================================
 ;; Date/time helpers
