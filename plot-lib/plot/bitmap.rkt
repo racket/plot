@@ -28,7 +28,7 @@
            #:title (or/c string? #f)
            #:x-label (or/c string? #f)
            #:y-label (or/c string? #f)
-           #:aspect-ratio (or/c (and/c real? positive?) #f)
+           #:aspect-ratio (or/c (and/c rational? positive?) #f)
            #:legend-anchor anchor/c
            #:out-file (or/c path? string? output-port? #f)
            #:out-kind symbol?]
@@ -48,6 +48,7 @@
            #:x-label (or/c string? #f)
            #:y-label (or/c string? #f)
            #:z-label (or/c string? #f)
+           #:aspect-ratio (or/c (and/c rational? positive?) #f)
            #:legend-anchor anchor/c
            #:out-file (or/c path? string? output-port? #f)
            #:out-kind symbol?]
