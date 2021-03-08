@@ -26,6 +26,7 @@
          #:title (or/c string? pict? #f)
          #:x-label (or/c string? pict? #f)
          #:y-label (or/c string? pict? #f)
+         #:aspect-ratio (or/c (and/c rational? positive?) #f)
          #:legend-anchor legend-anchor/c]
         void?)]
    [untyped-plot-bitmap
@@ -39,6 +40,7 @@
           #:width (or/c real? #f)
           #:x-label (or/c string? pict? #f)
           #:y-label (or/c string? pict? #f)
+          #:aspect-ratio (or/c (and/c rational? positive?) #f)
           #:legend-anchor legend-anchor/c]
          (is-a?/c bitmap%))]
     [untyped-plot-pict
@@ -52,6 +54,7 @@
            #:height (or/c real? #f)
            #:width (or/c real? #f)
            #:y-label (or/c string? pict? #f)
+           #:aspect-ratio (or/c (and/c rational? positive?) #f)
            #:legend-anchor legend-anchor/c]
           pict?)]))
 
