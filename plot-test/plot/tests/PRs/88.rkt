@@ -94,5 +94,6 @@
    (test-case "1:1 Aspect Ratio Portrait"
      (check-draw-steps-3d do-plot3d-11-ar-portrait pr88-3d-11-ar-portrait-data))))
 
-
-   
+(module+ test
+  (require rackunit/text-ui)
+  (run-tests pr88-test-suite))
