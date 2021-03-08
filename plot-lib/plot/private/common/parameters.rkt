@@ -141,6 +141,8 @@
 (defparam plot-ps/pdf-interactive? Boolean #f)
 (defparam plot-ps-setup (Instance PS-Setup%) default-plot-ps-setup)
 
+(defparam plot-aspect-ratio (U Nonnegative-Real #f) #f)
+
 ;; Labels
 
 (defparam plot-title (U String pict #f) #f)

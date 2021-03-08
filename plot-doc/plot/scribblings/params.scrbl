@@ -39,6 +39,29 @@ If @(racket #t), @(racket plot-file) and @(racket plot3d-file) open a dialog whe
 
 @section{General Appearance}
 
+@defparam[plot-aspect-ratio ratio (or/c (and/c rational? positive?) #f) #:value #f]{
+
+  Controls the aspect ratio of the plot area, independently from the width and
+  height of the entire plot.
+
+  When the aspect ratio is @(racket #f), the plot area fill fill the entire
+  area of the plot, leaving room only for the axis labels and title.
+
+  When an aspect ratio is a positive number, the plot area will maintain this
+  aspect ratio, possibly leaving empty areas around the plot.
+
+  This feature is useful when the aspect ratio needs to be maintained for the
+  plot output to look correct, for example when plotting a circle:
+
+  @interaction[#:eval plot-eval
+               (parameterize ([plot-aspect-ratio 1/1]
+                              [plot-background "lightyellow"])
+                 (plot (polar (lambda (t) 1)) #:width 400 #:height 200))]
+
+  @history[#:added "8.1"]
+
+}
+
 @deftogether[((defparam plot-title title (or/c string? #f) #:value #f)
               (defparam plot-x-label label (or/c string? #f) #:value "x axis")
               (defparam plot-y-label label (or/c string? #f) #:value "y axis")
@@ -117,7 +140,7 @@ For example, the value @racket['(columns 1 equal-size)] will place the legend en
  top to bottom and all entries will have the same height. A value of @racket['(rows 2 'compact)] will
  place legend entries horizontally on two rows -- this type of layout is useful when the legend is
  placed at the top or bottom of the plot.
- 
+
 @history[#:added "7.9"]
 }
 
@@ -333,11 +356,11 @@ The default width, pen color/width/style, and opacity used by @racket[error-bars
               (defparam candlestick-line-width pen-width (>=/c 0) #:value 1)
               (defparam candlestick-line-style pen-style plot-pen-style/c #:value 'solid)
               (defparam candlestick-alpha alpha (real-in 0 1) #:value 2/3))]{
-The default width, pen color/width/style, and opacity used by @racket[candlesticks]. Both the up (a candle whose 
-open value is lower than its close value) color and the down (a candle whose open value is higher than its close 
-value) color can be specified independently. The width parameter will be important to specify if your x-axis is 
-in units like days, weeks, or months. Because dates are actually represented as seconds from an epoch, your 
-width should take that into consideration. For example, a width of 86400 may be useful for x-axis values in days 
+The default width, pen color/width/style, and opacity used by @racket[candlesticks]. Both the up (a candle whose
+open value is lower than its close value) color and the down (a candle whose open value is higher than its close
+value) color can be specified independently. The width parameter will be important to specify if your x-axis is
+in units like days, weeks, or months. Because dates are actually represented as seconds from an epoch, your
+width should take that into consideration. For example, a width of 86400 may be useful for x-axis values in days
 as there are 86400 seconds in a day. This candle will be exactly one day in width.
 }
 

@@ -31,7 +31,8 @@
                      [dc-x-min Real]
                      [dc-y-min Real]
                      [dc-x-size Nonnegative-Real]
-                     [dc-y-size Nonnegative-Real])
+                     [dc-y-size Nonnegative-Real]
+                     [aspect-ratio (U Nonnegative-Real #f)])
          [put-clip-rect (-> Rect Void)]
          [clear-clip-rect (-> Void)]
          [get-x-ticks (-> (Listof tick))]
@@ -40,6 +41,7 @@
          [get-y-far-ticks (-> (Listof tick))]
          [get-bounds-rect (-> Rect)]
          [get-clip-rect (-> Rect)]
+         [get-aspect-ratio (-> (U Nonnegative-Real #f))]
          [get-area-bounds-rect (-> Rect)]
          [plot->dc (-> (Vectorof Real) (Vectorof Real))]
          [dc->plot (-> (Vectorof Real) (Vectorof Real))]
@@ -74,7 +76,7 @@
 (define 2d-plot-area%
   (class object%
     (init-field bounds-rect rx-ticks rx-far-ticks ry-ticks ry-far-ticks legend)
-    (init-field dc dc-x-min dc-y-min dc-x-size dc-y-size)
+    (init-field dc dc-x-min dc-y-min dc-x-size dc-y-size aspect-ratio)
     (super-new)
 
     (: pd (Instance Plot-Device%))
@@ -643,6 +645,24 @@
       (set! right right-val)
       (set! top top-val)
       (set! bottom bottom-val))
+
+    ;; When an aspect ratio has been defined, adjust the margins so that the
+    ;; actual plot area maintains this ratio.
+    (when (real? aspect-ratio)
+      (let* ([area-width (- dc-x-size left right)]
+             [area-height (- dc-y-size top bottom)]
+             [desired-height (/ area-width (cast aspect-ratio Real))])
+        (if (<= desired-height area-height)
+            (let ([adjust (/ (- area-height desired-height) 2)])
+              (set! top (+ top adjust))
+              (set! bottom (+ bottom adjust)))
+            (let* ([desired-width (* area-height (cast aspect-ratio Real))]
+                   [adjust (/ (- area-width desired-width) 2)])
+              (set! left (+ left adjust))
+              (set! right (+ right adjust)))))
+      (set! view->dc (make-view->dc left right top bottom)))
+
+    (define/public (get-aspect-ratio) aspect-ratio)
 
     (: area-x-min Real)
     (: area-x-max Real)
