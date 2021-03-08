@@ -86,13 +86,13 @@
    (test-case "1:1 Aspect Ratio Portrait"
      (check-draw-steps do-plot-11-ar-portrait pr88-11-ar-portrait-data))
    (test-case "No Aspect Ratio"
-     (check-draw-steps3d do-plot3d-no-ar pr88-3d-no-ar-data))
+     (check-draw-steps-3d do-plot3d-no-ar pr88-3d-no-ar-data))
    (test-case "16:10 Aspect Ratio"
-     (check-draw-steps3d do-plot3d-1610-ar pr88-3d-1610-ar-data))
+     (check-draw-steps-3d do-plot3d-1610-ar pr88-3d-1610-ar-data))
    (test-case "1:1 Aspect Ratio"
-     (check-draw-steps3d do-plot-3d-11-ar pr88-3d-11-ar-data))
+     (check-draw-steps-3d do-plot-3d-11-ar pr88-3d-11-ar-data))
    (test-case "1:1 Aspect Ratio Portrait"
-     (check-draw-steps3d do-plot-3d-11-ar-portrait pr88-3d-11-ar-portrait-data))))
+     (check-draw-steps-3d do-plot-3d-11-ar-portrait pr88-3d-11-ar-portrait-data))))
 
 
    
