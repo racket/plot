@@ -1,7 +1,10 @@
 #lang typed/racket
 
+(require typed/pict)
+
 (provide Pict pict?)
 
-(require/typed
+(define-type Pict pict)
+#;(require/typed
  pict
  [#:opaque Pict pict?])
