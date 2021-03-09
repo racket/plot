@@ -31,7 +31,7 @@
     (: dys (Listof Real))
     (define dys (case anchor
                   [(top-left top top-right)  (list (- dist) (- height dist))]
-                  [(left center right)       (list (* -1/2 height) (* 1/2 width))]
+                  [(left center right)       (list (* -1/2 height) (* 1/2 height))]
                   [else                      (list (- dist height) dist)]))
     
     (for*/list : (Listof (Vector Real Real)) ([dx  (in-list dxs)] [dy  (in-list dys)])
