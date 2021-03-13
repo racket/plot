@@ -6,6 +6,11 @@
 ;; test exists to ensure that the overlay plot area is created at least once
 ;; during the testing process, and any initialization problems are caught
 ;; early.
+;;
+;; An additional bug was found where the `set-overlay-renderers` would only
+;; accept a flat list of renderers instead of a renderer tree as advertised by
+;; the method contract -- this unit tests also verifies that
+;; `set-overlay-renderers` does in fact accept renderer trees.
 
 (define snip-overlay-renderers
   (test-suite
@@ -34,8 +39,11 @@
       (check-not-exn
        (lambda ()
          ;; The 2d-plot-area% for the overlay area is created on-demand when
-         ;; overlay renderers are present
-         (send snip set-overlay-renderers (list (function cos -3 3)))
+         ;; overlay renderers are present.  Also the overlay renderers are a
+         ;; renderer tree (nested lists) to ensure that these are accepted by
+         ;; the method.
+         (send snip set-overlay-renderers
+               (list (function cos -3 3) (list (vrule -1) (vrule 1))))
          (send snip draw dc 0 0 0 0 10 10 0 0 'no-caret)))
       (send tl show #f)))))
 

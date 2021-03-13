@@ -198,7 +198,7 @@
     (define the-overlay-renderers #f)
 
     (define/public (set-overlay-renderers renderers)
-      (set! the-overlay-renderers renderers)
+      (set! the-overlay-renderers (flatten renderers))
       (refresh))
 
     (define (draw-overlay-renderers dc x y left top right bottom)
