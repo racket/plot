@@ -5,6 +5,8 @@
 
 (provide (all-defined-out))
 
+(define-type Plot-Snip% (Class #:implements Snip% #:implements Plot-Metrics<%>))
+
 (define-type Make-2D-Plot-Snip
   (-> (Instance Bitmap%)
       Plot-Parameters
@@ -14,7 +16,7 @@
       (U #f (Instance 2D-Plot-Area%))
       Positive-Integer
       Positive-Integer
-      (Instance Snip%)))
+      (Instance Plot-Snip%)))
 
 (define-type Make-3D-Plot-Snip
   (-> (Instance Bitmap%)
@@ -26,7 +28,7 @@
       (U #f (Instance 3D-Plot-Area%))
       Positive-Integer
       Positive-Integer
-      (Instance Snip%)))
+      (Instance Plot-Snip%)))
 
 (define-type Make-Snip-Frame
   (-> (-> Positive-Integer Positive-Integer (Instance Snip%))

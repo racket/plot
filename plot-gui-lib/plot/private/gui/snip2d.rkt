@@ -372,6 +372,12 @@
         (start-update-thread #f)
         (set-update #t))
       (super resize w h))
+
+    (define/public (get-plot-bounds)
+      (match-define (vector (ivl xmin xmax) (ivl ymin ymax))
+        (send area get-bounds-rect))
+      (vector (vector xmin xmax) (vector ymin ymax)))
+    (define/public (plot->dc coords) (send area plot->dc coords))
     ))
 
 (define (make-2d-plot-snip

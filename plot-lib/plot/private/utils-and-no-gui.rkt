@@ -18,7 +18,11 @@
  Labels
  Contour-Levels
  Image-File-Format
- Legend-Anchor)
+ Legend-Anchor
+ Plot-Metrics<%>
+ plotpict?
+ plotpict-bounds
+ plotpict-plot->dc)
 
 (require "common/math.rkt")
 

@@ -6,7 +6,8 @@
 
 (provide make-2d-plot-snip
          make-3d-plot-snip
-         make-snip-frame)
+         make-snip-frame
+         Plot-Snip%)
 
 (type-environment
  [make-2d-plot-snip  (parse-type #'Make-2D-Plot-Snip)]
