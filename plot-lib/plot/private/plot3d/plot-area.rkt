@@ -124,6 +124,7 @@
          [end-renderers (-> Void)]
          [draw-legend (-> (Listof legend-entry) Void)]
          [end-plot (-> Void)]
+         [plot->dc (-> (Vectorof Real) (Vectorof Real))]
          [put-alpha  (-> Nonnegative-Real Void)]
          [put-pen (-> Plot-Color Nonnegative-Real Plot-Pen-Style Void)]
          [put-major-pen (->* [] [Plot-Pen-Style] Void)]
@@ -335,7 +336,7 @@
     
     (: plot->dc (-> (Vectorof Real) (Vectorof Real)))
     (: norm->dc (-> FlVector (Vectorof Real)))    
-    (define/private (plot->dc v) (view->dc (plot->view v)))
+    (define/public (plot->dc v) (view->dc (plot->view v)))
     (define/private (norm->dc v) (view->dc (norm->view v)))
     
     (define: view-x-size : Real  0)

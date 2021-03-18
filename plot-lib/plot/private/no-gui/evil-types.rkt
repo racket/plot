@@ -5,6 +5,3 @@
 (provide Pict pict?)
 
 (define-type Pict pict)
-#;(require/typed
- pict
- [#:opaque Pict pict?])

@@ -16,32 +16,13 @@
          "../plot2d/renderer.rkt"
          "plot2d-utils.rkt"
          "../common/math.rkt"
-         (only-in "evil.rkt" new-post-script-dc% new-pdf-dc% new-svg-dc%)
+         (except-in "evil.rkt" dc)
          typed/racket/unsafe)
 
 (unsafe-provide plot/dc
                 plot-bitmap
                 plot-pict
-                plot-file
-                plotpict-bounds
-                plotpict-plot->dc)
-
-;; ===================================================================================================
-;; Extra types
-
-(define-type Plot-Metrics<%>
-  (Class
-   [get-plot-bounds (-> (Vector (Vector Real Real) (Vector Real Real)))]
-   [plot->dc (-> (Vectorof Real) (Vectorof Real))]))
-
-(struct plotpict pict ([bounds : (Vector (Vector Real Real) (Vector Real Real))]
-                        [plot->dc : (-> (Vector Real Real) (Vectorof Real))]))
-(define (pict->pp [P : pict]
-                  [bounds : (Vector (Vector Real Real) (Vector Real Real))]
-                  [->dc : (-> (Vector Real Real) (Vectorof Real))]) : plotpict
-  (plotpict (pict-draw P) (pict-width P) (pict-height P) (pict-ascent P) (pict-descent P) (pict-children P) (pict-panbox P) (pict-last P)
-             bounds ->dc))
-
+                plot-file)
 
 ;; ===================================================================================================
 ;; Plot to a given device context

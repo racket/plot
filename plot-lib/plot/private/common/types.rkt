@@ -162,3 +162,17 @@
    [draw-pict (->* [pict (Vectorof Real)] (Anchor Real) Void)]
    [calculate-legend-rect (-> (Listof legend-entry) Rect Anchor Rect)]
    [draw-legend (-> (Listof legend-entry) Rect Void)]))
+
+(define-type Plot-Metrics<%>
+  (Class
+   [get-plot-bounds (-> (Vectorof (Vector Real Real)))]
+   [plot->dc (-> (Vectorof Real) (Vectorof Real))]))
+
+(struct plotpict pict ([bounds : (Vectorof (Vector Real Real))]
+                        [plot->dc : (-> (Vector Real Real) (Vectorof Real))]))
+(define (pict->pp [P : pict]
+                  [bounds : (Vectorof (Vector Real Real))]
+                  [->dc : (-> (Vector Real Real) (Vectorof Real))]) : plotpict
+  (plotpict (pict-draw P) (pict-width P) (pict-height P) (pict-ascent P) (pict-descent P) (pict-children P) (pict-panbox P) (pict-last P)
+             bounds ->dc))
+
