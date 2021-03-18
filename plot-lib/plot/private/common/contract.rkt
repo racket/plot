@@ -121,3 +121,8 @@
 (define (treeof elem-contract)
   (or/c elem-contract
         (listof (recursive-contract (treeof elem-contract) #:flat))))
+
+(define plot-metrics<%>/c
+  (object/c [get-plot-bounds (->m (-> (vectorof (vector/c real? real?))))]
+            [plot->dc (->m (vectorof real?) (vectorof real?))]))
+

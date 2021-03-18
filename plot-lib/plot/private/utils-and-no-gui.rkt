@@ -21,6 +21,7 @@
  Legend-Anchor
  Plot-Metrics<%>
  plotpict?
+ PlotPict
  plotpict-bounds
  plotpict-plot->dc)
 

@@ -26,7 +26,7 @@
           #:legend-anchor Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)]
-         (Instance Bitmap%)))
+         (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))))
 (define (plot renderer-tree
               #:x-min [x-min #f] #:x-max [x-max #f]
               #:y-min [y-min #f] #:y-max [y-max #f]
@@ -66,7 +66,7 @@
           #:legend-anchor Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)]
-         (Instance Bitmap%)))
+         (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))))
 (define (plot3d renderer-tree
                 #:x-min [x-min #f] #:x-max [x-max #f]
                 #:y-min [y-min #f] #:y-max [y-max #f]

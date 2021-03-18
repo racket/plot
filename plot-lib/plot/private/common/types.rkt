@@ -170,6 +170,7 @@
 
 (struct plotpict pict ([bounds : (Vectorof (Vector Real Real))]
                         [plot->dc : (-> (Vector Real Real) (Vectorof Real))]))
+(define-type PlotPict plotpict)
 (define (pict->pp [P : pict]
                   [bounds : (Vectorof (Vector Real Real))]
                   [->dc : (-> (Vector Real Real) (Vectorof Real))]) : plotpict

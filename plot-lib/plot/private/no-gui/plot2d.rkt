@@ -138,7 +138,7 @@
           #:y-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         plotpict))
+         PlotPict))
 (define (plot-pict renderer-tree
                    #:x-min [x-min #f] #:x-max [x-max #f]
                    #:y-min [y-min #f] #:y-max [y-max #f]

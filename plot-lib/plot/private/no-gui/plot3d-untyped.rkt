@@ -34,7 +34,7 @@
          #:z-label (or/c string? pict? #f)
          #:aspect-ratio (or/c (and/c rational? positive?) #f)
          #:legend-anchor legend-anchor/c]
-        void?)]))
+        plot-metrics<%>/c)]))
 
 (define-syntax untyped-plot3d/dc
   (make-rename-transformer (unbox plot3d/dc-box)))
