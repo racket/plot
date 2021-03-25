@@ -124,7 +124,6 @@
          [end-renderers (-> Void)]
          [draw-legend (-> (Listof legend-entry) Void)]
          [end-plot (-> Void)]
-         [plot->dc (-> (Vectorof Real) (Vectorof Real))]
          [put-alpha  (-> Nonnegative-Real Void)]
          [put-pen (-> Plot-Color Nonnegative-Real Plot-Pen-Style Void)]
          [put-major-pen (->* [] [Plot-Pen-Style] Void)]
@@ -145,6 +144,7 @@
          [put-text (->* [String (Vectorof Real)] [Anchor Real Real Boolean Integer] Void)]
          [put-glyphs (->* [(Listof (Vectorof Real)) Point-Sym Nonnegative-Real] [Integer] Void)]
          [put-arrow (->* ((Vectorof Real) (Vectorof Real)) (Boolean) Void)]
+         [get-plot-metrics-functions (-> Plot-Metrics-Functions)]
          ))
 
 (: 3d-plot-area% 3D-Plot-Area%)
@@ -276,15 +276,21 @@
     ;;  4. Device context coordinates (from view coordinates: project to 2D)
     
     (define: fx : (-> Real Real)  (λ ([x : Real]) x))
+    (define: gx : (-> Real Real)  (λ ([x : Real]) x))
     (define: fy : (-> Real Real)  (λ ([y : Real]) y))
+    (define: gy : (-> Real Real)  (λ ([y : Real]) y))
     (define: fz : (-> Real Real)  (λ ([z : Real]) z))
+    (define: gz : (-> Real Real)  (λ ([z : Real]) z))
     (match-let
-        ([(invertible-function fx-val _)  (apply-axis-transform (plot-x-transform) x-min x-max)]
-         [(invertible-function fy-val _)  (apply-axis-transform (plot-y-transform) y-min y-max)]
-         [(invertible-function fz-val _)  (apply-axis-transform (plot-z-transform) z-min z-max)])
+        ([(invertible-function fx-val gx-val)  (apply-axis-transform (plot-x-transform) x-min x-max)]
+         [(invertible-function fy-val gy-val)  (apply-axis-transform (plot-y-transform) y-min y-max)]
+         [(invertible-function fz-val gz-val)  (apply-axis-transform (plot-z-transform) z-min z-max)])
       (set! fx fx-val)
+      (set! gx gx-val)
       (set! fy fy-val)
-      (set! fz fz-val))
+      (set! gy gy-val)
+      (set! fz fz-val)
+      (set! gz gz-val))
     
     (: identity-transforms? Boolean)
     (define identity-transforms?
@@ -294,22 +300,26 @@
     
     (: plot->norm (-> (Vectorof Real) FlVector))
     (define/private (plot->norm v)
-      (if identity-transforms?
-          (match v
-            [(vector (? rational? x) (? rational? y) (? rational? z))
+      (match v
+        [(vector (? rational? x) (? rational? y) (? rational? z))
+         (if identity-transforms?
              (flvector (fl (/ (- x x-mid) x-size))
                        (fl (/ (- y y-mid) y-size))
-                       (fl (/ (- z z-mid) z-size)))]
-            [(vector x y z)
-             (flvector +nan.0 +nan.0 +nan.0)])
-          (match v
-            [(vector (? rational? x) (? rational? y) (? rational? z))
+                       (fl (/ (- z z-mid) z-size)))
              (let ([x  (fx x)] [y  (fy y)] [z  (fz z)])
                (flvector (if (rational? x) (fl (/ (- (inexact->exact x) x-mid) x-size)) +nan.0)
                          (if (rational? y) (fl (/ (- (inexact->exact y) y-mid) y-size)) +nan.0)
-                         (if (rational? z) (fl (/ (- (inexact->exact z) z-mid) z-size)) +nan.0)))]
-            [(vector x y z)
-             (flvector +nan.0 +nan.0 +nan.0)])))
+                         (if (rational? z) (fl (/ (- (inexact->exact z) z-mid) z-size)) +nan.0))))]
+        [(vector x y z)
+         (flvector +nan.0 +nan.0 +nan.0)]))
+    (: norm->plot (-> FlVector (Vectorof Real)))
+    (define (norm->plot v)
+      (for/vector : (Vectorof Real)
+        ([c (in-flvector v)]
+         [m (in-list (list x-mid y-mid z-mid))]
+         [s (in-list (list x-size y-size z-size))]
+         [g (in-list (list gx gy gz))])
+        (g (+ (* c s) m))))
     
     (: rotate-theta-matrix M3)
     (: rotate-rho-matrix M3)
@@ -336,7 +346,7 @@
     
     (: plot->dc (-> (Vectorof Real) (Vectorof Real)))
     (: norm->dc (-> FlVector (Vectorof Real)))    
-    (define/public (plot->dc v) (view->dc (plot->view v)))
+    (define (plot->dc v) (view->dc (plot->view v)))
     (define/private (norm->dc v) (view->dc (norm->view v)))
     
     (define: view-x-size : Real  0)
@@ -375,6 +385,21 @@
          (define z (flvector-ref v 2))
          (vector (fl+ area-x-mid (fl* x area-per-view-x))
                  (fl- area-y-mid (fl* z area-per-view-z))))))
+
+    (: dc->view (-> (Vectorof Real) FlVector))
+    (define (dc->view v)
+      (match-define (vector x y) v)
+      (define area-x-mid (* 1/2 (+ area-x-min area-x-max)))
+      (define area-y-mid (* 1/2 (+ area-y-min area-y-max)))
+      (define area-per-view-x (/ (- area-x-max area-x-min) view-x-size))
+      (define area-per-view-z (/ (- area-y-max area-y-min) view-z-size))
+      (flvector (fl (/ (- x area-x-mid) area-per-view-x))
+                0.0
+                (fl (/ (- area-y-mid y) area-per-view-z))))
+
+    (: dc->plot (-> (Vectorof Real)  (Vectorof Real)))
+    (define (dc->plot v)
+      (norm->plot (view->norm (dc->view v))))
     
     (: title-margin Real)
     (define title-margin
@@ -1607,4 +1632,32 @@
                                      (list (plot->norm c))))]
                 [else
                  (put-line v1 v2)]))))
+
+    (define/public (get-plot-metrics-functions)
+      (list (let ([bounds bounds-rect]
+                  [vect : (Option (Immutable-Vector (Immutable-Vector Real Real) (Immutable-Vector Real Real))) #f])
+              (λ () (or vect
+                        (let ([new (vector-immutable (vector-immutable (assert (ivl-min (vector-ref bounds 0)) real?)
+                                                                       (assert (ivl-max (vector-ref bounds 0)) real?))
+                                                     (vector-immutable (assert (ivl-min (vector-ref bounds 1)) real?)
+                                                                       (assert (ivl-max (vector-ref bounds 1)) real?)))])
+                          (set! vect new)
+                          new))))
+            plot->dc
+            dc->plot
+            (let ([v : (Option (Vectorof Real)) #f])
+              (λ ()
+                (or v
+                    (let* ([v1 (norm->plot (view->norm (flvector 0.0 0.0 0.0)))]
+                           [v2 (norm->plot (view->norm (flvector 0.0 1.0 0.0)))]
+                           [v3 (for/vector : (Vectorof Real)
+                                 ([i (in-vector v1)]
+                                  [j (in-vector v2)])
+                                 (- j i))]
+                           [norm (sqrt (assert (for/sum : Real ([i (in-vector v3)]) (* i i)) positive?))]
+                           [ans (for/vector : (Vectorof Real)
+                                  ([i (in-vector v3)])
+                                  (/ i norm))])
+                      (set! v ans)
+                      ans))))))
     )) ; end class

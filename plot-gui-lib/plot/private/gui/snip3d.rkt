@@ -3,6 +3,7 @@
 (require racket/gui/base racket/class racket/match
          plot/private/common/math
          plot/private/common/parameters
+         (submod plot/private/common/plotmetrics untyped)
          "worker-thread.rkt"
          "snip.rkt")
 
@@ -15,7 +16,7 @@
 (define (clamp x mn mx) (min* (max* x mn) mx))
 
 (define 3d-plot-snip%
-  (class plot-snip%
+  (class* plot-snip% (plot-metrics<%>)
     (init init-bm saved-plot-parameters)
     (init-field make-bm angle altitude area width height)
     
@@ -68,6 +69,7 @@
                 (worker-thread-try-get rth (λ () (values #f #f))))
               (cond [(is-a? new-bm bitmap%)
                      (set! area new-area)
+                     (set! plot-metrics-ok? #f)
                      (set-bitmap new-bm)
                      (set-message-center)
                      (when (not (and (= last-angle angle)
@@ -141,11 +143,22 @@
         (set-update #t))
       (super resize w h))
 
-    (define/public (get-plot-bounds)
-      (match-define (vector (ivl xmin xmax) (ivl ymin ymax) (ivl zmin zmax))
-        (send area get-bounds-rect))
-      (vector (vector xmin xmax) (vector ymin ymax) (vector zmin zmax)))
-    (define/public (plot->dc coords) (send area plot->dc coords))
+    (define plot-metrics-ok? #f)
+    (match-define (list bounds ->dc ->plot plane)
+      (send area get-plot-metrics-functions))
+    (define (update-metrics)
+      (match-define (list new-bounds new-->dc new-->plot new-plane)
+        (send area get-plot-metrics-functions))
+      (set! bounds new-bounds)
+      (set! ->dc new-->dc)
+      (set! ->plot new-->plot)
+      (set! plane new-plane)
+      (set! plot-metrics-ok? #t))
+    (define/public (get-plot-bounds) (unless plot-metrics-ok? (update-metrics)) (bounds))
+    (define/public (plot->dc coords) (unless plot-metrics-ok? (update-metrics)) (->dc coords))
+    (define/public (dc->plot coords) (unless plot-metrics-ok? (update-metrics)) (->plot coords))
+    (define/public (plane-vector coords) (unless plot-metrics-ok? (update-metrics)) (plane))
+    (define/public (get-plot-metrics-functions) (unless plot-metrics-ok? (update-metrics)) (list bounds ->dc ->plot plane))
     ))
 
 (define (make-3d-plot-snip

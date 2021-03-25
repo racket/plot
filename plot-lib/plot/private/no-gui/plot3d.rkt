@@ -12,6 +12,7 @@
          "../common/nonrenderer.rkt"
          "../common/file-type.rkt"
          "../common/utils.rkt"
+         "../common/plotmetrics.rkt"
          "../plot3d/plot-area.rkt"
          "../plot3d/renderer.rkt"
          "plot3d-utils.rkt"
@@ -93,16 +94,7 @@
                       dc x y width height aspect-ratio))
        (plot-area area renderer-list)
 
-       (define bounds (vector (vector (assert (ivl-min (vector-ref bounds-rect 0)) real?)
-                                      (assert (ivl-max (vector-ref bounds-rect 0)) real?))
-                              (vector (assert (ivl-min (vector-ref bounds-rect 1)) real?)
-                                      (assert (ivl-max (vector-ref bounds-rect 1)) real?))
-                              (vector (assert (ivl-min (vector-ref bounds-rect 2)) real?)
-                                      (assert (ivl-max (vector-ref bounds-rect 2)) real?))))
-       (new (class object%
-              (super-new)
-              (define/public (get-plot-bounds) bounds)
-              (define/public (plot->dc [v : (Vectorof Real)]) (send area plot->dc v)))))]))
+       (new plot-metrics% [->metrics-object (λ () area)]))]))
 
 (require (for-syntax racket/base
                      "plot3d-evil-box.rkt"))
@@ -143,10 +135,8 @@
                        #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                        #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define bm : (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))
-    (new (class bitmap%
-           (super-make-object width height #t 1.0)
-           (define/public (get-plot-bounds) (send pm get-plot-bounds))
-           (define/public (plot->dc [v : (Vectorof Real)]) (send pm plot->dc v)))))
+    (make-object (plot-metrics-mixin (class bitmap% (super-new)))
+      (λ () pm) width height #t 1.0))
   (define dc : (Instance DC<%>) (make-object bitmap-dc% bm))
   (define pm : (Instance Plot-Metrics<%>)
     (plot3d/dc renderer-tree dc 0 0 width height
@@ -172,7 +162,7 @@
           #:z-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         plotpict))
+         Plot-Pict))
 (define (plot3d-pict renderer-tree
                      #:x-min [x-min #f] #:x-max [x-max #f]
                      #:y-min [y-min #f] #:y-max [y-max #f]
@@ -199,11 +189,7 @@
                                                #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
                                                #:aspect-ratio aspect-ratio))))
         width height))
-  (pict->pp
-   P
-   (send (assert pm) get-plot-bounds)
-   (λ ([v : (Vector Real Real)])
-     (send (assert pm) plot->dc v))))
+  (pict->pp P (assert pm)))
 
 ;; ===================================================================================================
 ;; Plot to any supported kind of file
