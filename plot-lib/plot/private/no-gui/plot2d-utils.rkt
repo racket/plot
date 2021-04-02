@@ -66,6 +66,11 @@
 
 (: plot-area (-> (Instance 2D-Plot-Area%) (Listof renderer2d) Void))
 (define (plot-area area renderer-list)
+  (unless (is-a? area 2d-plot-area%)
+    (raise-argument-error 'plot-area "(is-a? 2d-plot-area%)" 0 area renderer-list))
+  (unless (and (list? renderer-list)
+               (andmap renderer2d? renderer-list))
+    (raise-argument-error 'plot-area "(listof renderer2d?)" 1 area renderer-list))
   (send area start-plot)
   
   (for ([rend  (in-list renderer-list)])
