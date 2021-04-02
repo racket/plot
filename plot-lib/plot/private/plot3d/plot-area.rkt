@@ -1635,12 +1635,14 @@
 
     (define/public (get-plot-metrics-functions)
       (list (let ([bounds bounds-rect]
-                  [vect : (Option (Immutable-Vector (Immutable-Vector Real Real) (Immutable-Vector Real Real))) #f])
+                  [vect : (Option (Immutable-Vector (Immutable-Vector Real Real) (Immutable-Vector Real Real) (Immutable-Vector Real Real))) #f])
               (λ () (or vect
                         (let ([new (vector-immutable (vector-immutable (assert (ivl-min (vector-ref bounds 0)) real?)
                                                                        (assert (ivl-max (vector-ref bounds 0)) real?))
                                                      (vector-immutable (assert (ivl-min (vector-ref bounds 1)) real?)
-                                                                       (assert (ivl-max (vector-ref bounds 1)) real?)))])
+                                                                       (assert (ivl-max (vector-ref bounds 1)) real?))
+                                                     (vector-immutable (assert (ivl-min (vector-ref bounds 2)) real?)
+                                                                       (assert (ivl-max (vector-ref bounds 2)) real?)))])
                           (set! vect new)
                           new))))
             plot->dc

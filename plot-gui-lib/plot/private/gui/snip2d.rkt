@@ -389,7 +389,7 @@
     (define/public (get-plot-bounds) (unless plot-metrics-ok? (update-metrics)) (bounds))
     (define/public (plot->dc coords) (unless plot-metrics-ok? (update-metrics)) (->dc coords))
     (define/public (dc->plot coords) (unless plot-metrics-ok? (update-metrics)) (->plot coords))
-    (define/public (plane-vector coords) (unless plot-metrics-ok? (update-metrics)) (plane))
+    (define/public (plane-vector)    (unless plot-metrics-ok? (update-metrics)) (plane))
     (define/public (get-plot-metrics-functions) (unless plot-metrics-ok? (update-metrics)) (list bounds ->dc ->plot plane))
     ))
 

@@ -18,7 +18,7 @@
                             get-plot-metrics-functions))
 
   (define plot-metrics-object/c
-    (object/c [get-plot-bounds            (->m (-> (vectorof (vector/c real? real?))))]
+    (object/c [get-plot-bounds            (->m (vectorof (vector/c real? real?)))]
               [plot->dc                   (->m (vectorof real?) (vectorof real?))]
               [dc->plot                   (->m (vectorof real?) (vectorof real?))]
               [plane-vector               (->m (vectorof real?))]
