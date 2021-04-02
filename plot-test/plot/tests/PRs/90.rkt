@@ -70,9 +70,9 @@
                         (check-equal? (send ps plot->dc plotcoords) coords))
             (test-suite "PR90: 3d/snip after resize"
                         (send ps resize 800 800)
-                        (sleep/yield .1)
+                        (sleep/yield .5)
                         (check-within (send ps plot->dc (send ps dc->plot #(200 200)))
-                                      #(200 200) 5e-14)
+                                      #(200 200) 1e-13)
                         (check-not-equal? (send ps plot->dc plotcoords) coords)))))
    ))
 
