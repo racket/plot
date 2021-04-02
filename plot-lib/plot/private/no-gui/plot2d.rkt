@@ -104,8 +104,7 @@
                      #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                      #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define bm : (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))
-    (make-object (plot-metrics-mixin bitmap%)
-      (λ () pm) width height #t 1.0))
+    (make-object (plot-metrics-mixin bitmap%) (λ () pm) width height))
   (define dc : (Instance DC<%>) (make-object bitmap-dc% bm))
   (define pm : (Instance Plot-Metrics<%>)
     (plot/dc renderer-tree dc 0 0 width height
