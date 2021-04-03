@@ -68,7 +68,9 @@
                                       (send ps plot->dc #(0 0 0))))
             (test-suite "PR90: 3d/snip before resize"
                         (check-equal? (send ps plot->dc plotcoords) coords))
-            (test-suite "PR90: 3d/snip after resize"
+            ;It's uncertain that the sleep/yield will be long enough for the async update to finish
+            ;for now this test is disabled.
+            #;(test-suite "PR90: 3d/snip after resize"
                         (send ps resize 800 800)
                         (sleep/yield .5)
                         (check-within (send ps plot->dc (send ps dc->plot #(200 200)))
