@@ -44,6 +44,11 @@
          ;; the method.
          (send snip set-overlay-renderers
                (list (function cos -3 3) (list (vrule -1) (vrule 1))))
+         (send snip draw dc 0 0 0 0 10 10 0 0 'no-caret)
+
+         ;; Ensure that #f handled correctly, see
+         ;; https://github.com/racket/racket/issues/3753
+         (send snip set-overlay-renderers #f)
          (send snip draw dc 0 0 0 0 10 10 0 0 'no-caret)))
       (send tl show #f)))))
 
