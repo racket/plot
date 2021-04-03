@@ -165,7 +165,7 @@
     (define bm (make-bitmap (ceiling width) (ceiling height)))
     (define dc (make-object bitmap-dc% bm))
     (define area (make-object 2d-plot-area%
-                   bounds-rect x-ticks x-ticks y-ticks y-ticks '() dc 0 0 width height))
+                   bounds-rect x-ticks x-ticks y-ticks y-ticks '() dc 0 0 width height #f))
     
     (define data+axes (mix x-axis-data y-axis-data data))
     
@@ -214,7 +214,7 @@
     (define bm (make-bitmap (ceiling width) (ceiling height)))
     (define dc (make-object bitmap-dc% bm))
     (define area (make-object 3d-plot-area%
-                   bounds-rect x-ticks x-ticks y-ticks y-ticks z-ticks z-ticks '() dc 0 0 width height))
+                   bounds-rect x-ticks x-ticks y-ticks y-ticks z-ticks z-ticks '() dc 0 0 width height #f))
     
     (send area start-plot)
     (send area start-renderer bounds-rect)

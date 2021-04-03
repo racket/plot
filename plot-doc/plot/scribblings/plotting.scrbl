@@ -28,6 +28,7 @@ Each 3D plotting procedure behaves the same way as its corresponding 2D procedur
                [#:title title (or/c string? pict? #f) (plot-title)]
                [#:x-label x-label (or/c string? pict? #f) (plot-x-label)]
                [#:y-label y-label (or/c string? pict? #f) (plot-y-label)]
+               [#:aspect-ratio aspect-ratio (or/c (and/c rational? positive?) #f) (plot-aspect-ratio)]
                [#:legend-anchor legend-anchor legend-anchor/c (plot-legend-anchor)]
                [#:out-file out-file (or/c path-string? output-port? #f) #f]
                [#:out-kind out-kind plot-file-format/c 'auto]
@@ -51,6 +52,9 @@ When @(racket #:out-file) is given, @(racket plot) writes the plot to a file usi
 
 When given, the @(racket x-min), @(racket x-max), @(racket y-min) and @(racket y-max) arguments determine the bounds of the plot, but not the bounds of the renderers. For example,
 
+When given, the @(racket aspect-ratio) argument defines the aspect ratio of
+the plot area, see @(racket plot-aspect-ratio) for more details.
+
 @interaction[#:eval plot-eval
 (plot (function (λ (x) (sin (* 4 x))) -1 1)
       #:x-min -1.5 #:x-max 1.5 #:y-min -1.5 #:y-max 1.5)]
@@ -62,6 +66,7 @@ Please set the @(racket plot-foreground) and @(racket plot-background) parameter
 The @(racket #:lncolor) keyword argument is also accepted for backward compatibility but deprecated. It does nothing.
 
 @history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label. And to plot the legend outside the plot-area with #:legend-anchor"]
+@history[#:changed "8.1" "Added #:aspect-ratio"]
 }
 
 @defproc[(plot3d [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
@@ -76,6 +81,7 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
                  [#:x-label x-label (or/c string? pict? #f) (plot-x-label)]
                  [#:y-label y-label (or/c string? pict? #f) (plot-y-label)]
                  [#:z-label z-label (or/c string? pict? #f) (plot-z-label)]
+                 [#:aspect-ratio aspect-ratio (or/c (and/c rational? positive?) #f) (plot-aspect-ratio)]
                  [#:legend-anchor legend-anchor legend-anchor/c (plot-legend-anchor)]
                  [#:out-file out-file (or/c path-string? output-port? #f) #f]
                  [#:out-kind out-kind plot-file-format/c 'auto]
@@ -88,6 +94,9 @@ When @(racket #:out-file) is given, @(racket plot3d) writes the plot to a file u
 
 When given, the @(racket x-min), @(racket x-max), @(racket y-min), @(racket y-max), @(racket z-min) and @(racket z-max) arguments determine the bounds of the plot, but not the bounds of the renderers.
 
+When given, the @(racket aspect-ratio) argument defines the aspect ratio of
+the plot area, see @(racket plot-aspect-ratio) for more details.
+
 @bold{Deprecated keywords.} The @(racket #:fgcolor) and @(racket #:bgcolor) keyword arguments are currently supported for backward compatibility, but may not be in the future.
 Please set the @(racket plot-foreground) and @(racket plot-background) parameters instead of using these keyword arguments.
 The @(racket #:lncolor) keyword argument is also accepted for backward compatibility but deprecated. It does nothing.
@@ -95,6 +104,7 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
 The @(racket #:az) and @(racket #:alt) keyword arguments are backward-compatible, deprecated aliases for @(racket #:angle) and @(racket #:altitude), respectively.
 
 @history[#:changed "7.9" "Added support for pictures for #:title, #:x-label and #:y-label. And to plot the legend outside the plot-area with #:legend-anchor"]
+@history[#:changed "8.1" "Added #:aspect-ratio"]
 }
 
 @defproc[(plot-snip [<plot-argument> <plot-argument-contract>] ...)

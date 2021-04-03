@@ -22,6 +22,7 @@
           #:title (U String #f)
           #:x-label (U String #f)
           #:y-label (U String #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)]
@@ -34,17 +35,20 @@
               #:title [title (plot-title)]
               #:x-label [x-label (plot-x-label)]
               #:y-label [y-label (plot-y-label)]
+              #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
               #:legend-anchor [legend-anchor (plot-legend-anchor)]
               #:out-file [out-file #f]
               #:out-kind [out-kind 'auto])
   (when out-file
     (plot-file renderer-tree out-file out-kind
                #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
-               #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor))
+               #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+               #:aspect-ratio aspect-ratio))
   
   (plot-bitmap renderer-tree
                #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
-               #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor))
+               #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+               #:aspect-ratio aspect-ratio))
 
 (:: plot3d
     (->* [(Treeof (U renderer3d nonrenderer))]
@@ -58,6 +62,7 @@
           #:x-label (U String #f)
           #:y-label (U String #f)
           #:z-label (U String #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)]
@@ -74,6 +79,7 @@
                 #:x-label [x-label (plot-x-label)]
                 #:y-label [y-label (plot-y-label)]
                 #:z-label [z-label (plot-z-label)]
+                #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                 #:legend-anchor [legend-anchor (plot-legend-anchor)]
                 #:out-file [out-file #f]
                 #:out-kind [out-kind 'auto])
@@ -82,10 +88,12 @@
                  #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
                  #:width width #:height height #:title title
                  #:angle (or angle (plot3d-angle)) #:altitude (or altitude (plot3d-altitude))
-                 #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
+                 #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
+                 #:aspect-ratio aspect-ratio))
   
   (plot3d-bitmap renderer-tree
                  #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
                  #:width width #:height height #:title title
                  #:angle (or angle (plot3d-angle)) #:altitude (or altitude (plot3d-altitude))
-                 #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
+                 #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
+                 #:aspect-ratio aspect-ratio))

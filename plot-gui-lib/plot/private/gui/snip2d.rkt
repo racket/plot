@@ -260,7 +260,8 @@
                              '() '() '() '() '()
                              dc
                              dc-x-min dc-y-min
-                             (- dc-x-max dc-x-min) (- dc-y-max dc-y-min)))
+                             (- dc-x-max dc-x-min) (- dc-y-max dc-y-min)
+                             (send area get-aspect-ratio)))
               (plot-area overlay-area the-overlay-renderers)))
 
           (send dc set-origin origin-x origin-y))))

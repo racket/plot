@@ -66,6 +66,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
          (Instance Snip%)))
 (define (plot-snip renderer-tree
@@ -76,6 +77,7 @@
                    #:title [title (plot-title)]
                    #:x-label [x-label (plot-x-label)]
                    #:y-label [y-label (plot-y-label)]
+                   #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                    #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define fail/kw (make-raise-keyword-error 'plot-snip))
   (cond
@@ -89,6 +91,8 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
+    [(and aspect-ratio (not (and (rational? aspect-ratio) (positive? aspect-ratio))))
+     (fail/kw "#f or positive real" '#:aspect-ratio aspect-ratio)]
     [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   (parameterize ([plot-title          title]
@@ -116,7 +120,7 @@
         (define new-area
           (make-object 2d-plot-area%
                        bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks legend
-                       dc 0 0 width height))
+                       dc 0 0 width height aspect-ratio))
         (set! area new-area)
         (plot-area new-area renderer-list))
       (values bm area))
@@ -137,6 +141,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
          (Instance Frame%)))
 (define (plot-frame renderer-tree
@@ -147,6 +152,7 @@
                     #:title [title (plot-title)]
                     #:x-label [x-label (plot-x-label)]
                     #:y-label [y-label (plot-y-label)]
+                    #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                     #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define fail/kw (make-raise-keyword-error 'plot-frame))
   (cond
@@ -160,6 +166,8 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
+    [(and aspect-ratio (not (and (rational? aspect-ratio) (positive? aspect-ratio))))
+     (fail/kw "#f or positive real" '#:aspect-ratio aspect-ratio)]
     [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   ;; make-snip will be called in a separate thread, make sure the
@@ -171,7 +179,8 @@
       (plot-snip
        renderer-tree
        #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
-       #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor)))
+       #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+       #:aspect-ratio aspect-ratio)))
   (make-snip-frame make-snip width height (if title (format "Plot: ~a" title) "Plot")))
 
 ;; ===================================================================================================
@@ -186,6 +195,7 @@
           #:title (U String pict #f)
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)
@@ -201,6 +211,7 @@
               #:title [title (plot-title)]
               #:x-label [x-label (plot-x-label)]
               #:y-label [y-label (plot-y-label)]
+              #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
               #:legend-anchor [legend-anchor (plot-legend-anchor)]
               #:out-file [out-file #f]
               #:out-kind [out-kind 'auto]
@@ -226,6 +237,8 @@
     [(and title (not (or (string? title) (pict? title)))) (fail/kw "#f, string or pict" '#:title title)]
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
+    [(and aspect-ratio (not (and (rational? aspect-ratio) (positive? aspect-ratio))))
+     (fail/kw "#f or positive real" '#:aspect-ratio aspect-ratio)]
     [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)]
     [(and out-kind (not (plot-file-format/c out-kind))) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(not (plot-file-format/c out-kind)) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
@@ -241,18 +254,21 @@
       (plot-file
        renderer-tree out-file out-kind
        #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
-       #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor))
+       #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+       #:aspect-ratio aspect-ratio))
     
     (cond [(plot-new-window?)
            (define frame
              (plot-frame
               renderer-tree
               #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
-              #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor))
+              #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+              #:aspect-ratio aspect-ratio))
            (send frame show #t)
            (void)]
           [else
            (plot-snip
             renderer-tree
             #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:width width #:height height
-            #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor)])))
+            #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+            #:aspect-ratio aspect-ratio)])))

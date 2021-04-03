@@ -105,6 +105,7 @@
  plot-ps/pdf-interactive?
  plot-ps-setup
  plot-title
+ plot-aspect-ratio
  plot-x-label
  plot-y-label
  plot-z-label

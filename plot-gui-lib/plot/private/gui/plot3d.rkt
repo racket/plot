@@ -44,6 +44,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
          (Instance Snip%)))
 (define (plot3d-snip renderer-tree
@@ -58,6 +59,7 @@
                      #:x-label [x-label (plot-x-label)]
                      #:y-label [y-label (plot-y-label)]
                      #:z-label [z-label (plot-z-label)]
+                     #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                      #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define fail/kw (make-raise-keyword-error 'plot3d-snip))
   (cond
@@ -76,6 +78,8 @@
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
     [(and z-label (not (or (string? z-label) (pict? z-label)))) (fail/kw "#f, string or pict" '#:y-label z-label)]
+    [(and aspect-ratio (not (and (rational? aspect-ratio) (positive? aspect-ratio))))
+     (fail/kw "#f or positive real" '#:aspect-ratio aspect-ratio)]
     [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   (parameterize ([plot-title          title]
@@ -106,7 +110,7 @@
         
         (define area (make-object 3d-plot-area%
                                   bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks legend
-                                  dc 0 0 width height))
+                                  dc 0 0 width height aspect-ratio))
         (send area start-plot)
 
         (cond [(not (hash-ref render-tasks-hash (plot-animating?) #f))
@@ -146,6 +150,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
          (Instance Frame%)))
 (define (plot3d-frame renderer-tree
@@ -160,6 +165,7 @@
                       #:x-label [x-label (plot-x-label)]
                       #:y-label [y-label (plot-y-label)]
                       #:z-label [z-label (plot-z-label)]
+                      #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                       #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define fail/kw (make-raise-keyword-error 'plot3d-frame))
   (cond
@@ -178,6 +184,8 @@
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
     [(and z-label (not (or (string? z-label) (pict? z-label)))) (fail/kw "#f, string or pict" '#:y-label z-label)]
+    [(and aspect-ratio (not (and (rational? aspect-ratio) (positive? aspect-ratio))))
+     (fail/kw "#f or positive real" '#:aspect-ratio aspect-ratio)]
     [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)])
 
   ;; make-snip will be called in a separate thread, make sure the
@@ -190,7 +198,8 @@
        renderer-tree
        #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
        #:width width #:height height #:angle angle #:altitude altitude #:title title
-       #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor)))
+       #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
+       #:aspect-ratio aspect-ratio)))
   (make-snip-frame make-snip width height (if title (format "Plot: ~a" title) "Plot")))
 
 ;; ===================================================================================================
@@ -209,6 +218,7 @@
           #:x-label (U String pict #f)
           #:y-label (U String pict #f)
           #:z-label (U String pict #f)
+          #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)
@@ -229,6 +239,7 @@
                 #:x-label [x-label (plot-x-label)]
                 #:y-label [y-label (plot-y-label)]
                 #:z-label [z-label (plot-z-label)]
+                #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                 #:legend-anchor [legend-anchor (plot-legend-anchor)]
                 #:out-file [out-file #f]
                 #:out-kind [out-kind 'auto]
@@ -265,6 +276,8 @@
     [(and x-label (not (or (string? x-label) (pict? x-label)))) (fail/kw "#f, string or pict" '#:x-label x-label)]
     [(and y-label (not (or (string? y-label) (pict? y-label)))) (fail/kw "#f, string or pict" '#:y-label y-label)]
     [(and z-label (not (or (string? z-label) (pict? z-label)))) (fail/kw "#f, string or pict" '#:y-label z-label)]
+    [(and aspect-ratio (not (and (rational? aspect-ratio) (positive? aspect-ratio))))
+     (fail/kw "#f or positive real" '#:aspect-ratio aspect-ratio)]
     [(not (legend-anchor/c legend-anchor)) (fail/kw "legend-anchor/c" '#:legend-anchor legend-anchor)]
     [(and out-kind (not (plot-file-format/c out-kind))) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
     [(not (plot-file-format/c out-kind)) (fail/kw "plot-file-format/c" '#:out-kind out-kind)]
@@ -291,7 +304,8 @@
        #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
        #:width width #:height height #:title title
        #:angle (or angle az (plot3d-angle)) #:altitude (or altitude alt (plot3d-altitude))
-       #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
+       #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
+       #:aspect-ratio aspect-ratio))
 
     (cond [(plot-new-window?)
            (define frame
@@ -300,7 +314,8 @@
               #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
               #:width width #:height height #:title title
               #:angle (or angle az (plot3d-angle)) #:altitude (or altitude alt (plot3d-altitude))
-              #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor))
+              #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
+              #:aspect-ratio aspect-ratio))
            (send frame show #t)
            (void)]
           [else
@@ -309,4 +324,5 @@
             #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
             #:width width #:height height #:title title
             #:angle (or angle az (plot3d-angle)) #:altitude (or altitude alt (plot3d-altitude))
-            #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor)])))
+            #:x-label x-label #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
+            #:aspect-ratio aspect-ratio)])))

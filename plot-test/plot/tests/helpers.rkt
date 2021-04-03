@@ -48,13 +48,15 @@
                              #:title (title (plot-title))
                              #:x-label (x-label (plot-x-label))
                              #:y-label (y-label (plot-y-label))
+                             #:aspect-ratio (aspect-ratio (plot-aspect-ratio))
                              #:legend-anchor (legend-anchor (plot-legend-anchor)))
   (define dc (new mock-record-dc% [width width] [height height]))
   (plot/dc renderer-tree dc 0 0 width height
            #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
            #:title title
            #:x-label x-label #:y-label y-label
-           #:legend-anchor legend-anchor)
+           #:legend-anchor legend-anchor
+           #:aspect-ratio aspect-ratio)
   (send dc get-recorded-datum))
 
 ;; Same as `generate-draw-steps` but uses `plot3d/dc` and should be used for
@@ -74,6 +76,7 @@
                                 #:z-label (z-label (plot-z-label))
                                 #:angle (angle (plot3d-angle))
                                 #:altitude (altitude (plot3d-altitude))
+                                #:aspect-ratio (aspect-ratio (plot-aspect-ratio))
                                 #:legend-anchor (legend-anchor (plot-legend-anchor)))
   (define dc (new mock-record-dc% [width width] [height height]))
   (plot3d/dc renderer-tree dc 0 0 width height
@@ -84,7 +87,8 @@
              #:x-label x-label #:y-label y-label #:z-label z-label
              #:angle angle
              #:altitude altitude
-             #:legend-anchor legend-anchor)
+             #:legend-anchor legend-anchor
+             #:aspect-ratio aspect-ratio)
   (send dc get-recorded-datum))
 
 ;; Return #t if two sets of draw steps, SET1 and SET2 are the same, false
@@ -194,13 +198,15 @@
               #:title (title (plot-title))
               #:x-label (x-label (plot-x-label))
               #:y-label (y-label (plot-y-label))
+              #:aspect-ratio (aspect-ratio (plot-aspect-ratio))
               #:legend-anchor (legend-anchor (plot-legend-anchor)))
        (plot-file rt image-file
                   #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
                   #:width width #:height height
                   #:title title
                   #:x-label x-label #:y-label y-label
-                  #:legend-anchor legend-anchor)))
+                  #:legend-anchor legend-anchor
+                  #:aspect-ratio aspect-ratio)))
     (fail (format "draw steps not the same, new set written to ~a" data-file))))
 
 ;; Same as `check-draw-steps` but for 3D plots.
@@ -230,6 +236,7 @@
                             #:z-label (z-label (plot-z-label))
                             #:angle (angle (plot3d-angle))
                             #:altitude (altitude (plot3d-altitude))
+                            #:aspect-ratio (aspect-ratio (plot-aspect-ratio))
                             #:legend-anchor (legend-anchor (plot-legend-anchor)))
                      (plot3d-file rt image-file
                                   #:x-min x-min #:x-max x-max
@@ -242,5 +249,6 @@
                                   #:z-label z-label
                                   #:angle angle
                                   #:altitude altitude
-                                  #:legend-anchor legend-anchor)))
+                                  #:legend-anchor legend-anchor
+                                  #:aspect-ratio aspect-ratio)))
     (fail (format "draw steps not the same, new set written to ~a" data-file))))
