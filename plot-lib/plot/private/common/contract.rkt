@@ -121,3 +121,6 @@
 (define (treeof elem-contract)
   (or/c elem-contract
         (listof (recursive-contract (treeof elem-contract) #:flat))))
+
+(require (submod "plotmetrics.rkt" untyped))
+(provide plot-metrics-object/c)

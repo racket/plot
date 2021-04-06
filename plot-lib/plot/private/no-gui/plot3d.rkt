@@ -1,7 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/draw typed/racket/class
-         (only-in typed/pict pict)
+         typed/pict
          "../common/type-doc.rkt"
          "../common/types.rkt"
          "../common/draw.rkt"
@@ -12,10 +12,12 @@
          "../common/nonrenderer.rkt"
          "../common/file-type.rkt"
          "../common/utils.rkt"
+         "../common/plotmetrics.rkt"
          "../plot3d/plot-area.rkt"
          "../plot3d/renderer.rkt"
          "plot3d-utils.rkt"
-         "evil.rkt"
+         "../common/math.rkt"
+         (except-in "evil.rkt" dc)
          typed/racket/unsafe)
 
 
@@ -42,7 +44,7 @@
           #:z-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         Void))
+         (Instance Plot-Metrics<%>)))
 (define (plot3d/dc renderer-tree dc x y width height
                    #:x-min [x-min #f] #:x-max [x-max #f]
                    #:y-min [y-min #f] #:y-max [y-max #f]
@@ -78,7 +80,7 @@
      (define-values (x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks)
        (get-ticks renderer-list bounds-rect))
      (define legend-list (get-legend-entry-list renderer-list bounds-rect))
-     
+
      (parameterize ([plot3d-angle        angle]
                     [plot3d-altitude     altitude]
                     [plot-title          title]
@@ -90,7 +92,9 @@
                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks z-ticks z-far-ticks
                       legend-list
                       dc x y width height aspect-ratio))
-       (plot-area area renderer-list))]))
+       (plot-area area renderer-list)
+
+       (new plot-metrics% [->metrics-object (λ () area)]))]))
 
 (require (for-syntax racket/base
                      "plot3d-evil-box.rkt"))
@@ -115,8 +119,8 @@
           #:z-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         (Instance Bitmap%)))
-(define (plot3d-bitmap renderer-tree 
+         (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))))
+(define (plot3d-bitmap renderer-tree
                        #:x-min [x-min #f] #:x-max [x-max #f]
                        #:y-min [y-min #f] #:y-max [y-max #f]
                        #:z-min [z-min #f] #:z-max [z-max #f]
@@ -130,12 +134,14 @@
                        #:z-label [z-label (plot-z-label)]
                        #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                        #:legend-anchor [legend-anchor (plot-legend-anchor)])
-  (define bm (make-bitmap width height))
-  (define dc (make-object bitmap-dc% bm))
-  (plot3d/dc renderer-tree dc 0 0 width height
-             #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
-             #:angle angle #:altitude altitude #:title title #:x-label x-label #:y-label y-label
-             #:z-label z-label #:legend-anchor legend-anchor #:aspect-ratio aspect-ratio)
+  (define bm : (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))
+    (make-object (plot-metrics-mixin (class bitmap% (super-new))) (λ () pm) width height))
+  (define dc : (Instance DC<%>) (make-object bitmap-dc% bm))
+  (define pm : (Instance Plot-Metrics<%>)
+    (plot3d/dc renderer-tree dc 0 0 width height
+               #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min #:z-max z-max
+               #:angle angle #:altitude altitude #:title title #:x-label x-label #:y-label y-label
+               #:z-label z-label #:legend-anchor legend-anchor #:aspect-ratio aspect-ratio))
   bm)
 
 ;; ===================================================================================================
@@ -155,8 +161,8 @@
           #:z-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         Pict))
-(define (plot3d-pict renderer-tree 
+         Plot-Pict))
+(define (plot3d-pict renderer-tree
                      #:x-min [x-min #f] #:x-max [x-max #f]
                      #:y-min [y-min #f] #:y-max [y-max #f]
                      #:z-min [z-min #f] #:z-max [z-max #f]
@@ -171,14 +177,18 @@
                      #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                      #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define saved-plot-parameters (plot-parameters))
-  (dc (λ (dc x y)
-        (parameterize/group ([plot-parameters  saved-plot-parameters])
-          (plot3d/dc renderer-tree dc x y width height
-                     #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min
-                     #:z-max z-max #:angle angle #:altitude altitude #:title title #:x-label x-label
-                     #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
-                     #:aspect-ratio aspect-ratio)))
-      width height))
+  (define pm : (Option (Instance Plot-Metrics<%>)) #f)
+  (define P : Pict
+    (dc (λ (dc x y)
+          (parameterize/group ([plot-parameters  saved-plot-parameters])
+                              (set! pm
+                                    (plot3d/dc renderer-tree dc x y width height
+                                               #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max #:z-min z-min
+                                               #:z-max z-max #:angle angle #:altitude altitude #:title title #:x-label x-label
+                                               #:y-label y-label #:z-label z-label #:legend-anchor legend-anchor
+                                               #:aspect-ratio aspect-ratio))))
+        width height))
+  (pict->pp P (assert pm)))
 
 ;; ===================================================================================================
 ;; Plot to any supported kind of file

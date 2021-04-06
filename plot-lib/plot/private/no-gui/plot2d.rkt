@@ -1,7 +1,7 @@
 #lang typed/racket/base
 
 (require typed/racket/draw typed/racket/class
-         (only-in typed/pict pict)
+         typed/pict
          "../common/type-doc.rkt"
          "../common/types.rkt"
          "../common/draw.rkt"
@@ -12,10 +12,11 @@
          "../common/nonrenderer.rkt"
          "../common/file-type.rkt"
          "../common/utils.rkt"
+         "../common/plotmetrics.rkt"
          "../plot2d/plot-area.rkt"
          "../plot2d/renderer.rkt"
          "plot2d-utils.rkt"
-         "evil.rkt"
+         (except-in "evil.rkt" dc)
          typed/racket/unsafe)
 
 (unsafe-provide plot/dc
@@ -25,6 +26,7 @@
 
 ;; ===================================================================================================
 ;; Plot to a given device context
+
 
 (:: plot/dc
     (->* [(Treeof (U renderer2d nonrenderer))
@@ -37,7 +39,7 @@
           #:y-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         Void))
+         (Instance Plot-Metrics<%>)))
 (define (plot/dc renderer-tree dc x y width height
                  #:x-min [x-min #f] #:x-max [x-max #f]
                  #:y-min [y-min #f] #:y-max [y-max #f]
@@ -65,14 +67,16 @@
      (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
        (get-ticks renderer-list bounds-rect))
      (define legend (get-legend-entry-list renderer-list bounds-rect))
-     
+
      (parameterize ([plot-title          title]
                     [plot-x-label        x-label]
                     [plot-y-label        y-label]
                     [plot-legend-anchor  legend-anchor])
        (define area (make-object 2d-plot-area%
                       bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks legend dc x y width height aspect-ratio))
-       (plot-area area renderer-list))]))
+       (plot-area area renderer-list)
+
+       (new plot-metrics% [->metrics-object (λ () area)]))]))
 
 ;; ===================================================================================================
 ;; Plot to a bitmap
@@ -88,7 +92,7 @@
           #:y-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         (Instance Bitmap%)))
+         (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))))
 (define (plot-bitmap renderer-tree
                      #:x-min [x-min #f] #:x-max [x-max #f]
                      #:y-min [y-min #f] #:y-max [y-max #f]
@@ -99,12 +103,14 @@
                      #:y-label [y-label (plot-y-label)]
                      #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                      #:legend-anchor [legend-anchor (plot-legend-anchor)])
-  (define bm (make-bitmap width height))
-  (define dc (make-object bitmap-dc% bm))
-  (plot/dc renderer-tree dc 0 0 width height
-           #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
-           #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
-           #:aspect-ratio aspect-ratio)
+  (define bm : (Instance (Class #:implements Bitmap% #:implements Plot-Metrics<%>))
+    (make-object (plot-metrics-mixin bitmap%) (λ () pm) width height))
+  (define dc : (Instance DC<%>) (make-object bitmap-dc% bm))
+  (define pm : (Instance Plot-Metrics<%>)
+    (plot/dc renderer-tree dc 0 0 width height
+             #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
+             #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+             #:aspect-ratio aspect-ratio))
   bm)
 
 ;; ===================================================================================================
@@ -121,7 +127,7 @@
           #:y-label (U String pict #f)
           #:aspect-ratio (U Nonnegative-Real #f)
           #:legend-anchor Legend-Anchor]
-         Pict))
+         Plot-Pict))
 (define (plot-pict renderer-tree
                    #:x-min [x-min #f] #:x-max [x-max #f]
                    #:y-min [y-min #f] #:y-max [y-max #f]
@@ -133,13 +139,17 @@
                    #:aspect-ratio [aspect-ratio (plot-aspect-ratio)]
                    #:legend-anchor [legend-anchor (plot-legend-anchor)])
   (define saved-values (plot-parameters))
-  (dc (λ (dc x y)
-        (parameterize/group ([plot-parameters  saved-values])
-          (plot/dc renderer-tree dc x y width height
-                   #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
-                   #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
-                   #:aspect-ratio aspect-ratio)))
-      width height))
+  (define pm : (Option (Instance Plot-Metrics<%>)) #f)
+  (define P : pict
+    (dc (λ (dc x y)
+          (parameterize/group ([plot-parameters  saved-values])
+             (set! pm
+                   (plot/dc renderer-tree dc x y width height
+                            #:x-min x-min #:x-max x-max #:y-min y-min #:y-max y-max
+                            #:title title #:x-label x-label #:y-label y-label #:legend-anchor legend-anchor
+                            #:aspect-ratio aspect-ratio))))
+        width height))
+  (pict->pp P (assert pm)))
 
 ;; ===================================================================================================
 ;; Plot to a file

@@ -162,3 +162,6 @@
    [draw-pict (->* [pict (Vectorof Real)] (Anchor Real) Void)]
    [calculate-legend-rect (-> (Listof legend-entry) Rect Anchor Rect)]
    [draw-legend (-> (Listof legend-entry) Rect Void)]))
+
+(require "plotmetrics.rkt")
+(provide Plot-Metrics<%> Plot-Pict Plot-Metrics-Functions)

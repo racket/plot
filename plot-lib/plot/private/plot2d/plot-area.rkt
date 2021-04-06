@@ -70,6 +70,7 @@
          [put-arrow (->* ((Vectorof Real) (Vectorof Real)) (Boolean) Void)]
          [put-tick (-> (Vectorof Real) Real Real Void)]
          [put-pict (->* [pict (Vectorof Real)] [Anchor Real] Void)]
+         [get-plot-metrics-functions (-> Plot-Metrics-Functions)]
          ))
 
 (: 2d-plot-area% 2D-Plot-Area%)
@@ -197,7 +198,11 @@
             [(vector x y)
              (vector +nan.0 +nan.0)])))
 
-    (define/public (plot->dc v) (view->dc (plot->view v)))
+    (: plot->dc (-> (Vectorof Real) (Vectorof Real)))
+    (define (plot->dc v) (view->dc (plot->view v)))
+    (begin
+      (public [public-plot->dc plot->dc])
+      (define (public-plot->dc [v : (Vectorof Real)]) (plot->dc v)))
 
     (define: view-x-size : Real  0)
     (define: view-y-size : Real  0)
@@ -704,8 +709,13 @@
       (vector (/ (- x area-x-min) area-per-view-x)
               (/ (- area-y-max y) area-per-view-y)))
 
-    (define/public (dc->plot v)
+    (: dc->plot (-> (Vectorof Real) (Vectorof Real)))
+    (define (dc->plot v)
       (view->plot (dc->view v)))
+
+    (begin
+      (public [public-dc->plot dc->plot])
+      (define (public-dc->plot [v : (Vectorof Real)]) (dc->plot v)))
 
     ;; ===============================================================================================
     ;; Plot decoration
@@ -907,4 +917,18 @@
       (let ([v  (exact-vector2d v)])
         (when (and v (in-bounds? v))
           (send pd draw-pict pict (plot->dc v) anchor dist))))
+
+    (define/public (get-plot-metrics-functions)
+      (list (let ([bounds bounds-rect]
+                  [vect : (Option (Immutable-Vector (Immutable-Vector Real Real) (Immutable-Vector Real Real))) #f])
+              (λ () (or vect
+                        (let ([new (vector-immutable (vector-immutable (assert (ivl-min (vector-ref bounds 0)) real?)
+                                                                       (assert (ivl-max (vector-ref bounds 0)) real?))
+                                                     (vector-immutable (assert (ivl-min (vector-ref bounds 1)) real?)
+                                                                       (assert (ivl-max (vector-ref bounds 1)) real?)))])
+                          (set! vect new)
+                          new))))
+            plot->dc
+            dc->plot
+            (λ () #(0 0 1))))
     ))

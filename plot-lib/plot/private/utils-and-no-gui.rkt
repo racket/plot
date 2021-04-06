@@ -20,6 +20,17 @@
  Image-File-Format
  Legend-Anchor)
 
+(require "common/plotmetrics.rkt")
+
+(provide
+ Plot-Metrics<%>
+ plot-pict?
+ Plot-Pict
+ plot-pict-bounds
+ plot-pict-plot->dc
+ plot-pict-dc->plot
+ plot-pict-plane-vector)
+
 (require "common/math.rkt")
 
 (provide
