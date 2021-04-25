@@ -636,8 +636,8 @@
          ;; get max widths and heights per row/column
          (define-values (max-label-widths max-label-heights)
            (let-values ([(width height)
-                        (for/fold ([width  : (HashTable Integer Exact-Rational) #hash()]
-                                   [height : (HashTable Integer Exact-Rational) #hash()])
+                        (for/fold ([width  : (Immutable-HashTable Integer Exact-Rational) #hash()]
+                                   [height : (Immutable-HashTable Integer Exact-Rational) #hash()])
                                   ([label (in-list labels)]
                                    [k (in-naturals)])
                           (define-values (i j)
@@ -666,7 +666,7 @@
          ;; different gaps
          (define-values (horiz-gap min-label-height baseline _1)
            (get-text-extent " "))
-      
+
          (define top-gap baseline)
          (define bottom-gap (* 1/2 baseline))
          (define in-label-gap (* 3 horiz-gap))
@@ -724,7 +724,7 @@
          (define draw-x-mins (for/list : (Listof Real)
                                ([x (in-list label-x-mins)]
                                 [w (in-list max-label-widths)]) (+ x w in-label-gap)))
-         
+
          (values legend-rect max-label-heights
                  draw-x-size label-x-mins draw-x-mins
                  draw-y-size label-y-mins
@@ -801,7 +801,7 @@
           (define max-label-height (list-ref max-label-heights i))
           (define label-y-min (+ legend-entry-y-min
                                  (* 1/2 (- max-label-height label-height))))
-          
+
           (if (pict? label)
               (draw-pict label (vector label-x-min label-y-min) 'top-left 0)
               (draw-text label (vector label-x-min label-y-min) 'top-left 0 0 #t))
