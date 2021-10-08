@@ -31,7 +31,9 @@
        (send area put-arrow (car x) (cdr x) #t))))
 
 
-(define-type LVof (All (A) (U (Listof A)(Vectorof A))))
+(define-type (LVof A)
+  (U (Listof A) (Vectorof A)))
+
 (:: arrows3d
     (->* [(U (LVof (LVof Real))
              (LVof (LVof (LVof Real))))]
@@ -74,7 +76,7 @@
         'arrows3d
         "(U (Sequenceof (Sequence Real Real Real)) (Sequenceof (Sequence (Sequence Real Real Real) (Sequence Real Real Real))))"
         vs))
-     
+
      ;; check if we have head/tail or pair vectors, and put in standard format
      (define-values (S1 S2)
        (for/fold ([S1 : (Listof (Vectorof Real)) '()]
