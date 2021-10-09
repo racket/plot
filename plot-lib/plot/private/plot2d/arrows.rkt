@@ -44,7 +44,9 @@
 
 ;(Sequenceof (Sequence (Sequenceof Real))) does not work because (sequence? 5) = #t
 ;and so the contract can not know if '((2 2)) is three or two nested sequences
-(define-type LVof (All (A) (U (Listof A) (Vectorof A))))
+(define-type (LVof A)
+  (U (Listof A) (Vectorof A)))
+
 (:: arrows
     (->* [(U (LVof (LVof Real))
              (LVof (LVof (LVof Real))))]
@@ -113,7 +115,7 @@
              [v2 (in-list (cdr S1*))])
             (cons v1 v2))]
          [else S2]))
-     
+
      ;; calculate bound and pick right render-fun
      (define rvs
        (let ()
