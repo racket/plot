@@ -143,7 +143,7 @@
                          [(n . = . 2)  (list (line data (first vs) (second vs)))]
                          [else  (list (lines data vs))]))
                  vss)))
-         
+
          (define-values (vss1 vss2) (split-lines3d vs plane))
          (values (vertices->lines vss2) (vertices->lines vss1))]))
 
@@ -254,7 +254,7 @@
              (define n (length ivls))
              (define-values (ivls1 ivls2) (split-at ivls (quotient n 2)))
              (interval-list-union (loop ivls1) (loop ivls2))])))
-  
+
   (cond [(empty? ivls)  #f]
         [(empty? (rest ivls))  #f]
         [else
@@ -408,7 +408,7 @@
      (match s
        [(points _ vs)
         (if (empty? vs) empty (list s))]
-       [(line _ v1 v2) 
+       [(line _ v1 v2)
         (if (equal? v1 v2) empty (list s))]
        [(poly data vs ls norm)
         (let-values ([(vs ls)  (canonical-polygon3d vs ls)])
@@ -513,17 +513,17 @@
     [else
      (define axes (vertices->axes (bsp-polys->vertices ps)))
      (define center (list->flvector (map axis-mid axes)))
-     
+
      ;; Planes defined by neighboring polygon vertices
      (define polygon-planes (delay (sort-planes (append* (map bsp-poly-planes ps)) center)))
-     
+
      (: try-bsp-split/polygon-planes (-> Boolean (U #f BSP-Tree)))
      ;; Tries splitting using polygon-planes
      (define (try-bsp-split/polygon-planes disjoint?)
        (define planes (force polygon-planes))
        (cond [(and disjoint? ((length planes) . > . 10))  #f]
              [else  (try-bsp-split/planes ss planes disjoint?)]))
-     
+
      (let* ([bsp  #f]
             [bsp  (if bsp bsp (try-bsp-split/axial-planes ss axes))]
             [bsp  (if bsp bsp (try-bsp-split/bounding-planes ss ps center))]
@@ -543,17 +543,17 @@
     [else
      (define axes (vertices->axes (bsp-lines->vertices ls)))
      (define center (list->flvector (map axis-mid axes)))
-     
+
      ;; Planes defined by line segments and basis vectors (i.e. one basis in normal is zero)
      (define line-planes (delay (sort-planes (append* (map bsp-line-planes ls)) center)))
-     
+
      (: try-bsp-split/line-planes (-> Boolean (U #f BSP-Tree)))
      ;; Tries splitting using line-planes
      (define (try-bsp-split/line-planes disjoint?)
        (define planes (force line-planes))
        (cond [(and disjoint? ((length planes) . > . 10))  #f]
              [else  (try-bsp-split/planes ss planes disjoint?)]))
-     
+
      (let* ([bsp  #f]
             [bsp  (if bsp bsp (try-bsp-split/axial-planes ss axes))]
             [bsp  (if bsp bsp (try-bsp-split/line-planes #t))]
@@ -573,7 +573,7 @@
      (define axes (vertices->axes (append (append* (map lines-vertices ls))
                                           (append* (map points-vertices ps)))))
      (define center (list->flvector (map axis-mid axes)))
-     
+
      (: try-nondisjoint-split (-> (U #f BSP-Tree)))
      (define (try-nondisjoint-split)
        (match-define (axis i size _mn _mx mid) (argmax axis-size axes))
@@ -581,7 +581,7 @@
              [else
               (define plane (axial-plane i mid))
               (try-bsp-split ss plane #f (λ () #f))]))
-     
+
      (let* ([bsp  #f]
             [bsp  (if bsp bsp (try-bsp-split/axial-planes ss axes))]
             [bsp  (if bsp bsp (try-nondisjoint-split))])
