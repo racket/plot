@@ -21,3 +21,6 @@
 (define version "1.1")
 
 (define test-responsibles '((all AlexHarsanyi@gmail.com)))
+
+(define license
+  '(Apache-2.0 OR MIT))
