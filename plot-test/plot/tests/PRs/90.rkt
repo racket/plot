@@ -1,7 +1,8 @@
 #lang racket
 (require rackunit
          racket/draw pict (only-in racket/gui/base sleep/yield)
-         plot (submod plot/private/common/plotmetrics untyped))
+         plot
+         #;(submod plot/private/common/plotmetrics untyped))
 
 ; tests for PR#90, https://github.com/racket/plot/pull/90
 ; "Plotmetrics: access/calculate data about the plot area"
