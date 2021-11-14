@@ -8,6 +8,7 @@
                     plot
                     plot/utils
                     plot/snip
+                    (only-in (submod plot/private/common/plotmetrics untyped) plot-metrics<%>)
                     (only-in racket/sequence sequence/c)))
 
 (provide (all-defined-out)
@@ -19,6 +20,7 @@
                                   plot
                                   plot/snip
                                   plot/utils)
+                    plot-metrics<%>
                     sequence/c))
 
 (require (for-syntax racket/base

@@ -21,9 +21,12 @@
  Legend-Anchor)
 
 (require "common/plotmetrics.rkt")
+(require/typed (submod "common/plotmetrics.rkt" untyped)
+  [#:opaque plot-metrics<%> interface?])
 
 (provide
  Plot-Metrics<%>
+ plot-metrics<%>
  plot-pict?
  Plot-Pict
  plot-pict-bounds

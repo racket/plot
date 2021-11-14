@@ -582,3 +582,136 @@ Convert @racket[plot-time]s to real seconds, and vice-versa.
                  (plot-time+ (plot-time 32 0 12 1)
                              (plot-time 32 0 14 1))]
 }
+
+@section{Plot Metrics}
+
+@definterface[plot-metrics<%> ()]{
+
+  The @racket[plot-metrics<%>] interface allows obtaining plot area positions
+  on the plots returned by @racket[plot], @racket[plot-snip],
+  @racket[plot-bitmap], @racket[plot/dc], as well as their 3D variants,
+  @racket[plot3d], @racket[plot3d-snip], @racket[plot3d-bitmap] and
+  @racket[plot3d/dc].  All plot objects returned by these functions implement
+  this interface.
+
+  In addition to this, the plots created by @racket[plot-snip] and
+  @racket[plot3d-snip] have their own set of functions allowing access to the
+  same functionality.
+
+  @defmethod[(get-plot-bounds) (vectorof (vector/c real? real?))]{
+
+    Return the bounds of the plot as a vector of minimum and maximum values,
+    one for each axis in the plot.  For 2D plots, this method returns a vector
+    of two elements, for the X and Y axes, while 3D plots return a vector of
+    three elements for the X, Y and Z axes.
+
+    The values returned are in plot coordinates, to obtain the coordinates on
+    the drawing surface (i.e. image coordinates), use @method[plot-metrics<%>
+    plot-dc] on these bounds.
+
+    Plot bounds for interactive plots, like those produced by @racket[plot]
+    and @racket[plot-snip], can change as the user zoom in and out the plot,
+    @method[plot-metrics<%> get-plot-bounds] always returns the current bounds
+    of the plot, but they might be invalidated by a user operation.
+    
+  }
+
+  @defmethod[(plot->dc [coordinates (vectorof real?)]) (vectorof real?)]{
+
+    Convert @racket[coordinates] from plot coordinate system to the drawing
+    coordinate system (that is, image coordinates).  For 2D plots,
+    @racket[coordinates] is a vector of two values, the X and Y coordinates on
+    the plot, while for 3D plots it is a vector of three values, the X, Y and
+    Z coordinates.
+
+    This method can be used, for example, to determine the actual location on
+    the image where the coordinates @racket[0], @racket[0] are.  It can also
+    be used to determine the location of the plot area inside the image, by
+    calling it on the plot bounds returned by @method[plot-metrics<%> get-plot-bounds].
+
+    For interactive plots, the coordinates might change as the user zooms in
+    and out the plot.
+    
+  }
+
+  @defmethod[(dc->plot [coordinates (vectorof real?)]) (vectorof real?)]{
+
+    For 2D plots, this method returns the 2D plot coordinates that correspond
+    to the input @racket[coordinates], which are in the draw context
+    coordinate system.
+
+    For 3D plots, this method returns a 3D position on the plane perpendicular
+    to the user view for the plot.  Together with the normal vector for this
+    plane, returned by @method[plot-metrics<%> plane-vector], the projection
+    line can be reconstructed.
+
+    This is the reverse operation from @method[plot-metrics<%> plot->dc] and
+    same remark about the user zooming in and out the plot applies.
+    
+  }
+
+  @defmethod[(plane-vector) (vectorof real?)]{
+
+    Return the unit vector representing the normal of the screen through the
+    plot origin.  For 2D plots this always returns @racket[#(0 0 1)], for 3D
+    plots this unit vector can be used to reconstruct plot coordinates from
+    draw context coordinates.
+
+    For interactive 3D plots, the returned value will change if the user
+    rotates the plot.
+
+  }
+
+  @history[#:added "8.1"]
+}
+
+@defproc[(plot-pict? [any any/c]) boolean?]{
+
+  Return @racket[#t] if @racket[any] is a plot returned by @racket[plot-pict].
+  This can be used to determine if the functions @racket[plot-pict-bounds],
+  @racket[plot-pict-plot->dc], @racket[plot-pict-dc->plot] and
+  @racket[plot-pict-plane-vector] can be called on it.
+
+  @history[#:added "8.1"]
+
+}
+
+@defproc[(plot-pict-bounds [plot plot-pict?]) (vectorof (vector/c real? real?))]{
+
+  Return the bounds of the plot returned by @racket[plot-pict].  See
+  @method[plot-metrics<%> get-plot-bounds] for more details.
+
+  @history[#:added "8.1"]
+
+}
+
+@defproc[(plot-pict-plot->dc [plot plot-pict?] [coordinates (vectorof real?)])
+         (vectorof real?)]{
+
+  Convert the plot @racket[coordinates] to draw context coordinates for the
+  @racket[plot].  See @method[plot-metrics<%> plot->dc] for more details.
+
+  @history[#:added "8.1"]
+
+}
+
+@defproc[(plot-pict-dc->plot [plot plot-pict?] [coordinates (vectorof real?)])
+         (vectorof real?)]{
+
+  Convert the draw contect @racket[coordinates] to plot coordinates for the
+  @racket[plot].  See @method[plot-metrics<%> dc->plot] for more details.
+
+  @history[#:added "8.1"]
+
+}
+
+@defproc[(plot-pict-plane-vector [plot plot-pict?]) (vectorof real?)]{
+
+  Return the unit vector representing the normal of the screen through the
+  plot origin.  For 2D plots this always returns @racket[#(0 0 1)], for 3D
+  plots this can be used to reconstruct plot coordinates from draw context
+  coordinates.  See @method[plot-metrics<%> plane-vector] for more details.
+
+  @history[#:added "8.1"]
+  
+}
