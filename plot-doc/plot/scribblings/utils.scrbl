@@ -607,7 +607,7 @@ Convert @racket[plot-time]s to real seconds, and vice-versa.
 
     The values returned are in plot coordinates, to obtain the coordinates on
     the drawing surface (i.e. image coordinates), use @method[plot-metrics<%>
-    plot-dc] on these bounds.
+    plot->dc] on these bounds.
 
     Plot bounds for interactive plots, like those produced by @racket[plot]
     and @racket[plot-snip], can change as the user zoom in and out the plot,
