@@ -2,6 +2,7 @@
 
 (require "private/utils-and-no-gui.rkt")
 (provide (all-from-out "private/utils-and-no-gui.rkt"))
+(provide plot-metrics<%>)
 
 (require "private/common/contract.rkt"
          "private/common/leftover-contracts.rkt"
