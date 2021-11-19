@@ -594,9 +594,9 @@ Convert @racket[plot-time]s to real seconds, and vice-versa.
   @racket[plot3d/dc].  All plot objects returned by these functions implement
   this interface.
 
-  In addition to this, the plots created by @racket[plot-snip] and
-  @racket[plot3d-snip] have their own set of functions allowing access to the
-  same functionality.
+  For plots created by @racket[plot-pict] and @racket[plot3d-pict], there is a
+  separate set of functions that provide the same functionality, for example,
+  see @racket[plot-pict-bounds].
 
   @defmethod[(get-plot-bounds) (vectorof (vector/c real? real?))]{
 
