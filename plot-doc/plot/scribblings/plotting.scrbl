@@ -32,7 +32,7 @@ Each 3D plotting procedure behaves the same way as its corresponding 2D procedur
                [#:legend-anchor legend-anchor legend-anchor/c (plot-legend-anchor)]
                [#:out-file out-file (or/c path-string? output-port? #f) #f]
                [#:out-kind out-kind plot-file-format/c 'auto]
-               ) (or/c (is-a?/c snip%) void?)]{
+               ) (or/c (and/c (is-a?/c snip%) (is-a?/c plot-metrics<%>)) void?)]{
 Plots a 2D renderer or list of renderers (or more generally, a tree of renderers), as returned by @(racket points), @(racket function), @(racket contours), @(racket discrete-histogram), and others.
 
 By default, @(racket plot) produces a Racket value that is displayed as an image and can be manipulated like any other value.
@@ -85,7 +85,7 @@ The @(racket #:lncolor) keyword argument is also accepted for backward compatibi
                  [#:legend-anchor legend-anchor legend-anchor/c (plot-legend-anchor)]
                  [#:out-file out-file (or/c path-string? output-port? #f) #f]
                  [#:out-kind out-kind plot-file-format/c 'auto]
-                 ) (or/c (is-a?/c snip%) void?)]{
+                 ) (or/c (and/c (is-a?/c snip%) (is-a/c plot-metrics<%>)) void?)]{
 Plots a 3D renderer or list of renderers (or more generally, a tree of renderers), as returned by @(racket points3d), @(racket parametric3d), @(racket surface3d), @(racket isosurface3d), and others.
 
 When the parameter @(racket plot-new-window?) is @(racket #t), @(racket plot3d) opens a new window to display the plot and returns @(racket (void)).
@@ -108,9 +108,9 @@ The @(racket #:az) and @(racket #:alt) keyword arguments are backward-compatible
 }
 
 @defproc[(plot-snip [<plot-argument> <plot-argument-contract>] ...)
-         (is-a?/c 2d-plot-snip%)]
+         (and/c (is-a?/c 2d-plot-snip%) (is-a?/c plot-metrics<%>))]
 @defproc[(plot3d-snip [<plot-argument> <plot-argument-contract>] ...)
-         (is-a?/c snip%)]
+         (and/c (is-a?/c snip%) (is-a?/c plot-metrics<%>))]
 @defproc[(plot-frame [<plot-argument> <plot-argument-contract>] ...)
          (is-a?/c frame%)]
 @defproc[(plot3d-frame [<plot-argument> <plot-argument-contract>] ...)
@@ -142,13 +142,13 @@ for more details.
                       [#:<plot3d-keyword> <plot3d-keyword> <plot3d-keyword-contract>] ...)
          void?]
 @defproc[(plot-pict [<plot-argument> <plot-argument-contract>] ...)
-         pict?]
+         plot-pict?]
 @defproc[(plot3d-pict [<plot3d-argument> <plot3d-argument-contract>] ...)
-         pict?]
+         plot-pict?]
 @defproc[(plot-bitmap [<plot-argument> <plot-argument-contract>] ...)
-         (is-a?/c bitmap%)]
+         (and/c (is-a?/c bitmap%) (is-a?/c plot-metrics<%>))]
 @defproc[(plot3d-bitmap [<plot3d-argument> <plot3d-argument-contract>] ...)
-         (is-a?/c bitmap%)]{
+         (and/c (is-a?/c bitmap%) (is-a?/c plot-metrics<%>))]{
 Plot to different non-GUI backends.
 These procedures accept the same arguments as @(racket plot) and @(racket plot3d), except deprecated keywords, and @racket[#:out-file] and @racket[#:out-kind].
 
@@ -182,7 +182,7 @@ Use @(racket plot-bitmap) or @(racket plot3d-bitmap) to create a @(racket bitmap
                   [width (>=/c 0)]
                   [height (>=/c 0)]
                   [#:<plot-keyword> <plot-keyword> <plot-keyword-contract>] ...)
-         void?]
+         (is-a?/c plot-metrics<%>)]
 @defproc[(plot3d/dc [renderer-tree (treeof (or/c renderer3d? nonrenderer?))]
                     [dc (is-a?/c dc<%>)]
                     [x real?]
@@ -190,7 +190,7 @@ Use @(racket plot-bitmap) or @(racket plot3d-bitmap) to create a @(racket bitmap
                     [width (>=/c 0)]
                     [height (>=/c 0)]
                     [#:<plot3d-keyword> <plot3d-keyword> <plot3d-keyword-contract>] ...)
-         void?]{
+         (is-a?/c plot-metrics<%>)]{
 Plot to an arbitrary device context, in the rectangle with width @(racket width), height @(racket height), and upper-left corner @(racket x),@(racket y).
 These procedures accept the same arguments as @(racket plot) and @(racket plot3d), except deprecated keywords, and @racket[#:out-file] and @racket[#:out-kind].
 

@@ -3,26 +3,26 @@
 ;; Untyped interface / contract
 (module untyped racket/base
   (require racket/class
-           racket/contract
-           racket/match
-           racket/draw)
+           racket/contract)
 
   (provide plot-metrics<%>
-           plot-metrics-object/c)
+           plot-metrics-object/c
+           interface?)
 
-  (define plot-metrics<%> (interface ()
-                            get-plot-bounds
-                            dc->plot
-                            plot->dc
-                            plane-vector
-                            get-plot-metrics-functions))
+  (define plot-metrics<%>
+    (interface ()
+      get-plot-bounds
+      dc->plot
+      plot->dc
+      plane-vector
+      get-plot-metrics-functions))
 
   (define plot-metrics-object/c
     (object/c [get-plot-bounds            (->m (vectorof (vector/c real? real?)))]
               [plot->dc                   (->m (vectorof real?) (vectorof real?))]
               [dc->plot                   (->m (vectorof real?) (vectorof real?))]
               [plane-vector               (->m (vectorof real?))]
-              [get-plot-metrics-functions (->m (values (-> (vectorof (vector/c real? real?)))
+              [get-plot-metrics-functions (->m (list/c (-> (vectorof (vector/c real? real?)))
                                                        (-> (vectorof real?) (vectorof real?))
                                                        (-> (vectorof real?) (vectorof real?))
                                                        (-> (vectorof real?))))]))
@@ -80,7 +80,6 @@
     (define/public (get-plot-metrics-functions) (getall))))
 
 (define plot-metrics% (plot-metrics-mixin object%))
-
 
 (struct plot-pict pict ([bounds : (Vectorof (Vectorof Real))]
                         [plot->dc : (-> (Vectorof Real) (Vectorof Real))]
