@@ -12,7 +12,7 @@
 
 (provide
  (contract-out
-  [untyped-plot/dc
+  [plot/dc
    (->* [(treeof (or/c renderer2d? nonrenderer?))
          (is-a?/c dc<%>)
          real?
@@ -29,7 +29,7 @@
          #:aspect-ratio (or/c (and/c rational? positive?) #f)
          #:legend-anchor legend-anchor/c]
         plot-metrics-object/c)]
-   [untyped-plot-bitmap
+   [plot-bitmap
     (->* [(treeof (or/c renderer2d? nonrenderer?))]
          [#:x-min (or/c real? #f)
           #:x-max (or/c real? #f)
@@ -43,7 +43,7 @@
           #:aspect-ratio (or/c (and/c rational? positive?) #f)
           #:legend-anchor legend-anchor/c]
          (and/c (is-a?/c bitmap%) plot-metrics-object/c))]
-    [untyped-plot-pict
+    [plot-pict
      (->* [(treeof (or/c renderer2d? nonrenderer?))]
           [#:x-min (or/c real? #f)
            #:x-max (or/c real? #f)
@@ -58,6 +58,3 @@
            #:legend-anchor legend-anchor/c]
           plot-pict?)]))
 
-(define untyped-plot/dc plot/dc)
-(define untyped-plot-pict plot-pict)
-(define untyped-plot-bitmap plot-bitmap)
