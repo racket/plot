@@ -26,7 +26,10 @@
                     [plot/dc     typed-plot/dc]
                     [plot-bitmap typed-plot-bitmap]
                     [plot-pict   typed-plot-pict])
-         "private/no-gui/plot2d-untyped.rkt")
+         (rename-in "private/no-gui/plot2d-untyped.rkt"
+                    [plot/dc untyped-plot/dc]
+                    [plot-bitmap untyped-plot-bitmap]
+                    [plot-pict untyped-plot-pict]))
 
 (define-typed/untyped-identifier plot/dc
   typed-plot/dc

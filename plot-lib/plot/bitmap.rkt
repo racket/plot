@@ -17,7 +17,7 @@
            "private/plot2d/renderer.rkt")
   (provide
    (contract-out
-    [untyped-plot
+    [plot
      (->* [(treeof (or/c renderer2d? nonrenderer?))]
           [#:x-min (or/c real? #f)
            #:x-max (or/c real? #f)
@@ -33,7 +33,7 @@
            #:out-file (or/c path? string? output-port? #f)
            #:out-kind symbol?]
           (is-a?/c bitmap%))]
-    [untyped-plot3d
+    [plot3d
      (->* [(treeof (or/c renderer3d? nonrenderer?))]
           [#:x-min (or/c real? #f)
            #:x-max (or/c real? #f)
@@ -52,15 +52,15 @@
            #:legend-anchor anchor/c
            #:out-file (or/c path? string? output-port? #f)
            #:out-kind symbol?]
-          (is-a?/c bitmap%))]))
-   (define untyped-plot3d plot3d)
-   (define untyped-plot plot))
+          (is-a?/c bitmap%))])))
 
 
 (require (rename-in "private/no-gui/plot-bitmap.rkt"
                     [plot typed-plot]
                     [plot3d typed-plot3d])
-         'untyped)
+         (rename-in (submod "." untyped)
+                    [plot untyped-plot]
+                    [plot3d untyped-plot3d]))
 
 (define-typed/untyped-identifier plot
   typed-plot
