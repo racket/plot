@@ -66,7 +66,7 @@
                                       #(#(0 1) #(1 2) #(1 3))))
             (test-suite "PR90: 3d/snip plot->dc & dc->plot"
                         (check-within (send ps plot->dc (send ps dc->plot #(200 200)))
-                                      #(200 200) 1e-15))
+                                      #(200 200) 1e-13))
             (test-suite "PR90: 3d/snip plane-vector"
                         (check-equal? (send ps plot->dc (send ps plane-vector))
                                       (send ps plot->dc #(0 0 0))))

@@ -9,7 +9,7 @@ jobs:
       # the failure is specific to a Racket version.
       fail-fast: false
       matrix:
-        racket-version: ["8.2", "current"]
+        racket-version: ["current"]
         racket-variant: ["BC", "CS"]
     steps:
       - uses: actions/checkout@v2

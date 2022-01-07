@@ -7,7 +7,7 @@
                "plot-gui-lib"
                "plot-lib"
                "plot-doc"
-               "draw-lib"
+               ["draw-lib" #:version "1.19"]
                "pict-lib"
                "rackunit-lib"
                "slideshow-lib"
