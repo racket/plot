@@ -100,6 +100,14 @@ Used as default keyword arguments of plotting procedures such as @racket[plot3d]
 Amount of ambient light, and whether 3D plots are rendered with diffuse and specular reflectance.
 }
 
+@defparam[plot-line-width width (>=/c 0) #:value 1]{
+  The width of the lines used to draw plot axes and other non-renderer
+  elements.
+
+  The line width for plot renderers, such as @racket[function] and
+  @racket[lines], is controlled by the @racket[line-width] parameter.
+}
+
 @deftogether[((defparam plot-foreground color plot-color/c #:value 0)
               (defparam plot-background color plot-color/c #:value 0))]{
 The plot foreground and background color.
