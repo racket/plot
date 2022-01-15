@@ -3,13 +3,14 @@
 (require racket/list racket/promise
          math/base
          math/flonum
-         (only-in math/statistics sort-samples)
+         (only-in math/statistics sort-samples quantile stddev)
          "math.rkt"
          "utils.rkt"
          "sample.rkt"
          "type-doc.rkt")
 
-(provide kde)
+(provide kde
+         silverman-bandwidth)
 
 (: make-kde/windowed (-> (Vectorof Flonum) Flonum (Vectorof Flonum) Flonum (-> Flonum Flonum)))
 ;; Can assume that xs is sorted
@@ -77,3 +78,11 @@
                    [(> y x-max)  0.0]
                    [else  (* c (kde/windowed y))]))))
        (values f x-min x-max))]))
+
+(:: silverman-bandwidth (-> (Listof Real) Real))
+(define (silverman-bandwidth xs)
+  (define iqr (- (quantile 3/4 < xs) (quantile 1/4 < xs)))
+  (define n (length xs))
+  (define m (min (stddev xs) (/ iqr 1.349)))
+  (/ (* 0.9 m)
+     (expt n 1/5)))

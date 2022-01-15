@@ -79,7 +79,8 @@
  parametric-interval
  polar-interval
  function-interval
- inverse-interval)
+ inverse-interval
+ violin)
 
 (require "private/plot2d/contour.rkt")
 (provide

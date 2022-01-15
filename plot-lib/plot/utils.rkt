@@ -217,4 +217,5 @@
 (require "private/common/kde.rkt")
 
 (provide
- kde)
+ kde
+ silverman-bandwidth)

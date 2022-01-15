@@ -2,7 +2,8 @@
 
 ;; Renderers for intervals between functions.
 
-(require typed/racket/class racket/match racket/math racket/list
+(require typed/racket/class racket/match racket/math racket/list racket/sequence
+         (only-in math/statistics stddev quantile)
          (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
@@ -374,3 +375,89 @@
                                                line1-color line1-width line1-style
                                                line2-color line2-width line2-style
                                                alpha))]))
+
+;; ===================================================================================================
+;; Violin
+
+(:: violin
+    (->* [Real (Sequenceof Real)
+          (U Real #f) (U Real #f)]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:samples Positive-Integer
+          #:color Plot-Color
+          #:style Plot-Brush-Style
+          #:line1-color Plot-Color
+          #:line1-width Nonnegative-Real
+          #:line1-style Plot-Pen-Style
+          #:line2-color Plot-Color
+          #:line2-width Nonnegative-Real
+          #:line2-style Plot-Pen-Style
+          #:alpha Nonnegative-Real
+          #:label (U String pict #f)
+          #:bandwidth (U Real #f)
+          #:invert? Boolean]
+         renderer2d))
+(define (violin
+         x-center ys
+         [y-min #f] [y-max #f]
+         #:x-min [x-min #f] #:x-max [x-max #f]
+         #:samples [samples (line-samples)]
+         #:color [color (interval-color)]
+         #:style [style (interval-style)]
+         #:line1-color [line1-color (interval-line1-color)]
+         #:line1-width [line1-width (interval-line1-width)]
+         #:line1-style [line1-style (interval-line1-style)]
+         #:line2-color [line2-color (interval-line2-color)]
+         #:line2-width [line2-width (interval-line2-width)]
+         #:line2-style [line2-style (interval-line2-style)]
+         #:alpha [alpha (interval-alpha)]
+         #:label [label #f]
+         #:bandwidth [bandwidth #f]
+         #:invert? [invert? #f])
+  (define fail/pos (make-raise-argument-error 'violin x-center ys y-min y-max))
+  (define fail/kw (make-raise-keyword-error 'violin))
+  (cond
+    [(and y-min (not (rational? y-min)))  (fail/pos "#f or rational" 2)]
+    [(and y-max (not (rational? y-max)))  (fail/pos "#f or rational" 3)]
+    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
+    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
+    [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
+    [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
+    [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
+    [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
+    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [else
+     (define x-ivl (ivl x-min x-max))
+     (define y-ivl (ivl y-min y-max))
+
+     (define ys* (sequence->list ys))
+     (define-values (f1 low high)
+       (kde ys* (or bandwidth (silverman-bandwidth ys*))))
+     (define (f1* [y : Real]) (+ (f1 y) x-center))
+     (define (f2* [y : Real]) (+ (- (f1 y)) x-center))
+
+     (define-values (g1 g2 bounds bounds-fun render-proc)
+       (if invert?
+           (values (function->sampler f1* y-ivl)
+                   (function->sampler f2* y-ivl)
+                   (vector y-ivl x-ivl)
+                   function-interval-bounds-fun
+                   function-interval-render-proc)
+           (values (inverse->sampler f1* y-ivl)
+                   (inverse->sampler f2* y-ivl)
+                   (vector x-ivl y-ivl)
+                   inverse-interval-bounds-fun
+                   inverse-interval-render-proc)))
+
+     (renderer2d bounds
+                 (bounds-fun g1 g2 samples)
+                 default-ticks-fun
+                 (and label (λ (_)
+                              (interval-legend-entry label color style 0 0 'transparent
+                                                     line1-color line1-width line1-style
+                                                     line2-color line2-width line2-style)))
+                 (render-proc g1 g2 samples color style
+                              line1-color line1-width line1-style
+                              line2-color line2-width line2-style
+                              alpha))]))
