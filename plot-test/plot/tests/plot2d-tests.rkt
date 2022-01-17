@@ -651,10 +651,11 @@
   (define xs1 (build-list 10 (λ _ (random 0 10))))
   (define xs2 (build-list 10 (λ _ (random 15 25))))
   (output-fn
-   (list (violin 0.0 xs1 -4 14
+   (list (violin xs1
                  #:invert? #t
                  #:label "one")
-         (violin 0.5 xs2 11 29
+         (violin xs2
+                 #:x 1/2
                  #:invert? #t
                  #:label "two"
                  #:color 4 #:line1-color 4 #:line2-color 4))))
@@ -663,7 +664,10 @@
 (define (do-plot-72 output-fn)
   (random-seed 42)
   (define ys1 (build-list 20 (λ _ (random 10 20))))
-  (output-fn (list (violin 1.0 ys1 6 24 #:bandwidth 2))))
+  (output-fn (list (violin ys1
+                           #:x 1
+                           #:y-min 6 #:y-max 24
+                           #:bandwidth 2))))
 
 (define plot2d-tests
   (test-suite

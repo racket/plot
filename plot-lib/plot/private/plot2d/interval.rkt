@@ -7,7 +7,8 @@
          (only-in typed/pict pict)
          plot/utils
          "../common/type-doc.rkt"
-         "../common/utils.rkt")
+         "../common/utils.rkt"
+         "rectangle.rkt")
 
 (provide (all-defined-out))
 
@@ -380,9 +381,11 @@
 ;; Violin
 
 (:: violin
-    (->* [Real (Sequenceof Real)
-          (U Real #f) (U Real #f)]
-         [#:x-min (U Real #f) #:x-max (U Real #f)
+    (->* [(Sequenceof Real)]
+         [#:x Real
+          #:y-min (U Real #f) #:y-max (U Real #f)
+          #:gap Nonnegative-Real
+          #:skip Nonnegative-Real
           #:samples Positive-Integer
           #:color Plot-Color
           #:style Plot-Brush-Style
@@ -394,13 +397,17 @@
           #:line2-style Plot-Pen-Style
           #:alpha Nonnegative-Real
           #:label (U String pict #f)
+          #:add-ticks? Boolean
+          #:far-ticks? Boolean
           #:bandwidth (U Real #f)
           #:invert? Boolean]
          renderer2d))
 (define (violin
-         x-center ys
-         [y-min #f] [y-max #f]
-         #:x-min [x-min #f] #:x-max [x-max #f]
+         ys
+         #:x [x 0]
+         #:y-min [y-min #f] #:y-max [y-max #f]
+         #:gap [gap (discrete-histogram-gap)]
+         #:skip [skip (discrete-histogram-skip)]
          #:samples [samples (line-samples)]
          #:color [color (interval-color)]
          #:style [style (interval-style)]
@@ -412,30 +419,31 @@
          #:line2-style [line2-style (interval-line2-style)]
          #:alpha [alpha (interval-alpha)]
          #:label [label #f]
+         #:add-ticks? [add-ticks? #t]
+         #:far-ticks? [far-ticks? #f]
          #:bandwidth [bandwidth #f]
          #:invert? [invert? #f])
-  (define fail/pos (make-raise-argument-error 'violin x-center ys y-min y-max))
   (define fail/kw (make-raise-keyword-error 'violin))
   (cond
-    [(and y-min (not (rational? y-min)))  (fail/pos "#f or rational" 2)]
-    [(and y-max (not (rational? y-max)))  (fail/pos "#f or rational" 3)]
-    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
-    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
     [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
     [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [(or (> gap 1) (not (rational? gap)))  (fail/kw "real in [0,1]" '#:gap gap)]
+    [(not (rational? skip))  (fail/kw "rational?" '#:skip skip)]
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
     [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
-     (define x-ivl (ivl x-min x-max))
-     (define y-ivl (ivl y-min y-max))
-
      (define ys* (sequence->list ys))
-     (define-values (f1 low high)
+     (define-values (f1 y-low y-high)
        (kde ys* (or bandwidth (silverman-bandwidth ys*))))
-     (define (f1* [y : Real]) (+ (f1 y) x-center))
-     (define (f2* [y : Real]) (+ (- (f1 y)) x-center))
+     (define y-min* (or y-min y-low))
+     (define y-max* (or y-max y-high))
+     (define half-width (/ (- skip gap) 2))
+     (define x-ivl (ivl (- x half-width) (+ x half-width)))
+     (define y-ivl (ivl y-min* y-max*))
+     (define (f1* [y : Real]) (+ (f1 y) x))
+     (define (f2* [y : Real]) (+ (- (f1 y)) x))
 
      (define-values (g1 g2 bounds bounds-fun render-proc)
        (if invert?
@@ -450,9 +458,16 @@
                    inverse-interval-bounds-fun
                    inverse-interval-render-proc)))
 
+     (: maybe-invert (All (A) (-> A A (Vectorof A))))
+     (define maybe-invert (if invert? (λ (x y) (vector y x)) vector))
+
      (renderer2d bounds
                  (bounds-fun g1 g2 samples)
-                 default-ticks-fun
+                 (if label
+                     (discrete-histogram-ticks-fun (list label) (list x)
+                                                   add-ticks? far-ticks?
+                                                   maybe-invert)
+                     default-ticks-fun)
                  (and label (λ (_)
                               (interval-legend-entry label color style 0 0 'transparent
                                                      line1-color line1-width line1-style
