@@ -428,7 +428,7 @@
     [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
     [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
     [(not (rational? gap))  (fail/kw "rational?" '#:gap gap)]
-    [(not (rational? skip))  (fail/kw "rational?" '#:skip skip)]
+    [(not (and (rational? skip) (positive? skip)))  (fail/kw "positive rational" '#:skip skip)]
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
     [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
