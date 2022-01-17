@@ -558,10 +558,11 @@ Corresponds with @(racket polar).
 }
 
 @defproc[(violin
-          [x real?]
           [ys (sequence/c real?)]
-          [y-min (or/c rational? #f) #f] [y-max (or/c rational? #f) #f]
-          [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
+          [#:x x real? 0]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:gap gap rational? (discrete-histogram-gap)]
+          [#:skip skip (>=/c 0) (discrete-histogram-skip)]
           [#:samples samples (and/c exact-integer? (>=/c 2)) (line-samples)]
           [#:color color plot-color/c (interval-color)]
           [#:style style plot-brush-style/c (interval-style)]
@@ -573,18 +574,20 @@ Corresponds with @(racket polar).
           [#:line2-style line2-style plot-pen-style/c (interval-line2-style)]
           [#:alpha alpha (real-in 0 1) (interval-alpha)]
           [#:label label (or/c string? pict? #f) #f]
-          [#:invert? invert? boolean? #f]
+          [#:add-ticks? add-ticks? boolean? #t]
+          [#:far-ticks? far-ticks? boolean? #f]
           [#:bandwidth bandwidth (or/c real? #f) #f]
+          [#:invert? invert? boolean? #f]
           ) renderer2d?]{
-Draws a violin plot centered at @racket[x].
+Draws a @hyperlink["https://en.wikipedia.org/wiki/Violin_plot"]{violin} plot centered at @racket[x].
 The default kernel density bandwidth is determined by @racket[silverman-bandwidth].
 If @racket[invert?] is @racket[#t],
 the x and y coordinates are inverted,
 and the violin is drawn horizontally rather than vertically.
 
 @interaction[#:eval plot-eval
-  (plot (list (violin 0.0 '(2 3 3 4 4 4 5 9 9) 0 12 #:invert? #t)
-              (violin 0.5 '(7 8 9 9 10 11 12 13) 4 15 #:invert? #t)))]
+  (plot (list (violin '(2 3 3 4 4 4 5 9 9) #:invert? #t)
+              (violin '(7 8 9 9 10 11 12 13) #:x 1/2 #:invert? #t)))]
 
 @history[#:added "8.5"]
 }
