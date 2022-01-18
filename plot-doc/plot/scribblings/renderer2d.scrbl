@@ -557,6 +557,41 @@ Corresponds with @(racket polar).
 @history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
+@defproc[(violin
+          [ys (sequence/c real?)]
+          [#:x x real? 0]
+          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
+          [#:gap gap rational? (discrete-histogram-gap)]
+          [#:skip skip (>=/c 0) (discrete-histogram-skip)]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (line-samples)]
+          [#:color color plot-color/c (interval-color)]
+          [#:style style plot-brush-style/c (interval-style)]
+          [#:line1-color line1-color plot-color/c (interval-line1-color)]
+          [#:line1-width line1-width (>=/c 0) (interval-line1-width)]
+          [#:line1-style line1-style plot-pen-style/c (interval-line1-style)]
+          [#:line2-color line2-color plot-color/c (interval-line2-color)]
+          [#:line2-width line2-width (>=/c 0) (interval-line2-width)]
+          [#:line2-style line2-style plot-pen-style/c (interval-line2-style)]
+          [#:alpha alpha (real-in 0 1) (interval-alpha)]
+          [#:label label (or/c string? pict? #f) #f]
+          [#:add-ticks? add-ticks? boolean? #t]
+          [#:far-ticks? far-ticks? boolean? #f]
+          [#:bandwidth bandwidth (or/c real? #f) #f]
+          [#:invert? invert? boolean? #f]
+          ) renderer2d?]{
+Draws a @hyperlink["https://en.wikipedia.org/wiki/Violin_plot"]{violin} plot centered at @racket[x].
+The default kernel density bandwidth is determined by @racket[silverman-bandwidth].
+If @racket[invert?] is @racket[#t],
+the x and y coordinates are inverted,
+and the violin is drawn horizontally rather than vertically.
+
+@interaction[#:eval plot-eval
+  (plot (list (violin '(2 3 3 4 4 4 5 9 9) #:invert? #t)
+              (violin '(7 8 9 9 10 11 12 13) #:x 1/2 #:invert? #t)))]
+
+@history[#:added "8.5"]
+}
+
 @section{2D Contour (Isoline) Renderers}
 
 @defproc[(isoline
@@ -1106,4 +1141,3 @@ renderers will cause overlays to be disabled.
                                                             any/c)]{
 A contract for callback functions passed to @racket[set-mouse-event-callback].
 }
-

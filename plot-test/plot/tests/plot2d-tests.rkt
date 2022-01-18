@@ -645,6 +645,30 @@
              #:y-min -10 #:y-max 10
              #:title "rectangles that extend to the edge of the plot"))
 
+(define-runtime-path p2d-71-data "./test-data/p2d-71.dat")
+(define (do-plot-71 output-fn)
+  (random-seed 42)
+  (define xs1 (build-list 10 (λ _ (random 0 10))))
+  (define xs2 (build-list 10 (λ _ (random 15 25))))
+  (output-fn
+   (list (violin xs1
+                 #:invert? #t
+                 #:label "one")
+         (violin xs2
+                 #:x 1/2
+                 #:invert? #t
+                 #:label "two"
+                 #:color 4 #:line1-color 4 #:line2-color 4))))
+
+(define-runtime-path p2d-72-data "./test-data/p2d-72.dat")
+(define (do-plot-72 output-fn)
+  (random-seed 42)
+  (define ys1 (build-list 20 (λ _ (random 10 20))))
+  (output-fn (list (violin ys1
+                           #:x 1
+                           #:y-min 6 #:y-max 24
+                           #:bandwidth 2))))
+
 (define plot2d-tests
   (test-suite
    "plot2d-tests"
@@ -718,7 +742,9 @@
    (test-case "test case 67" (check-draw-steps do-plot-67 p2d-67-data))
    (test-case "test case 68" (check-draw-steps do-plot-68 p2d-68-data))
    (test-case "test case 69" (check-draw-steps do-plot-69 p2d-69-data))
-   (test-case "test case 70" (check-draw-steps do-plot-70 p2d-70-data))))
+   (test-case "test case 70" (check-draw-steps do-plot-70 p2d-70-data))
+   (test-case "test case 71" (check-draw-steps do-plot-71 p2d-71-data))
+   (test-case "test case 72" (check-draw-steps do-plot-72 p2d-72-data))))
 
 (module+ test
   (require rackunit/text-ui)

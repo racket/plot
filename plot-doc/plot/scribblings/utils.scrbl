@@ -146,6 +146,13 @@ Given optionally weighted samples and a kernel bandwidth, returns a function rep
 Used by @(racket density).
 }
 
+@defproc[(silverman-bandwidth [xs (listof real?)])
+         real?]{
+Returns the Silverman Bandwidth estimator for the given samples. This is used as the default bandwidth by the @racket[violin] renderer. See the @hyperlink["https://en.wikipedia.org/wiki/Kernel_density_estimation"]{kernel density estimation} Wikipedia article for more details.
+
+@history[#:added "8.5"]
+}
+
 @;====================================================================================================
 @section{Plot Colors and Styles}
 
