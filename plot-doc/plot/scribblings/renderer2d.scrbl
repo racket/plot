@@ -557,41 +557,6 @@ Corresponds with @(racket polar).
 @history[#:changed "7.9" "Added support for pictures for #:label"]
 }
 
-@defproc[(violin
-          [ys (sequence/c real?)]
-          [#:x x real? 0]
-          [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
-          [#:gap gap rational? (discrete-histogram-gap)]
-          [#:skip skip (>=/c 0) (discrete-histogram-skip)]
-          [#:samples samples (and/c exact-integer? (>=/c 2)) (line-samples)]
-          [#:color color plot-color/c (interval-color)]
-          [#:style style plot-brush-style/c (interval-style)]
-          [#:line1-color line1-color plot-color/c (interval-line1-color)]
-          [#:line1-width line1-width (>=/c 0) (interval-line1-width)]
-          [#:line1-style line1-style plot-pen-style/c (interval-line1-style)]
-          [#:line2-color line2-color plot-color/c (interval-line2-color)]
-          [#:line2-width line2-width (>=/c 0) (interval-line2-width)]
-          [#:line2-style line2-style plot-pen-style/c (interval-line2-style)]
-          [#:alpha alpha (real-in 0 1) (interval-alpha)]
-          [#:label label (or/c string? pict? #f) #f]
-          [#:add-ticks? add-ticks? boolean? #t]
-          [#:far-ticks? far-ticks? boolean? #f]
-          [#:bandwidth bandwidth (or/c real? #f) #f]
-          [#:invert? invert? boolean? #f]
-          ) renderer2d?]{
-Draws a @hyperlink["https://en.wikipedia.org/wiki/Violin_plot"]{violin} plot centered at @racket[x].
-The default kernel density bandwidth is determined by @racket[silverman-bandwidth].
-If @racket[invert?] is @racket[#t],
-the x and y coordinates are inverted,
-and the violin is drawn horizontally rather than vertically.
-
-@interaction[#:eval plot-eval
-  (plot (list (violin '(2 3 3 4 4 4 5 9 9) #:invert? #t)
-              (violin '(7 8 9 9 10 11 12 13) #:x 1/2 #:invert? #t)))]
-
-@history[#:added "8.5"]
-}
-
 @section{2D Contour (Isoline) Renderers}
 
 @defproc[(isoline
@@ -815,6 +780,168 @@ The heights of each bar section are given as a list.
                                           #:invert? #t
                                           #:labels '("Red" #f "Blue"))
                        #:legend-anchor 'top-right)]
+}
+
+@section{Violin and Box Plot Renderers}
+
+@defproc[(violin
+          [vs (sequence/c real?)]
+          [#:x x real? 0]
+          [#:width width (>=/c 0) 1]
+          [#:bandwidth bandwidth (or/c real? #f) #f]
+          [#:invert? invert? boolean? #f]
+          [#:label label (or/c string? pict? #f) #f]
+          [#:add-ticks? add-ticks? boolean? #t]
+          [#:far-ticks? far-ticks? boolean? #f]
+          [#:y-min y-min (or/c rational? #f) #f]
+          [#:y-max y-max (or/c rational? #f) #f]
+          [#:samples samples (and/c exact-integer? (>=/c 2)) (line-samples)]
+          [#:color color plot-color/c (interval-color)]
+          [#:style style plot-brush-style/c (interval-style)]
+          [#:line-color line1-color plot-color/c (interval-line1-color)]
+          [#:line-width line1-width (>=/c 0) (interval-line1-width)]
+          [#:line-style line1-style plot-pen-style/c (interval-line1-style)]
+          [#:alpha alpha (real-in 0 1) (interval-alpha)]
+          ) renderer2d?]{
+
+Draws a @hyperlink["https://en.wikipedia.org/wiki/Violin_plot"]{violin} plot
+from the list of real values @racket[vs].  The plot is centered at @racket[x]
+and the @racket[width] parameter is used as a scaling factor to control the
+width of the violin.
+
+The default kernel density bandwidth is determined by
+@racket[silverman-bandwidth].
+
+When @racket[invert?] is @racket[#f], the violin plot is drawn vertically,
+when it is @racket[#t], the x and y coordinates are inverted, and the violin
+is drawn horizontally.
+
+@racket[label] defines the plot label, it is the value shown in the plot
+legend as well as on the X axis under the violin plot (or Y axis if the plot
+is inverted).  The label is shown on the X axis on only if @racket[add-ticks?]
+is @racket[#t], and, if @racket[far-ticks?] is @racket[#t] the label is placed
+on the far axis.
+
+@racket[y-min] and @racket[y-max] define the vertical range to draw the
+violin, by default, the entire violin is drawn.
+
+@racket[samples] defines the number of samples used by the function renderer
+while drawing the violin outline.
+
+See @secref["renderer2d-function-arguments"] for the meaning of the other
+arguments.
+
+@interaction[#:eval plot-eval
+             (parameterize ([plot-pen-color-map 'tab20]
+                            [plot-brush-color-map 'tab20]
+                            [plot-x-label #f]
+                            [plot-y-label #f])
+               (define (rnorm sample-count mean stddev)
+                 (sample (normal-dist mean stddev) sample-count))
+               (define a (rnorm 50 10 5))
+               (define b (append (rnorm 50 13 1) (rnorm 50 18 1)))
+               (define c (rnorm 20 25 4))
+               (define d (rnorm 10 12 2))
+               (plot
+                (for/list ([data (list a b c d)]
+                           [label (list "a" "b" "c" "d")]
+                           [index (in-naturals)])
+                  (violin data
+                          #:label label
+                          #:invert? #t
+                          #:x index
+                          #:width 10/8
+                          #:color (+ (* index 2) 1)
+                          #:line-color (* index 2)))
+                #:legend-anchor 'no-legend))]
+
+@history[#:added "8.5"]
+}
+
+@defproc[(box-and-whisker
+          [vs (sequence/c real?)]
+          [#:weights ws (sequence/c real?) #f]
+          [#:x x real? 0]
+          [#:width width (>=/c 0) 1]
+          [#:iqr-scale iqr-scale (>=/c 0) 1.5]
+          [#:invert? invert? boolean? #f]
+          [#:label label (or/c string? pict? #f) #f]
+          [#:add-ticks? add-ticks? boolean? #t]
+          [#:far-ticks? far-ticks? boolean? #f]
+          [#:box-color box-color plot-color/c (rectangle-color)]
+          [#:box-style box-style plot-brush-style/c (rectangle-style)]
+          [#:box-line-color box-line-color plot-color/c (rectangle-line-color)]
+          [#:box-line-width box-line-width (>=/c 0) (rectangle-line-width)]
+          [#:box-line-style box-line-style plot-pen-style/c (rectangle-line-style)]
+          [#:box-alpha box-alpha (real-in 0 1) (rectangle-alpha)]
+          [#:show-outliers? show-outliers? boolean? #t]
+          [#:outlier-color outlier-color plot-color/c (point-color)]
+          [#:outlier-sym outlier-sym point-sym/c (point-sym)]
+          [#:outlier-fill-color outlier-fill-color (or/c plot-color/c 'auto) 'auto]
+          [#:outlier-size outlier-size (>=/c 0) (point-size)]
+          [#:outlier-line-width outlier-line-width (>=/c 0) (point-line-width)]
+          [#:outlier-alpha outlier-alpha (real-in 0 1) (point-alpha)]
+          [#:show-whiskers? show-whiskers? boolean? #t]
+          [#:whisker-color whisker-color plot-color/c (line-color)]
+          [#:whisker-width whisker-width (>=/c 0) (line-width)]
+          [#:whisker-style whisker-style plot-pen-style/c (line-style)]
+          [#:whisker-alpha whisker-alpha (real-in 0 1) (line-alpha)]
+          [#:show-median? show-median? boolean? #t]
+          [#:median-color median-color plot-color/c (line-color)]
+          [#:median-width median-width (>=/c 0) (line-width)]
+          [#:median-style median-style plot-pen-style/c (line-style)]
+          [#:median-alpha median-alpha (real-in 0 1) (line-alpha)]
+          ) renderer2d?]{
+
+Draws a @hyperlink["https://en.wikipedia.org/wiki/Box_plot"]{box and whisker}
+plot from the list of real values @racket[vs], possibly weighted by the values
+in @racket[ws].  The plot is centered at @racket[x] and the @racket[width]
+parameter is used as a scaling factor to control the width of the box.
+
+The @racket[iqr-scale] controls the scaling factor for the inter-quantile
+range, which decides how far the whiskers extent and which points are
+considered outliers.
+
+When @racket[invert?] is @racket[#f], the box plot is drawn vertically, when
+it is @racket[#t], the x and y coordinates are inverted, and the box plot is
+drawn horizontally.
+
+@racket[label] defines the plot label, it is the value shown in the plot
+legend as well as on the X axis under the box plot (or Y axis if the plot is
+inverted).  The label is shown on the X axis on only if @racket[add-ticks?] is
+@racket[#t], and, if @racket[far-ticks?] is @racket[#t] the label is placed on
+the far axis.
+
+See @secref["renderer2d-function-arguments"] for the meaning of the other
+arguments.
+
+@interaction[#:eval plot-eval
+             (parameterize ([plot-pen-color-map 'tab20]
+                            [plot-brush-color-map 'tab20]
+                            [plot-x-label #f]
+                            [plot-y-label #f])
+               (define (rnorm sample-count mean stddev)
+                 (sample (normal-dist mean stddev) sample-count))
+               (define a (rnorm 50 10 5))
+               (define b (append (rnorm 50 13 1) (rnorm 50 18 1)))
+               (define c (rnorm 20 25 4))
+               (define d (rnorm 10 12 2))
+               (plot
+                (for/list ([data (list a b c d)]
+                           [label (list "a" "b" "c" "d")]
+                           [index (in-naturals)])
+                  (box-and-whisker data
+                                   #:label label
+                                   #:invert? #f
+                                   #:x index
+                                   #:width 6/8
+                                   #:box-color (+ (* index 2) 1)
+                                   #:box-line-color (* index 2)
+                                   #:whisker-color (* index 2)
+                                   #:median-color "red"))
+                #:legend-anchor 'no-legend))]
+
+@history[#:added "8.5"]
 }
 
 @section{2D Plot Decoration Renderers}

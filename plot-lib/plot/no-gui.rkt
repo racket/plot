@@ -82,6 +82,9 @@
  inverse-interval
  violin)
 
+(require "private/plot2d/box-and-whisker.rkt")
+(provide box-and-whisker)
+
 (require "private/plot2d/contour.rkt")
 (provide
  isoline

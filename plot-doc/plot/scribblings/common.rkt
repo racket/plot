@@ -6,8 +6,9 @@
                     pict
                     db
                     plot
-                    plot/utils
+                    (except-in plot/utils sample) ; need the one from math/distributions
                     plot/snip
+                    math/distributions
                     (only-in racket/sequence sequence/c)))
 
 (provide (all-defined-out)
@@ -18,7 +19,8 @@
                                   db
                                   plot
                                   plot/snip
-                                  plot/utils)
+                                  plot/utils
+                                  math/distributions)
                     sequence/c))
 
 (require (for-syntax racket/base
@@ -37,7 +39,8 @@
     (eval '(begin
              (require racket/math racket/match racket/list racket/draw racket/class
                       plot/pict
-                      plot/utils)))
+                      plot/utils
+                      math/distributions)))
     eval))
 
 (define (close-plot-eval)

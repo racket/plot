@@ -8,7 +8,8 @@
          plot/utils
          "../common/type-doc.rkt"
          "../common/utils.rkt"
-         "rectangle.rkt")
+         (only-in "rectangle.rkt" discrete-histogram-ticks-fun)
+         (only-in "box-and-whisker.rkt" make-one-axis-default-ticks-fun))
 
 (provide (all-defined-out))
 
@@ -74,7 +75,7 @@
     [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
     [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
     [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
-    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(or (not (rational? alpha)) (> alpha 1) (< alpha 0)) (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (let ([v1s  (sequence->listof-vector 'lines-interval v1s 2)]
            [v2s  (sequence->listof-vector 'lines-interval v2s 2)])
@@ -140,7 +141,7 @@
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
     [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
-    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(or (not (rational? alpha)) (> alpha 1) (< alpha 0)) (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (let ([f1  (λ ([t : Real]) (sequence-head-vector 'parametric-interval (f1 t) 2))]
            [f2  (λ ([t : Real]) (sequence-head-vector 'parametric-interval (f2 t) 2))])
@@ -197,7 +198,7 @@
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
     [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
-    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(or (not (rational? alpha)) (> alpha 1) (< alpha 0)) (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (define θs (linear-seq θ-min θ-max samples))
      (lines-interval
@@ -275,7 +276,7 @@
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
     [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
-    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(or (not (rational? alpha)) (> alpha 1) (< alpha 0)) (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (define x-ivl (ivl x-min x-max))
      (define y-ivl (ivl y-min y-max))
@@ -359,7 +360,7 @@
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
     [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
-    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(or (not (rational? alpha)) (> alpha 1) (< alpha 0)) (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (define x-ivl (ivl x-min x-max))
      (define y-ivl (ivl y-min y-max))
@@ -384,17 +385,13 @@
     (->* [(Sequenceof Real)]
          [#:x Real
           #:y-min (U Real #f) #:y-max (U Real #f)
-          #:gap Real
-          #:skip Nonnegative-Real
+          #:width Nonnegative-Real
           #:samples Positive-Integer
           #:color Plot-Color
           #:style Plot-Brush-Style
-          #:line1-color Plot-Color
-          #:line1-width Nonnegative-Real
-          #:line1-style Plot-Pen-Style
-          #:line2-color Plot-Color
-          #:line2-width Nonnegative-Real
-          #:line2-style Plot-Pen-Style
+          #:line-color Plot-Color
+          #:line-width Nonnegative-Real
+          #:line-style Plot-Pen-Style
           #:alpha Nonnegative-Real
           #:label (U String pict #f)
           #:add-ticks? Boolean
@@ -406,17 +403,13 @@
          ys
          #:x [x 0]
          #:y-min [y-min #f] #:y-max [y-max #f]
-         #:gap [gap (discrete-histogram-gap)]
-         #:skip [skip (discrete-histogram-skip)]
+         #:width [width 1]
          #:samples [samples (line-samples)]
          #:color [color (interval-color)]
          #:style [style (interval-style)]
-         #:line1-color [line1-color (interval-line1-color)]
-         #:line1-width [line1-width (interval-line1-width)]
-         #:line1-style [line1-style (interval-line1-style)]
-         #:line2-color [line2-color (interval-line2-color)]
-         #:line2-width [line2-width (interval-line2-width)]
-         #:line2-style [line2-style (interval-line2-style)]
+         #:line-color [line-color (interval-line1-color)]
+         #:line-width [line-width (interval-line1-width)]
+         #:line-style [line-style (interval-line1-style)]
          #:alpha [alpha (interval-alpha)]
          #:label [label #f]
          #:add-ticks? [add-ticks? #t]
@@ -427,23 +420,21 @@
   (cond
     [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
     [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
-    [(not (rational? gap))  (fail/kw "rational?" '#:gap gap)]
-    [(not (and (rational? skip) (positive? skip)))  (fail/kw "positive rational" '#:skip skip)]
+    [(not (and (rational? width) (positive? width)))  (fail/kw "positive rational" '#:width width)]
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
-    [(not (rational? line1-width))  (fail/kw "rational?" '#:line1-width line1-width)]
-    [(not (rational? line2-width))  (fail/kw "rational?" '#:line2-width line2-width)]
-    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(not (rational? line-width))  (fail/kw "rational?" '#:line-width line-width)]
+    [(or (not (rational? alpha)) (> alpha 1) (< alpha 0)) (fail/kw "real in [0,1]" '#:alpha alpha)]
     [else
      (define ys* (sequence->list ys))
      (define-values (f1 y-low y-high)
        (kde ys* (or bandwidth (silverman-bandwidth ys*))))
      (define y-min* (or y-min y-low))
      (define y-max* (or y-max y-high))
-     (define half-width (/ (- skip gap) 2))
+     (define half-width (/ width 2))
      (define x-ivl (ivl (- x half-width) (+ x half-width)))
      (define y-ivl (ivl y-min* y-max*))
-     (define (f1* [y : Real]) (+ (f1 y) x))
-     (define (f2* [y : Real]) (+ (- (f1 y)) x))
+     (define (f1* [y : Real]) (+ (* width (f1 y)) x))
+     (define (f2* [y : Real]) (+ (* width (- (f1 y))) x))
 
      (define-values (g1 g2 bounds bounds-fun render-proc)
        (if invert?
@@ -463,16 +454,15 @@
 
      (renderer2d bounds
                  (bounds-fun g1 g2 samples)
-                 (if label
-                     (discrete-histogram-ticks-fun (list label) (list x)
-                                                   add-ticks? far-ticks?
-                                                   maybe-invert)
-                     default-ticks-fun)
+                 (if (and (string? label) add-ticks?)
+                     (discrete-histogram-ticks-fun
+                      (list label) (list x) add-ticks? far-ticks? maybe-invert)
+                     (make-one-axis-default-ticks-fun invert?))
                  (and label (λ (_)
                               (interval-legend-entry label color style 0 0 'transparent
-                                                     line1-color line1-width line1-style
-                                                     line2-color line2-width line2-style)))
+                                                     line-color line-width line-style
+                                                     line-color line-width line-style)))
                  (render-proc g1 g2 samples color style
-                              line1-color line1-width line1-style
-                              line2-color line2-width line2-style
+                              line-color line-width line-style
+                              line-color line-width line-style
                               alpha))]))
