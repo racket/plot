@@ -55,29 +55,29 @@
                         ))
      #:legend-anchor 'no-legend)))
 
-(define-runtime-path prXX-a "./test-data/prXX-a.dat")
-(define-runtime-path prXX-b "./test-data/prXX-b.dat")
-(define-runtime-path prXX-c "./test-data/prXX-c.dat")
-(define-runtime-path prXX-d "./test-data/prXX-d.dat")
-(define-runtime-path prXX-e "./test-data/prXX-e.dat")
-(define-runtime-path prXX-f "./test-data/prXX-f.dat")
+(define-runtime-path pr107-a "./test-data/pr107-a.dat")
+(define-runtime-path pr107-b "./test-data/pr107-b.dat")
+(define-runtime-path pr107-c "./test-data/pr107-c.dat")
+(define-runtime-path pr107-d "./test-data/pr107-d.dat")
+(define-runtime-path pr107-e "./test-data/pr107-e.dat")
+(define-runtime-path pr107-f "./test-data/pr107-f.dat")
 
-(define prXX-test-suite
+(define pr107-test-suite
   (test-suite
    "box-and-whisker"
-   (test-case "PR#XX: box-and-whisker case A"
-     (check-draw-steps (do-plot-box-and-whisker #f #t 7/8) prXX-a))
-   (test-case "PR#XX: box-and-whisker case B"
-     (check-draw-steps (do-plot-box-and-whisker #f #f 1.5) prXX-b))
-   (test-case "PR#XX: box-and-whisker case C"
-     (check-draw-steps (do-plot-box-and-whisker #t #t 1.5) prXX-c))
-   (test-case "PR#XX: violin case D"
-     (check-draw-steps (do-plot-violin #f #t 7/8) prXX-d))
-   (test-case "PR#XX: violin case E"
-     (check-draw-steps (do-plot-violin #f #f 1.5) prXX-e))
-   (test-case "PR#XX: violin case F"
-     (check-draw-steps (do-plot-violin #t #t 1.5) prXX-f))))
+   (test-case "PR#107: box-and-whisker case A"
+     (check-draw-steps (do-plot-box-and-whisker #f #t 7/8) pr107-a))
+   (test-case "PR#107: box-and-whisker case B"
+     (check-draw-steps (do-plot-box-and-whisker #f #f 1.5) pr107-b))
+   (test-case "PR#107: box-and-whisker case C"
+     (check-draw-steps (do-plot-box-and-whisker #t #t 1.5) pr107-c))
+   (test-case "PR#107: violin case D"
+     (check-draw-steps (do-plot-violin #f #t 7/8) pr107-d))
+   (test-case "PR#107: violin case E"
+     (check-draw-steps (do-plot-violin #f #f 1.5) pr107-e))
+   (test-case "PR#107: violin case F"
+     (check-draw-steps (do-plot-violin #t #t 1.5) pr107-f))))
 
 (module+ test
   (require rackunit/text-ui)
-  (run-tests prXX-test-suite))
+  (run-tests pr107-test-suite))
