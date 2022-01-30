@@ -19,7 +19,9 @@
                      "scribble-lib"
                      "slideshow-doc"
                      "slideshow-lib"
-                     "srfi-doc"))
+                     "srfi-doc"
+                     "math-lib"
+                     "math-doc"))
 
 (define update-implies '("plot-lib"))
 
