@@ -22,7 +22,7 @@
           #:x-label (U String #f)
           #:y-label (U String #f)
           #:aspect-ratio (U Nonnegative-Real #f)
-          #:legend-anchor Anchor
+          #:legend-anchor Legend-Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)]
          Plot-Pict))
@@ -62,7 +62,7 @@
           #:y-label (U String #f)
           #:z-label (U String #f)
           #:aspect-ratio (U Nonnegative-Real #f)
-          #:legend-anchor Anchor
+          #:legend-anchor Legend-Anchor
           #:out-file (U Path-String Output-Port #f)
           #:out-kind (U 'auto Image-File-Format)]
          Plot-Pict))
