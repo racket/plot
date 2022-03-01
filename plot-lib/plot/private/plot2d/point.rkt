@@ -190,7 +190,6 @@
                              Nonnegative-Real Nonnegative-Real Boolean
                              2D-Render-Proc))
 (define ((error-bars-render-fun xs ys hs color line-width line-style width alpha invert?) area)
-  (define clip-rect (send area get-clip-rect))
   (define radius (* 1/2 width))
   (define angle (if invert? (/ pi 2) 0))
 
@@ -200,12 +199,11 @@
   (send area put-alpha alpha)
   (send area put-pen color line-width line-style)
   (for ([x  (in-list xs)] [y  (in-list ys)] [h  (in-list hs)])
-    (when (rect-contains? clip-rect (maybe-invert x y))
-      (define v1 (maybe-invert x (- y h)))
-      (define v2 (maybe-invert x (+ y h)))
-      (send area put-line v1 v2)
-      (send area put-tick v1 radius angle)
-      (send area put-tick v2 radius angle))))
+    (define v1 (maybe-invert x (- y h)))
+    (define v2 (maybe-invert x (+ y h)))
+    (send area put-line v1 v2)
+    (send area put-tick v1 radius angle)
+    (send area put-tick v2 radius angle)))
 
 (:: error-bars
     (->* [(Sequenceof (Sequenceof Real))]
