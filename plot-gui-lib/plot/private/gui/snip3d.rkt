@@ -55,7 +55,7 @@
     (define (set-altitude!)
       (define degrees-per-pixel (/ 180 (send (get-bitmap) get-height)))
       (define dy (- mouse-y left-click-y))
-      (set! altitude (clamp (+ last-altitude (* dy degrees-per-pixel)) 0 90)))
+      (set! altitude (clamp (+ last-altitude (* dy degrees-per-pixel)) -90 90)))
     
     (define (start-update-thread animating?)
       (send this start-update-thread
