@@ -64,6 +64,7 @@
 
 (require "private/plot2d/line.rkt")
 (provide
+ raw-lines
  lines
  parametric
  polar

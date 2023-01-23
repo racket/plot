@@ -62,6 +62,7 @@
          [reset-drawing-params (-> Void)]
          [put-arrow-head (-> (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real Void)]
          [put-lines (-> (Listof (Vectorof Real)) Void)]
+         [put-raw-lines (-> (Listof (Vectorof Real)) Void)]
          [put-line (-> (Vectorof Real) (Vectorof Real) Void)]
          [put-polygon (-> (Listof (Vectorof Real)) Void)]
          [put-rect (-> Rect Void)]
@@ -839,6 +840,21 @@
               (let* ([vs  (if identity-transforms? vs (subdivide-lines (λ ([v : (Vectorof Real)])
                                                                          (plot->dc v))
                                                                        vs))]
+                     [vs  (map (λ ([v : (Vectorof Real)])
+                                 (plot->dc v))
+                               vs)])
+                (send pd draw-lines vs)))))))
+
+    (define/public (put-raw-lines vs)
+      (for ([vs  (in-list (exact-vector2d-sublists vs))])
+        (let ([vss  (if clipping?
+                        (clip-lines/bounds vs
+                                           clip-x-min clip-x-max
+                                           clip-y-min clip-y-max)
+                        (list vs))])
+          (for ([vs  (in-list vss)])
+            (unless (empty? vs)
+              (let* (
                      [vs  (map (λ ([v : (Vectorof Real)])
                                  (plot->dc v))
                                vs)])

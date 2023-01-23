@@ -63,6 +63,55 @@
                             (and label (λ (_) (line-legend-entry label color width style)))
                             (lines-render-proc vs color width style alpha)))]))]))
 
+(: raw-lines-render-proc (-> (Listof (Vectorof Real))
+                         Plot-Color Nonnegative-Real Plot-Pen-Style
+                         Nonnegative-Real
+                         2D-Render-Proc))
+(define ((raw-lines-render-proc vs color width style alpha) area)
+  (send area put-alpha alpha)
+  (send area put-pen color width style)
+  (send area put-raw-lines vs))
+
+(:: raw-lines
+    (->* [(Sequenceof (Sequenceof Real))]
+         [#:x-min (U Real #f) #:x-max (U Real #f)
+          #:y-min (U Real #f) #:y-max (U Real #f)
+          #:color Plot-Color
+          #:width Nonnegative-Real
+          #:style Plot-Pen-Style
+          #:alpha Nonnegative-Real
+          #:label (U String pict #f)]
+         renderer2d))
+(define (raw-lines vs
+               #:x-min [x-min #f] #:x-max [x-max #f]
+               #:y-min [y-min #f] #:y-max [y-max #f]
+               #:color [color (line-color)]
+               #:width [width (line-width)]
+               #:style [style (line-style)]
+               #:alpha [alpha (line-alpha)]
+               #:label [label #f])
+  (define fail/kw (make-raise-keyword-error 'raw-lines))
+  (cond
+    [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
+    [(and x-max (not (rational? x-max)))  (fail/kw "#f or rational" '#:x-max x-max)]
+    [(and y-min (not (rational? y-min)))  (fail/kw "#f or rational" '#:y-min y-min)]
+    [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
+    [(not (rational? width))  (fail/kw "rational?" '#:width width)]
+    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [else
+     (let ([vs  (sequence->listof-vector 'raw-lines vs 2)])
+       (define rvs (filter vrational? vs))
+       (cond [(empty? rvs)  empty-renderer2d]
+             [else
+              (match-define (list (vector #{rxs : (Listof Real)} #{rys : (Listof Real)}) ...) rvs)
+              (let ([x-min  (if x-min x-min (apply min* rxs))]
+                    [x-max  (if x-max x-max (apply max* rxs))]
+                    [y-min  (if y-min y-min (apply min* rys))]
+                    [y-max  (if y-max y-max (apply max* rys))])
+                (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
+                            (and label (λ (_) (line-legend-entry label color width style)))
+                            (raw-lines-render-proc vs color width style alpha)))]))]))
+
 (:: parametric
     (->* [(-> Real (Sequenceof Real)) Real Real]
          [#:x-min (U Real #f) #:x-max (U Real #f)
