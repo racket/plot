@@ -9,11 +9,11 @@ jobs:
       # the failure is specific to a Racket version.
       fail-fast: false
       matrix:
-        racket-version: ["8.4", "current"]
+        racket-version: ["8.7", "current"]
         racket-variant: ["BC", "CS"]
     steps:
-      - uses: actions/checkout@v2
-      - uses: Bogdanp/setup-racket@v1.7
+      - uses: actions/checkout@v3.3.0
+      - uses: Bogdanp/setup-racket@v1.9.1
         with:
           architecture: x64
           distribution: minimal
@@ -54,7 +54,7 @@ jobs:
       # files and sample images.  Upload these as an Github Actions Artifact,
       # so they can be inspected by the developer.
       
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3.1.2
         if: failure()
         with:
           name: New Test Data Files ${{ matrix.racket-version }} ${{ matrix.racket-variant }}
