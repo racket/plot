@@ -61,7 +61,7 @@
          [put-text-foreground (-> Plot-Color Void)]
          [reset-drawing-params (-> Void)]
          [put-arrow-head (-> (U (List '= Nonnegative-Real) Nonnegative-Real) Nonnegative-Real Void)]
-         [put-lines (-> (Listof (Vectorof Real)) Void)]
+         [put-lines (->* [(Listof (Vectorof Real))] [Boolean] Void)]
          [put-line (-> (Vectorof Real) (Vectorof Real) Void)]
          [put-polygon (-> (Listof (Vectorof Real)) Void)]
          [put-rect (-> Rect Void)]
@@ -827,7 +827,12 @@
 
     ;; Shapes
 
-    (define/public (put-lines vs)
+    ;; When ignore-axis-transforms? is #t, we don't sub-divide lines based on
+    ;; axis transforms.  This allows drawing a straight line regardless of the
+    ;; axis transforms used, such as a log-log plot.  This is used to
+    ;; replicate "lines" functionality form other plotting libraries.  See
+    ;; also #110.
+    (define/public (put-lines vs [ignore-axis-transforms? #f])
       (for ([vs  (in-list (exact-vector2d-sublists vs))])
         (let ([vss  (if clipping?
                         (clip-lines/bounds vs
@@ -836,9 +841,11 @@
                         (list vs))])
           (for ([vs  (in-list vss)])
             (unless (empty? vs)
-              (let* ([vs  (if identity-transforms? vs (subdivide-lines (λ ([v : (Vectorof Real)])
-                                                                         (plot->dc v))
-                                                                       vs))]
+              (let* ([vs  (if (or identity-transforms? ignore-axis-transforms?)
+                              vs
+                              (subdivide-lines (λ ([v : (Vectorof Real)])
+                                                 (plot->dc v))
+                                               vs))]
                      [vs  (map (λ ([v : (Vectorof Real)])
                                  (plot->dc v))
                                vs)])
