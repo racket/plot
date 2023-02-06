@@ -263,6 +263,7 @@ For example, a parabola, an inverse parabola, and the reflection line:
                 [#:style style plot-pen-style/c (line-style)]
                 [#:alpha alpha (real-in 0 1) (line-alpha)]
                 [#:label label (or/c string? pict? #f) #f]
+                [#:ignore-axis-transforms? ignore-axis-transforms? boolean? #f]
                 ) renderer2d?]{
 
   Returns a renderer that draws lines connecting the points in the input
@@ -278,14 +279,46 @@ For example, a parabola, an inverse parabola, and the reflection line:
                               (cons (vector i (+ y (* 1/100 (- (random) 1/2)))) lst)))
                            #:color 6 #:label "Random walk"))]
 
-The @(racket parametric) and @(racket polar) functions are defined using @(racket lines).
-
   If any of the points in @(racket vs) is @(racket +nan.0), no line segment
   will be drawn at that position.  This can be used to draw several
   independent data sets with one @(racket lines) renderer, improving rendering
-  performence if the datasets contain a large number of points.
+  performence for large datasets.
 
-  @history[#:changed "7.9" "Added support for pictures for #:label"]
+  When @(racket ignore-axis-transforms?) is @racket[#t], only the individual
+  points in @(racket vs) are affected by axis transforms, not the lines that
+  connect these points. This feature can be used, for example, to plot a
+  convergence line on a log-log plot.
+
+  @bold{NOTE:} It is undesirable to ignore axis transforms in plots, but this
+  feature can be used to replicate functionality of other plotting libraries
+  and it is meant for users familiar with those libraries.  In Racket, it is
+  preferable show the convergence line on log-log plots using the @(racket
+  function) renderer with the power function based on slope and intercept.
+
+@interaction[#:eval plot-eval
+(let ([data '((5 1.24) (203 510))]
+      [slope 1.6252]
+      [intercept -2.4005])
+  (parameterize ([plot-x-transform log-transform]
+                 [plot-y-transform log-transform])
+    (plot
+      (list
+        (tick-grid)
+        (lines data
+               #:ignore-axis-transforms? #f
+               #:label "ignore-axis-transforms? #f"
+               #:color 1)
+        (lines data
+               #:ignore-axis-transforms? #t
+               #:label "ignore-axis-transforms? #t"
+               #:color 2)
+        (function (lambda (x) (* (exp intercept)) (expt x slope))
+                  #:style 'long-dash
+                  #:label "convergence line"
+                  #:color 3)))))]
+
+  @history[#:changed "7.9" "#:label argument supports pictures"]
+  @history[#:changed "8.9" "#:ignore-axis-transforms? argument added"]
 }
 
 @defproc[(parametric [f (real? . -> . (sequence/c real?))]

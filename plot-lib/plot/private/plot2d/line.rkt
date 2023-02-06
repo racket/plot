@@ -15,13 +15,16 @@
 ;; Lines, parametric, polar
 
 (: lines-render-proc (-> (Listof (Vectorof Real))
-                         Plot-Color Nonnegative-Real Plot-Pen-Style
+                         Plot-Color
                          Nonnegative-Real
+                         Plot-Pen-Style
+                         Nonnegative-Real
+                         Boolean
                          2D-Render-Proc))
-(define ((lines-render-proc vs color width style alpha) area)
+(define ((lines-render-proc vs color width style alpha ignore-axis-transforms?) area)
   (send area put-alpha alpha)
   (send area put-pen color width style)
-  (send area put-lines vs))
+  (send area put-lines vs ignore-axis-transforms?))
 
 (:: lines
     (->* [(Sequenceof (Sequenceof Real))]
@@ -31,7 +34,8 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String pict #f)]
+          #:label (U String pict #f)
+          #:ignore-axis-transforms? Boolean]
          renderer2d))
 (define (lines vs
                #:x-min [x-min #f] #:x-max [x-max #f]
@@ -40,7 +44,8 @@
                #:width [width (line-width)]
                #:style [style (line-style)]
                #:alpha [alpha (line-alpha)]
-               #:label [label #f])
+               #:label [label #f]
+               #:ignore-axis-transforms? [ignore-axis-transforms? #f])
   (define fail/kw (make-raise-keyword-error 'lines))
   (cond
     [(and x-min (not (rational? x-min)))  (fail/kw "#f or rational" '#:x-min x-min)]
@@ -61,7 +66,7 @@
                     [y-max  (if y-max y-max (apply max* rys))])
                 (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
                             (and label (λ (_) (line-legend-entry label color width style)))
-                            (lines-render-proc vs color width style alpha)))]))]))
+                            (lines-render-proc vs color width style alpha ignore-axis-transforms?)))]))]))
 
 (:: parametric
     (->* [(-> Real (Sequenceof Real)) Real Real]
