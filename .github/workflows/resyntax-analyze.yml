@@ -33,7 +33,8 @@ jobs:
       - name: Install Racket
         uses: Bogdanp/setup-racket@v1.9.1
         with:
-          version: minimal
+          version: current
+          distribution: minimal
           local_catalogs: $GITHUB_WORKSPACE
           dest: '"${HOME}/racketdist-minimal-CS"'
           sudo: never
