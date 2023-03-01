@@ -34,7 +34,6 @@ jobs:
         uses: Bogdanp/setup-racket@v1.9.1
         with:
           version: minimal
-          packages: resyntax
           local_catalogs: $GITHUB_WORKSPACE
           dest: '"${HOME}/racketdist-minimal-CS"'
           sudo: never
