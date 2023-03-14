@@ -35,10 +35,16 @@
 
 (:: ticks-generate (-> ticks Real Real (Listof tick)))
 (define (ticks-generate t x-min x-max)
-  (match-define (ticks layout format) t)
+  (match-define (ticks layout fmt) t)
   (define ts (map pre-tick-inexact->exact (layout x-min x-max)))
   (match-define (list (pre-tick #{xs : (Listof Real)} #{majors : (Listof Boolean)}) ...) ts)
-  (map tick xs majors (format x-min x-max ts)))
+  (define labels (fmt x-min x-max ts))
+  (unless (= (length labels) (length ts))
+    (error
+     'ticks-format
+     (format "ticks format function returned bad number of labels, expecting ~a, got ~a"
+             (length ts) (length labels))))
+  (map tick xs majors labels))
 
 (defparam ticks-default-number Positive-Integer 4)
 
