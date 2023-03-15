@@ -620,13 +620,13 @@ Represents a tick with a label.
 @defthing[ticks-format/c contract? #:value (-> real? real? (listof pre-tick?) (listof string?))]{
 
   The contract for tick format functions in @racket[ticks] structures.  The
-  format function receives axis bounds and a list of @racket[pre-tick]s and
-  return a label for each @racket[pre-tick] in this list.
+  format function receives axis bounds and a list of @racket[pre-tick]s. It
+  must return a label for each @racket[pre-tick] in this list.
 
   The returned labels should be usually distinct, as the plot library will
-  consider ticks with the same label to be duplicates and collapse them,
-  however, this feature can be used by a custom format function to force
-  removal of some ticks form the plot.
+  consider ticks with labels that are @racket[string=?] to be duplicates and
+  collapse them, however, this feature can be used by a custom format function
+  to force removal of some ticks from the plot.
 
   Axis bounds can be used to determine how many decimal digits to display,
   usually by applying @racket[digits-for-range] to the bounds.
