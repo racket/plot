@@ -333,6 +333,20 @@ Returns @racket[#f] if @racket[x] is @racket[#f]; otherwise @racket[(inexact->ex
 Use this to convert interval endpoints, which may be @racket[#f], to exact numbers.
 }
 
+@deftogether[(
+  @defproc[(min* [r real?] ...) real?]
+  @defproc[(max* [r real?] ...) real?]
+)]{
+  Compute the @racket[min] or @racket[max] of a sequence of numbers.
+
+  @examples[#:eval plot-eval
+    (min* 3 5 4 2 1)
+    (max* 3 5 4 2 1)
+    (min*)
+    (max*)
+  ]
+}
+
 @;----------------------------------------------------------------------------------------------------
 @subsection[#:tag "math.vectors"]{Vector Functions}
 
