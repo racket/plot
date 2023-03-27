@@ -242,7 +242,7 @@ The ticks used for radius lines in @racket[polar-axes].
 }
 
 @defstruct[ticks ([layout ticks-layout/c] [format ticks-format/c])]{
-A @racket[ticks] for a near or far axis consists of a @racket[layout] function, which determines the number of ticks and where they will be placed, and a @racket[format] function, which determines the ticks' labels.
+A @racket[ticks] for a near or far axis consists of a @racket[_layout] function, which determines the number of ticks and where they will be placed, and a @racket[_format] function, which determines the ticks' labels.
 }
 
 @defproc[(ticks-generate [ticks ticks?] [min real?] [max real?]) (listof tick?)]{
