@@ -543,3 +543,9 @@ Returns a renderer that draws a labeled point.
 If @(racket label) is @(racket #f), the point is labeled with its position.
 Analogous to @racket[point-label].
 }
+
+@; Needs a timeout for testing:
+@(module* test racket/base
+   (require (submod ".."))
+   (module config info
+     (define timeout 180)))
