@@ -235,7 +235,6 @@
      (define base-str (number->string base))
      (λ (x-min x-max ts)
        (with-exact-bounds x-min x-max
-         (define epsilon (expt 10 (- (digits-for-range x-min x-max))))
          (define base-digits (digits-for-range 0 base))
          (for/list ([t  (in-list ts)])
            (define x (pre-tick-value t))
@@ -245,14 +244,17 @@
                  [(not scientific?)
                   (real->plot-label x base-digits scientific?)]
                  [else
+                  (define epsilon (expt 10 (- (digits-for-range x-min x))))
                   (define log-x (floor-log/base base x))
                   (define (major-str)
                     (if (zero? log-x) "1" (format "~a~a" base-str (integer->superscript log-x))))
                   (cond [((abs (- x (expt base log-x))) . < . epsilon)  (major-str)]
                         [(zero? log-x)  (real->plot-label x base-digits)]
-                        [else  (format "~a×~a"
-                                       (real->plot-label (/ x (expt base log-x)) base-digits)
-                                       (major-str))])]))))]))
+                        [else
+                         (let ([p (real->plot-label (/ x (expt base log-x)) base-digits)])
+                           (if (string=? p "1")
+                               (major-str)
+                               (format "~a×~a" p (major-str))))])]))))]))
 
 (:: log-ticks (->* [] [#:number Positive-Integer #:base Positive-Integer #:scientific? Boolean] ticks))
 (define (log-ticks #:number [number (ticks-default-number)] #:base [base 10] #:scientific? [scientific? #t])
