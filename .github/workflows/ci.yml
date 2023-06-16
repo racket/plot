@@ -9,11 +9,11 @@ jobs:
       # the failure is specific to a Racket version.
       fail-fast: false
       matrix:
-        racket-version: ["8.7", "current"]
+        racket-version: ["8.9", "current"]
         racket-variant: ["BC", "CS"]
     steps:
       - uses: actions/checkout@v3.3.0
-      - uses: Bogdanp/setup-racket@v1.9.1
+      - uses: Bogdanp/setup-racket@v1.10
         with:
           architecture: x64
           distribution: minimal
