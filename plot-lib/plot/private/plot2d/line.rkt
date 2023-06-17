@@ -19,12 +19,29 @@
                          Nonnegative-Real
                          Plot-Pen-Style
                          Nonnegative-Real
+                         Point-Sym
+                         Plot-Color
+                         Plot-Color
+                         Nonnegative-Real
+                         Nonnegative-Real
+                         Nonnegative-Real
                          Boolean
                          2D-Render-Proc))
-(define ((lines-render-proc vs color width style alpha ignore-axis-transforms?) area)
+(define ((lines-render-proc
+          vs
+          color width style alpha
+          marker marker-color marker-fill-color marker-size marker-line-width marker-alpha
+          ignore-axis-transforms?)
+         area)
   (send area put-alpha alpha)
   (send area put-pen color width style)
-  (send area put-lines vs ignore-axis-transforms?))
+  (send area put-lines vs ignore-axis-transforms?)
+
+  (unless (eq? marker 'none)
+    (send area put-alpha marker-alpha)
+    (send area put-pen marker-color marker-line-width 'solid)
+    (send area put-brush marker-fill-color 'solid)
+    (send area put-glyphs vs marker marker-size)))
 
 (:: lines
     (->* [(Sequenceof (Sequenceof Real))]
@@ -35,6 +52,12 @@
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
           #:label (U String pict #f)
+          #:marker Point-Sym
+          #:marker-color (U Plot-Color 'auto)
+          #:marker-fill-color (U Plot-Color 'auto)
+          #:marker-size Nonnegative-Real
+          #:marker-line-width Nonnegative-Real
+          #:marker-alpha Nonnegative-Real
           #:ignore-axis-transforms? Boolean]
          renderer2d))
 (define (lines vs
@@ -45,6 +68,12 @@
                #:style [style (line-style)]
                #:alpha [alpha (line-alpha)]
                #:label [label #f]
+               #:marker [marker 'none]
+               #:marker-color [marker-color 'auto]
+               #:marker-fill-color [marker-fill-color 'auto]
+               #:marker-size [marker-size (point-size)]
+               #:marker-line-width [marker-line-width (point-line-width)]
+               #:marker-alpha [marker-alpha (point-alpha)]
                #:ignore-axis-transforms? [ignore-axis-transforms? #f])
   (define fail/kw (make-raise-keyword-error 'lines))
   (cond
@@ -54,19 +83,55 @@
     [(and y-max (not (rational? y-max)))  (fail/kw "#f or rational" '#:y-max y-max)]
     [(not (rational? width))  (fail/kw "rational?" '#:width width)]
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(not (rational? marker-size))  (fail/kw "rational?" '#:marker-size marker-size)]
+    [(not (rational? marker-line-width))  (fail/kw "rational?" '#:marker-line-width marker-line-width)]
+    [(or (> marker-alpha 1) (not (rational? marker-alpha)))  (fail/kw "real in [0,1]" '#:marker-alpha marker-alpha)]
     [else
      (let ([vs  (sequence->listof-vector 'lines vs 2)])
        (define rvs (filter vrational? vs))
        (cond [(empty? rvs)  empty-renderer2d]
              [else
               (match-define (list (vector #{rxs : (Listof Real)} #{rys : (Listof Real)}) ...) rvs)
-              (let ([x-min  (if x-min x-min (apply min* rxs))]
-                    [x-max  (if x-max x-max (apply max* rxs))]
-                    [y-min  (if y-min y-min (apply min* rys))]
-                    [y-max  (if y-max y-max (apply max* rys))])
-                (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max)) #f default-ticks-fun
-                            (and label (λ (_) (line-legend-entry label color width style)))
-                            (lines-render-proc vs color width style alpha ignore-axis-transforms?)))]))]))
+              (let* ([x-min  (if x-min x-min (apply min* rxs))]
+                     [x-max  (if x-max x-max (apply max* rxs))]
+                     [y-min  (if y-min y-min (apply min* rys))]
+                     [y-max  (if y-max y-max (apply max* rys))]
+                     [marker-color (if (eq? marker-color 'auto)
+                                       (->pen-color color)
+                                       marker-color)]
+                     [marker-fill-color (if (eq? marker-fill-color 'auto)
+                                            (->pen-color marker-color)
+                                            marker-fill-color)])
+                (define render-fun
+                  (lines-render-proc
+                   vs
+                   color width style alpha
+                   marker marker-color marker-fill-color marker-size marker-line-width marker-alpha
+                   ignore-axis-transforms?))
+
+                (: legend-entries (U #f (-> Rect (Treeof legend-entry))))
+                (define legend-entries
+                  (and label
+                       (let ([lle (line-legend-entry label color width style)])
+                         (if (eq? marker 'none)
+                             (lambda (_) lle)
+                             (let ([mle (point-legend-entry
+                                         label marker marker-color marker-fill-color marker-size
+                                         marker-line-width)])
+                               (lambda (_)
+                                 (legend-entry
+                                  label
+                                  (lambda ([pd : (Instance Plot-Device%)]
+                                           [w : Real]
+                                           [h : Real])
+                                    ((legend-entry-draw lle) pd w h)
+                                    ((legend-entry-draw mle) pd w h)))))))))
+                
+                (renderer2d (vector (ivl x-min x-max) (ivl y-min y-max))
+                            #f
+                            default-ticks-fun
+                            legend-entries
+                            render-fun))]))]))
 
 (:: parametric
     (->* [(-> Real (Sequenceof Real)) Real Real]
@@ -227,17 +292,55 @@
 ;; ===================================================================================================
 ;; Function
 
-(: function-render-proc (-> Sampler Positive-Integer
-                            Plot-Color Nonnegative-Real Plot-Pen-Style
+(: function-render-proc (-> Sampler
+                            Positive-Integer
+                            Plot-Color
                             Nonnegative-Real
+                            Plot-Pen-Style
+                            Nonnegative-Real
+                            Point-Sym
+                            Plot-Color
+                            Plot-Color
+                            Nonnegative-Real
+                            Nonnegative-Real
+                            Nonnegative-Real
+                            Positive-Integer
                             2D-Render-Proc))
-(define ((function-render-proc f samples color width style alpha) area)
+(define ((function-render-proc
+          f samples
+          color width style alpha
+          marker marker-color marker-fill-color marker-size marker-line-width marker-alpha marker-count)
+         area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
   (match-define (sample xs ys y-min y-max) (f x-ivl samples))
+  (define vs (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys))
   
   (send area put-alpha alpha)
-  (send area put-pen color width style)
-  (send area put-lines (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys)))
+    (send area put-pen color width style)
+  (send area put-lines vs)
+
+  (unless (eq? marker 'none)
+
+    ;; Get a subset of the points from the samples to draw markers on.
+    ;; Normally `samples` is a large number (500 by default) and, without
+    ;; reducing their number, this draws too many markers on the plot.
+    (define mvs
+      (let ([vs-count (length vs)])
+        (if (<= vs-count marker-count)
+            vs
+            (let ([segment-length : Integer (exact-round (/ vs-count (sub1 marker-count)))])
+              (for/list : (Listof (Vector Real Real))
+                        ([v : (Vector Real Real) (in-list vs)]
+                         [n : Integer (in-naturals)]
+                         #:when (or (= 0 (remainder n segment-length))
+                                    ;; Always get the last point
+                                    (= n (sub1 vs-count))))
+                v)))))
+    
+    (send area put-alpha marker-alpha)
+    (send area put-pen marker-color marker-line-width 'solid)
+    (send area put-brush marker-fill-color 'solid)
+    (send area put-glyphs mvs marker marker-size)))
 
 (:: function
     (->* [(-> Real Real)]
@@ -248,7 +351,14 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
-          #:label (U String pict #f)]
+          #:label (U String pict #f)
+          #:marker Point-Sym
+          #:marker-color (U Plot-Color 'auto)
+          #:marker-fill-color (U Plot-Color 'auto)
+          #:marker-size Nonnegative-Real
+          #:marker-line-width Nonnegative-Real
+          #:marker-alpha Nonnegative-Real
+          #:marker-count Positive-Integer]
          renderer2d))
 (define (function f [x-min #f] [x-max #f]
                   #:y-min [y-min #f] #:y-max [y-max #f]
@@ -257,7 +367,14 @@
                   #:width [width (line-width)]
                   #:style [style (line-style)]
                   #:alpha [alpha (line-alpha)]
-                  #:label [label #f])
+                  #:label [label #f]
+                  #:marker [marker 'none]
+                  #:marker-color [marker-color 'auto]
+                  #:marker-fill-color [marker-fill-color 'auto]
+                  #:marker-size [marker-size (point-size)]
+                  #:marker-line-width [marker-line-width (point-line-width)]
+                  #:marker-alpha [marker-alpha (point-alpha)]
+                  #:marker-count [marker-count 20])
   (define fail/pos (make-raise-argument-error 'function f x-min x-max))
   (define fail/kw (make-raise-keyword-error 'function))
   (cond
@@ -268,30 +385,104 @@
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? width))  (fail/kw "rational?" '#:width width)]
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(not (rational? marker-size))  (fail/kw "rational?" '#:marker-size marker-size)]
+    [(not (rational? marker-line-width))  (fail/kw "rational?" '#:marker-line-width marker-line-width)]
+    [(or (> marker-alpha 1) (not (rational? marker-alpha)))  (fail/kw "real in [0,1]" '#:marker-alpha marker-alpha)]
+    [(not (positive-integer? marker-count)) (fail/kw "positive-integer?" '#:marker-count marker-count)]
     [else
      (define x-ivl (ivl x-min x-max))
      (define y-ivl (ivl y-min y-max))
-     (let ([f  (function->sampler f x-ivl)])
+     (let* ([f  (function->sampler f x-ivl)]
+            [marker-color
+             (if (eq? marker-color 'auto)
+                 (->pen-color color)
+                 marker-color)]
+            [marker-fill-color
+             (if (eq? marker-fill-color 'auto)
+                 (->pen-color marker-color)
+                 marker-fill-color)])
+
+       (define render-fun
+         (function-render-proc f samples color width style alpha
+                               marker marker-color marker-fill-color marker-size marker-line-width marker-alpha marker-count))
+
+       (: legend-entries (U #f (-> Rect (Treeof legend-entry))))
+       (define legend-entries
+         (and label
+              (let ([lle (line-legend-entry label color width style)])
+                (if (eq? marker 'none)
+                    (lambda (_) lle)
+                    (let ([mle (point-legend-entry
+                                label marker marker-color marker-fill-color marker-size
+                                marker-line-width)])
+                      (lambda (_)
+                        (legend-entry
+                         label
+                         (lambda ([pd : (Instance Plot-Device%)]
+                                  [w : Real]
+                                  [h : Real])
+                           ((legend-entry-draw lle) pd w h)
+                           ((legend-entry-draw mle) pd w h)))))))))
+       
        (renderer2d (vector x-ivl y-ivl)
                    (function-bounds-fun f samples)
                    default-ticks-fun
-                   (and label (λ (_) (line-legend-entry label color width style)))
-                   (function-render-proc f samples color width style alpha)))]))
+                   legend-entries
+                   render-fun))]))
 
 ;; ===================================================================================================
 ;; Inverse function
 
-(: inverse-render-proc (-> Sampler Positive-Integer
-                           Plot-Color Nonnegative-Real Plot-Pen-Style
+(: inverse-render-proc (-> Sampler
+                           Positive-Integer
+                           Plot-Color
                            Nonnegative-Real
+                           Plot-Pen-Style
+                           Nonnegative-Real
+                           Point-Sym
+                           Plot-Color
+                           Plot-Color
+                           Nonnegative-Real
+                           Nonnegative-Real
+                           Nonnegative-Real
+                           Positive-Integer
                            2D-Render-Proc))
-(define ((inverse-render-proc f samples color width style alpha) area)
+(define ((inverse-render-proc
+          f samples
+          color width style alpha
+          marker marker-color marker-fill-color marker-size marker-line-width marker-alpha marker-count)
+         area)
   (match-define (vector x-ivl y-ivl) (send area get-bounds-rect))
   (match-define (sample ys xs x-min x-max) (f y-ivl samples))
+  (define vs (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys))
   
   (send area put-alpha alpha)
   (send area put-pen color width style)
-  (send area put-lines (map (λ ([x : Real] [y : Real]) (vector x y)) xs ys)))
+  (send area put-lines vs)
+
+  (unless (eq? marker 'none)
+
+    ;; Get a subset of the points from the samples to draw markers on.
+    ;; Normally `samples` is a large number (500 by default) and, without
+    ;; reducing their number, this draws too many markers on the plot.
+    (define mvs
+      (let ([vs-count (length vs)])
+        (if (<= vs-count marker-count)
+            vs
+            (let ([segment-length : Integer (exact-round (/ vs-count (sub1 marker-count)))])
+              (for/list : (Listof (Vector Real Real))
+                        ([v : (Vector Real Real) (in-list vs)]
+                         [n : Integer (in-naturals)]
+                         #:when (or (= 0 (remainder n segment-length))
+                                    ;; Always get the last point
+                                    (= n (sub1 vs-count))))
+                v)))))
+    
+    (send area put-alpha marker-alpha)
+    (send area put-pen marker-color marker-line-width 'solid)
+    (send area put-brush marker-fill-color 'solid)
+    (send area put-glyphs mvs marker marker-size)))
 
 (: inverse
    (->* [(-> Real Real)]
@@ -302,6 +493,13 @@
           #:width Nonnegative-Real
           #:style Plot-Pen-Style
           #:alpha Nonnegative-Real
+          #:marker Point-Sym
+          #:marker-color (U Plot-Color 'auto)
+          #:marker-fill-color (U Plot-Color 'auto)
+          #:marker-size Nonnegative-Real
+          #:marker-line-width Nonnegative-Real
+          #:marker-alpha Nonnegative-Real
+          #:marker-count Positive-Integer
           #:label (U String pict #f)]
          renderer2d))
 (define (inverse f [y-min #f] [y-max #f]
@@ -311,6 +509,13 @@
                  #:width [width (line-width)]
                  #:style [style (line-style)]
                  #:alpha [alpha (line-alpha)]
+                 #:marker [marker 'none]
+                 #:marker-color [marker-color 'auto]
+                 #:marker-fill-color [marker-fill-color 'auto]
+                 #:marker-size [marker-size (point-size)]
+                 #:marker-line-width [marker-line-width (point-line-width)]
+                 #:marker-alpha [marker-alpha (point-alpha)]
+                 #:marker-count [marker-count 20]
                  #:label [label #f])
   (define fail/pos (make-raise-argument-error 'inverse f y-min y-max))
   (define fail/kw (make-raise-keyword-error 'inverse))
@@ -322,15 +527,52 @@
     [(< samples 2)  (fail/kw "Integer >= 2" '#:samples samples)]
     [(not (rational? width))  (fail/kw "rational?" '#:width width)]
     [(or (> alpha 1) (not (rational? alpha)))  (fail/kw "real in [0,1]" '#:alpha alpha)]
+    [(not (rational? marker-size))  (fail/kw "rational?" '#:marker-size marker-size)]
+    [(not (rational? marker-line-width))  (fail/kw "rational?" '#:marker-line-width marker-line-width)]
+    [(or (> marker-alpha 1) (not (rational? marker-alpha)))  (fail/kw "real in [0,1]" '#:marker-alpha marker-alpha)]
+    [(not (positive-integer? marker-count)) (fail/kw "positive-integer?" '#:marker-count marker-count)]
     [else
      (define x-ivl (ivl x-min x-max))
      (define y-ivl (ivl y-min y-max))
-     (define g (inverse->sampler f y-ivl))
-     (renderer2d (vector x-ivl y-ivl)
-                 (inverse-bounds-fun g samples)
-                 default-ticks-fun
-                 (and label (λ (_) (line-legend-entry label color width style)))
-                 (inverse-render-proc g samples color width style alpha))]))
+
+     (let* ([g (inverse->sampler f y-ivl)]
+            [marker-color
+             (if (eq? marker-color 'auto)
+                 (->pen-color color)
+                 marker-color)]
+            [marker-fill-color
+             (if (eq? marker-fill-color 'auto)
+                 (->pen-color marker-color)
+                 marker-fill-color)])
+
+       (define render-fun
+         (inverse-render-proc
+          g samples color width style alpha
+          marker marker-color marker-fill-color marker-size marker-line-width marker-alpha marker-count))
+
+       (: legend-entries (U #f (-> Rect (Treeof legend-entry))))
+       (define legend-entries
+         (and label
+              (let ([lle (line-legend-entry label color width style)])
+                (if (eq? marker 'none)
+                    (lambda (_) lle)
+                    (let ([mle (point-legend-entry
+                                label marker marker-color marker-fill-color marker-size
+                                marker-line-width)])
+                      (lambda (_)
+                        (legend-entry
+                         label
+                         (lambda ([pd : (Instance Plot-Device%)]
+                                  [w : Real]
+                                  [h : Real])
+                           ((legend-entry-draw lle) pd w h)
+                           ((legend-entry-draw mle) pd w h)))))))))
+       
+       (renderer2d (vector x-ivl y-ivl)
+                   (inverse-bounds-fun g samples)
+                   default-ticks-fun
+                   legend-entries
+                   render-fun))]))
 
 ;; ===================================================================================================
 ;; Kernel density estimation
