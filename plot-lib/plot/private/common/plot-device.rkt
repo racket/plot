@@ -445,7 +445,7 @@
     (define/private ((make-draw-circle-glyph r) v)
       (when (vrational? v)
         (match-define (vector x y) v)
-        (send dc draw-ellipse (- x r -1/2) (- y r -1/2) (* 2 r) (* 2 r))))
+        (send dc draw-ellipse (- x r) (- y r) (* 2 r) (* 2 r))))
 
     (: make-draw-polygon-glyph (-> Nonnegative-Real Natural Real (-> (Vectorof Real) Void)))
     (define/private (make-draw-polygon-glyph r sides start-angle)
