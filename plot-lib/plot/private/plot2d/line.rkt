@@ -230,7 +230,7 @@
            (ivl->plot-label (ivl x-min x-max)) (ivl->plot-label (ivl y-min y-max))))
 
   (send area put-alpha alpha)
-  (send area put-pen color width style 'butt)
+  (send area put-pen color width style)
   (case h/v
     [(h) (send area put-line (vector (or v-min x-min) v) (vector (or v-max x-max) v))]
     [(v) (send area put-line (vector v (or v-min y-min)) (vector v (or v-max y-max)))]))

@@ -68,6 +68,7 @@
 (defparam2 plot-foreground-alpha alpha Real Nonnegative-Real 1 (unit-ivl 'plot-foreground-alpha))
 (defparam2 plot-background-alpha alpha Real Nonnegative-Real 1 (unit-ivl 'plot-background-alpha))
 (defparam2 plot-line-width width Real Nonnegative-Real 1 (nonnegative-rational 'plot-line-width))
+(defparam plot-line-cap Plot-Pen-Cap 'round)
 (defparam2 plot-tick-size size Real Nonnegative-Real 10 (nonnegative-rational 'plot-tick-size))
 (defparam2 plot-font-size size Real Nonnegative-Real 11 (nonnegative-rational 'plot-font-size))
 (defparam plot-font-face face (U String #f) #f)
@@ -179,6 +180,7 @@
 (defparam line-color Plot-Color 1)
 (defparam2 line-width Real Nonnegative-Real 1 (nonnegative-rational 'line-width))
 (defparam line-style Plot-Pen-Style 'solid)
+(defparam line-cap Plot-Pen-Cap 'round)
 (defparam2 line-alpha Real Nonnegative-Real 1 (unit-ivl 'line-alpha))
 
 ;; Intervals

@@ -101,6 +101,15 @@ The contract for @(racket #:style) arguments when they refer to lines, and param
 For the meaning of integer pen styles, see @(racket ->pen-style).
 }
 
+@defthing[plot-pen-cap/c contract? #:value (one-of/c 'round 'projecting 'butt)]{
+
+  The contract for caps, or line endings, for lines drawn on the plot.  Used
+  by the @racket[plot-line-cap] and @racket[line-cap] parameters.
+
+  @history[#:added "8.10"]
+
+}
+
 @defthing[plot-brush-style/c contract? #:value (or/c exact-integer?
                                                      (one-of/c 'transparent      'solid
                                                                'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch

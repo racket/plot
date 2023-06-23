@@ -37,6 +37,9 @@
 (deftype Plot-Pen-Style
   (U Integer Plot-Pen-Style-Sym))
 
+(deftype Plot-Pen-Cap
+  (U 'round 'projecting 'butt))
+
 (deftype Plot-Brush-Style-Sym
   (U 'transparent      'solid
      'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch
