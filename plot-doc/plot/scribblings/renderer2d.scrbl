@@ -226,12 +226,32 @@ Returns a renderer that draws rectangles filled with a color based on the center
                    [#:width width (>=/c 0) (line-width)]
                    [#:style style plot-pen-style/c (line-style)]
                    [#:alpha alpha (real-in 0 1) (line-alpha)]
+                   [#:marker marker point-sym/c 'none]
+                   [#:marker-color marker-color (or/c 'auto plot-color/c) 'auto]
+                   [#:marker-fill-color marker-fill-color (or/c 'auto plot-color/c) 'auto]
+                   [#:marker-size marker-size (>=/c 0) (point-size)]
+                   [#:marker-line-width marker-line-width (>=/c 0) (point-line-width)]
+                   [#:marker-alpha marker-alpha (real-in 0 1) (point-alpha)]
+                   [#:marker-count marker-count positive-integer? 20]
                    [#:label label (or/c string? pict? #f) #f]
                    ) renderer2d?]{
-Returns a renderer that plots a function of @italic{x}. For example, a parabola:
-@interaction[#:eval plot-eval (plot (function sqr -2 2))]
 
-@history[#:changed "7.9" "Added support for pictures for #:label"]
+  Returns a renderer that plots a function of @italic{x}. For example, a parabola:
+
+  @interaction[#:eval plot-eval (plot (function sqr -2 2))]
+
+  When @(racket marker) is not @racket['none], markers will be placed on the
+  on the line drawn for the function at equal intervals.  The marker and
+  related arguments are the same as for the @racket[points] renderer.  The
+  number of markers shown on the plot is specified by @racket[marker-count]
+  parameter.
+
+  Using markers has the same effect as using both a @racket[function] and a
+  @racket[points] renderer in a single plot, exept that using @racket[marker]s
+  will show the marker super-imposed over the line style in the plot legend.
+
+  @history[#:changed "7.9" "#:label argument supports pictures"]
+  @history[#:changed "8.10" "#:marker and related arguments added"]
 }
 
 @defproc[(inverse [f (real? . -> . real?)]
@@ -242,17 +262,30 @@ Returns a renderer that plots a function of @italic{x}. For example, a parabola:
                   [#:width width (>=/c 0) (line-width)]
                   [#:style style plot-pen-style/c (line-style)]
                   [#:alpha alpha (real-in 0 1) (line-alpha)]
-                  [#:label label (or/c string? pict? #f) #f]
-                  ) renderer2d?]{
-Like @(racket function), but regards @(racket f) as a function of @italic{y}.
-For example, a parabola, an inverse parabola, and the reflection line:
+                  [#:marker marker point-sym/c 'none]
+                  [#:marker-color marker-color (or/c 'auto plot-color/c) 'auto]
+                  [#:marker-fill-color marker-fill-color (or/c 'auto plot-color/c) 'auto]
+                  [#:marker-size marker-size (>=/c 0) (point-size)]
+                  [#:marker-line-width marker-line-width (>=/c 0) (point-line-width)]
+                  [#:marker-alpha marker-alpha (real-in 0 1) (point-alpha)]
+                  [#:marker-count marker-count positive-integer? 20]
+                  [#:label label (or/c string? pict? #f) #f]) renderer2d?]{
+
+  Like @(racket function), but regards @(racket f) as a function of
+  @italic{y}.  For example, a parabola, an inverse parabola, and the
+  reflection line:
+
 @interaction[#:eval plot-eval
                     (plot (list (axes)
                                 (function sqr -2 2 #:label "y = x²")
                                 (function (λ (x) x) #:color 0 #:style 'dot #:label "y = x")
                                 (inverse sqr -2 2 #:color 3 #:label "x = y²")))]
 
-@history[#:changed "7.9" "Added support for pictures for #:label"]
+  The @(racket marker) and related arguments have the same meaning as for the
+  @racket[function] renderer.
+
+  @history[#:changed "7.9" "#:label argument supports pictures"]
+  @history[#:changed "8.10" "#:marker and related arguments added"]
 }
 
 @defproc[(lines [vs  (sequence/c (sequence/c #:min-count 2 real?))]
@@ -262,6 +295,12 @@ For example, a parabola, an inverse parabola, and the reflection line:
                 [#:width width (>=/c 0) (line-width)]
                 [#:style style plot-pen-style/c (line-style)]
                 [#:alpha alpha (real-in 0 1) (line-alpha)]
+                [#:marker marker point-sym/c 'none]
+                [#:marker-color marker-color (or/c 'auto plot-color/c) 'auto]
+                [#:marker-fill-color marker-fill-color (or/c 'auto plot-color/c) 'auto]
+                [#:marker-size marker-size (>=/c 0) (point-size)]
+                [#:marker-line-width marker-line-width (>=/c 0) (point-line-width)]
+                [#:marker-alpha marker-alpha (real-in 0 1) (point-alpha)]
                 [#:label label (or/c string? pict? #f) #f]
                 [#:ignore-axis-transforms? ignore-axis-transforms? boolean? #f]
                 ) renderer2d?]{
@@ -283,6 +322,14 @@ For example, a parabola, an inverse parabola, and the reflection line:
   will be drawn at that position.  This can be used to draw several
   independent data sets with one @(racket lines) renderer, improving rendering
   performence for large datasets.
+
+  When @(racket marker) is not @racket['none], markers will be placed on the
+  on the line at each point in @racket[vs].  The marker and related arguments
+  are the same as for the @racket[points] renderer.
+
+  Using markers has the same effect as using both a @racket[lines] and a
+  @racket[points] renderer in a single plot, exept that using @racket[marker]s
+  will show the marker super-imposed over the line style in the plot legend.
 
   When @(racket ignore-axis-transforms?) is @racket[#t], only the individual
   points in @(racket vs) are affected by axis transforms, not the lines that
@@ -319,6 +366,7 @@ For example, a parabola, an inverse parabola, and the reflection line:
 
   @history[#:changed "7.9" "#:label argument supports pictures"]
   @history[#:changed "8.9" "#:ignore-axis-transforms? argument added"]
+  @history[#:changed "8.10" "#:marker and related arguments added"]
 }
 
 @defproc[(parametric [f (real? . -> . (sequence/c real?))]
