@@ -803,7 +803,7 @@
 
     (define/public (put-alpha alpha) (send pd set-alpha alpha))
 
-    (define/public (put-pen color width style [cap 'round]) (send pd set-pen color width style cap))
+    (define/public (put-pen color width style [cap (line-cap)]) (send pd set-pen color width style cap))
     (define/public (put-major-pen [style 'solid]) (send pd set-major-pen style))
     (define/public (put-minor-pen [style 'solid]) (send pd set-minor-pen style))
 
