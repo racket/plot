@@ -614,12 +614,12 @@
     ;; the understanding is that Rect will be the complete dc for a legend outside the plot-area
     ;; and the plot-area otherwise
 
-    (: calculate-legend-parameters (-> (Listof legend-entry) Rect Anchor
+    (: calculate-legend-parameters (-> (Listof legend-entry) Rect Anchor Nonnegative-Real
                                        (Values Rect (Listof Exact-Rational)
                                                Nonnegative-Exact-Rational (Listof Real) (Listof Real)
                                                Nonnegative-Exact-Rational (Listof Real)
                                                Boolean Nonnegative-Integer)))
-    (define/private (calculate-legend-parameters legend-entries rect legend-anchor)
+    (define/private (calculate-legend-parameters legend-entries rect anchor padding)
       (define n (length legend-entries))
       (define labels (map legend-entry-label legend-entries))
       (match-define (vector (ivl x-min x-max) (ivl y-min y-max)) rect)
@@ -692,21 +692,24 @@
 
          ;; top-left corner of legend
          (define legend-x-min
-           (case legend-anchor
+           (case anchor
              [(top-left left bottom-left auto)     x-min]
              [(top-right right bottom-right)  (- x-max legend-x-size)]
              [(center bottom top)             (- (* 1/2 (+ x-min x-max))
                                                  (* 1/2 legend-x-size))]))
 
          (define legend-y-min
-           (case legend-anchor
+           (case anchor
              [(top-left top top-right auto)      y-min]
              [(bottom-left bottom bottom-right)  (- y-max legend-y-size)]
              [(center left right)                (- (* 1/2 (+ y-min y-max))
                                                     (* 1/2 legend-y-size))]))
 
-         (define legend-rect (vector (ivl legend-x-min (+ legend-x-min legend-x-size))
-                                     (ivl legend-y-min (+ legend-y-min legend-y-size))))
+         (define legend-rect
+           (vector (ivl (- legend-x-min padding)
+                        (+ legend-x-min legend-x-size padding))
+                   (ivl (- legend-y-min padding)
+                        (+ legend-y-min legend-y-size padding))))
 
          ;; per entry x/y left/top corners
          (define label-x-mins (for/fold ([mins : (Listof Real) (list (+ legend-x-min horiz-gap))]
@@ -732,7 +735,7 @@
         [else
          (raise-argument-error 'draw-legend "rect-known?" 1 legend-entries rect)]))
 
-    (define/public (calculate-legend-rect legend-entries rect legend-anchor)
+    (define/public (calculate-legend-rect legend-entries rect anchor padding)
       ;; Change font for correct size calculation in calculate-legend-parameters
       (define old-size (send (send dc get-font) get-point-size))
       (define old-face (send (send dc get-font) get-face))
@@ -746,7 +749,7 @@
                                   draw-x-size label-x-mins draw-x-mins
                                   draw-y-size label-y-mins
                                   cols? div)
-        (calculate-legend-parameters legend-entries rect legend-anchor))
+        (calculate-legend-parameters legend-entries rect anchor padding))
 
       ;; Undo change font
       (set-font-attribs old-size old-face old-family)
@@ -755,6 +758,7 @@
 
     (define/public (draw-legend legend-entries rect)
       (define legend-anchor (plot-legend-anchor))
+      (define legend-padding (plot-legend-padding))
       (when (not (eq? legend-anchor 'no-legend))
         (match-define (list (legend-entry #{labels : (Listof (U String pict))}
                                           #{draw-procs : (Listof Legend-Draw-Proc)})
@@ -774,7 +778,7 @@
                                     draw-x-size label-x-mins draw-x-mins
                                     draw-y-size label-y-mins
                                     cols? div)
-          (calculate-legend-parameters legend-entries rect (legend-anchor->anchor legend-anchor)))
+          (calculate-legend-parameters legend-entries rect (legend-anchor->anchor legend-anchor) legend-padding))
 
         ;; legend background
         (set-pen (plot-foreground) 1 'transparent)

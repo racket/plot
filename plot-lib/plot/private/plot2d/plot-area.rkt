@@ -257,7 +257,8 @@
                                      legend
                                      (vector (ivl dc-x-min (+ dc-x-min dc-x-size))
                                              (ivl dc-y-min (+ dc-y-min dc-y-size)))
-                                     (legend-anchor->anchor legend-anchor)))]
+                                     (legend-anchor->anchor legend-anchor)
+                                     (plot-legend-padding)))]
              [gap (pen-gap)]
              [make-print
               (λ ([get-bounds : (-> (Listof Real))])
@@ -640,16 +641,17 @@
     (define: right : Real  0)
     (define: top : Real  0)
     (define: bottom : Real  0)
-    (let-values ([(left-val right-val top-val bottom-val)
-                  (margin-fixpoint 0 dc-x-size 0 dc-y-size
-                                   init-left-margin  init-right-margin
-                                   init-top-margin   init-bottom-margin
-                                   (λ ([left : Real] [right : Real] [top : Real] [bottom : Real])
-                                     (get-param-vs/set-view->dc! left right top bottom)))])
-      (set! left left-val)
-      (set! right right-val)
-      (set! top top-val)
-      (set! bottom bottom-val))
+    (let ([inset (plot-inset)])
+      (let-values ([(left-val right-val top-val bottom-val)
+                    (margin-fixpoint inset (- dc-x-size inset) inset (- dc-y-size inset)
+                                     init-left-margin  init-right-margin
+                                     init-top-margin   init-bottom-margin
+                                     (λ ([left : Real] [right : Real] [top : Real] [bottom : Real])
+                                       (get-param-vs/set-view->dc! left right top bottom)))])
+        (set! left left-val)
+        (set! right right-val)
+        (set! top top-val)
+        (set! bottom bottom-val)))
 
     ;; When an aspect ratio has been defined, adjust the margins so that the
     ;; actual plot area maintains this ratio.

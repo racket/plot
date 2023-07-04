@@ -79,6 +79,7 @@
 (defparam plot-legend-anchor anchor Legend-Anchor 'top-left)
 (defparam plot-legend-layout layout Legend-Layout '(columns 1 equal-size))
 (defparam2 plot-legend-box-alpha alpha Real Nonnegative-Real 2/3 (unit-ivl 'plot-legend-box-alpha))
+(defparam plot-legend-padding Nonnegative-Real 0)
 (defparam plot-animating? Boolean #f)
 
 (defparam plot-x-axis? Boolean #t)
@@ -108,6 +109,7 @@
 (defparam plot-y-far-tick-label-anchor anchor Anchor 'left)
 
 (defparam plot-decorations? Boolean #t)
+(defparam plot-inset Nonnegative-Real 0.0)
 
 (defparam plot-pen-color-map (U Symbol #f) #f)
 (defparam plot-brush-color-map (U Symbol #f) #f)

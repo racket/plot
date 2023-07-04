@@ -105,7 +105,9 @@
  plot-legend-anchor
  plot-legend-box-alpha
  plot-legend-layout
+ plot-legend-padding
  plot-decorations?
+ plot-inset
  plot-animating?
  plot-pen-color-map
  plot-brush-color-map

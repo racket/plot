@@ -117,6 +117,20 @@ Amount of ambient light, and whether 3D plots are rendered with diffuse and spec
 
 }
 
+@defparam[plot-inset inset (>=/c 0) #:value 0]{
+
+  Specifies the amount of space around the plot to leave as a margin when
+  calculating plot layouts for ticks and axis labels.
+
+  One practical use for this parameter is to avoid clipping when very thick
+  lines are used: when lines for plot elements are very thick, see
+  @racket[plot-line-width] and @racket[line-width], the ends of axis ticks can
+  project beyond the end point of the line, and might be clipped at the edge
+  of the drawing region.  A non-zero @racket[plot-inset] value can be used to
+  avoid this clipping.
+
+}
+
 @deftogether[((defparam plot-foreground color plot-color/c #:value 0)
               (defparam plot-background color plot-color/c #:value 0))]{
 The plot foreground and background color.

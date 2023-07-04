@@ -163,7 +163,7 @@
    [draw-arrow-glyph (-> (Vectorof Real) Real Real Void)]
    [draw-glyphs (-> (Listof (Vectorof Real)) Point-Sym Nonnegative-Real Void)]
    [draw-pict (->* [pict (Vectorof Real)] (Anchor Real) Void)]
-   [calculate-legend-rect (-> (Listof legend-entry) Rect Anchor Rect)]
+   [calculate-legend-rect (-> (Listof legend-entry) Rect Anchor Nonnegative-Real Rect)]
    [draw-legend (-> (Listof legend-entry) Rect Void)]))
 
 (require "plotmetrics.rkt")
