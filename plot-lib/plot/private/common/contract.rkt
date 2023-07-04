@@ -53,6 +53,8 @@
                                (one-of/c 'transparent 'solid    'dot 'long-dash
                                          'short-dash  'dot-dash)))
 
+(define plot-pen-cap/c (one-of/c 'round 'butt 'projecting))
+
 (define plot-brush-style/c (or/c exact-integer?
                                  (one-of/c 'transparent      'solid
                                            'bdiagonal-hatch  'fdiagonal-hatch 'crossdiag-hatch

@@ -40,7 +40,9 @@
      plot-pen-color-map
      plot-brush-color-map
      arrow-head-size-or-scale
-     arrow-head-angle))
+     arrow-head-angle
+     plot-line-cap
+     line-cap))
 
   (define-parameter-group plot3d-appearance
     (plot3d-samples
@@ -110,7 +112,9 @@
       (U Symbol #f)
       (U Symbol #f)
       (U (List '= Nonnegative-Real) Nonnegative-Real)
-      Nonnegative-Real)
+      Nonnegative-Real
+      Plot-Pen-Cap
+      Plot-Pen-Cap)
      ;;plot3d-appearance
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)
      ;;plot-labels

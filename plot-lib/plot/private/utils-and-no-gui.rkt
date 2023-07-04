@@ -7,6 +7,7 @@
  Anchor
  Plot-Color
  Plot-Pen-Style
+ Plot-Pen-Cap
  Plot-Brush-Style
  Point-Sym
  List-Generator
@@ -93,6 +94,7 @@
  plot-background
  plot-background-alpha
  plot-line-width
+ plot-line-cap
  plot-tick-size
  plot-font-size
  plot-font-face
@@ -141,6 +143,7 @@
  line-color
  line-width
  line-style
+ line-cap
  line-alpha
  interval-color
  interval-style

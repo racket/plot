@@ -172,7 +172,7 @@
     ;; -----------------------------------------------------------------------------------------------
     ;; Pen, brush, alpha parameters
 
-    (define pen-hash ((inst make-hash (Vector Integer Integer Integer Real) (Instance Pen%))))
+    (define pen-hash ((inst make-hash (Vector Integer Integer Integer Real Symbol) (Instance Pen%))))
     (define transparent-pen (make-pen% 0 0 0 1 'transparent 'round))
 
     (: pen-color (List Real Real Real))
@@ -185,7 +185,7 @@
     ;; Sets the pen, using a hash table to avoid making duplicate objects. At time of writing (and for
     ;; the forseeable future) this is much faster than using a pen-list%, because it doesn't have to
     ;; synchronize access. It's also not thread-safe.
-    (define/public (set-pen color width style [cap 'round])
+    (define/public (set-pen color width style [cap (line-cap)])
       (set! pen-style (->pen-style style))
       (cond [(eq? pen-style 'transparent)
              (set! pen-color '(0 0 0))
@@ -198,16 +198,16 @@
                                  (app real->color-byte g)
                                  (app real->color-byte b))
                pen-color)
-             (send dc set-pen (hash-ref! pen-hash (vector r g b width)
+             (send dc set-pen (hash-ref! pen-hash (vector r g b width cap)
                                          (λ () (make-pen% r g b width 'solid cap))))]))
 
     ;; Sets the pen used to draw major ticks.
     (define/public (set-major-pen [style 'solid])
-      (set-pen (plot-foreground) (plot-line-width) style))
+      (set-pen (plot-foreground) (plot-line-width) style (plot-line-cap)))
 
     ;; Sets the pen used to draw minor ticks.
     (define/public (set-minor-pen [style 'solid])
-      (set-pen (plot-foreground) (* 1/2 (plot-line-width)) style))
+      (set-pen (plot-foreground) (* 1/2 (plot-line-width)) style (plot-line-cap)))
 
     (define brush-hash ((inst make-hash (Vector Integer Integer Integer Symbol) (Instance Brush%))))
     (define transparent-brush (make-brush% 0 0 0 'transparent))

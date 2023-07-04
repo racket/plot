@@ -108,6 +108,15 @@ Amount of ambient light, and whether 3D plots are rendered with diffuse and spec
   @racket[lines], is controlled by the @racket[line-width] parameter.
 }
 
+@defparam[plot-line-cap cap plot-pen-cap/c #:value 'round]{
+  
+  The cap of the lines used to draw plot axes and other non-renderer elements.
+  See also @racket[line-cap].
+
+  @history[#:added "8.10"]
+
+}
+
 @deftogether[((defparam plot-foreground color plot-color/c #:value 0)
               (defparam plot-background color plot-color/c #:value 0))]{
 The plot foreground and background color.
@@ -254,11 +263,21 @@ Used as a default keyword argument in @racket[function], @racket[inverse], @rack
 @deftogether[((defparam line-color color plot-color/c #:value 1)
               (defparam line-width width (>=/c 0) #:value 1)
               (defparam line-style style plot-pen-style/c #:value 'solid)
+              (defparam line-cap cap plot-pen-cap/c #:value 'round)
               (defparam line-alpha alpha (real-in 0 1) #:value 1))]{
-The pen color, pen width, pen style and opacity of lines in plots.
-Used as default keyword arguments of @racket[function], @racket[inverse], @racket[lines],
-@racket[parametric], @racket[polar], @racket[density], @racket[isoline], @racket[lines3d],
-@racket[parametric3d] and @racket[isoline3d].
+  
+  The pen color, pen width, pen style, pen cap and opacity of lines in plots.
+
+  Except for @racket[line-cap], all other parameters are used as default
+  keyword arguments of @racket[function], @racket[inverse], @racket[lines],
+  @racket[parametric], @racket[polar], @racket[density], @racket[isoline],
+  @racket[lines3d], @racket[parametric3d] and @racket[isoline3d].
+
+  The @racket[line-cap] parameter applies to lines drawn by renderers in a
+  plot.  See also @racket[plot-line-cap].
+
+  @history[#:added "8.10"]
+
 }
 
 @section{Intervals}
