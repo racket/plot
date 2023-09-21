@@ -117,7 +117,7 @@ Amount of ambient light, and whether 3D plots are rendered with diffuse and spec
 
 }
 
-@defparam[plot-inset inset (>=/c 0) #:value 0]{
+@defparam[plot-inset inset (or/c (>=/c 0) (list (>=/c 0) (>=/c 0) (>=/c 0) (>=/c 0))) #:value 0]{
 
   Specifies the amount of space around the plot to leave as a margin when
   calculating plot layouts for ticks and axis labels.

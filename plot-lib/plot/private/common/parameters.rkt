@@ -109,8 +109,13 @@
 (defparam plot-y-far-tick-label-anchor anchor Anchor 'left)
 
 (defparam plot-decorations? Boolean #t)
-(defparam plot-inset Nonnegative-Real 0.0)
-
+(defparam plot-inset
+  (U
+   ;; A single inset value for all sides
+   Nonnegative-Real
+   ;; Separate left, right, top, and bottom inset values
+   (List Nonnegative-Real Nonnegative-Real Nonnegative-Real Nonnegative-Real))
+  0.0)
 (defparam plot-pen-color-map (U Symbol #f) #f)
 (defparam plot-brush-color-map (U Symbol #f) #f)
 

@@ -117,7 +117,7 @@
       Nonnegative-Real
       Plot-Pen-Cap
       Plot-Pen-Cap
-      Nonnegative-Real
+      (U Nonnegative-Real (List Nonnegative-Real Nonnegative-Real Nonnegative-Real Nonnegative-Real))
       Nonnegative-Real)
      ;;plot3d-appearance
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)
