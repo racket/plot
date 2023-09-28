@@ -614,7 +614,12 @@
     ;; the understanding is that Rect will be the complete dc for a legend outside the plot-area
     ;; and the plot-area otherwise
 
-    (: calculate-legend-parameters (-> (Listof legend-entry) Rect Anchor Nonnegative-Real
+    (: calculate-legend-parameters (-> (Listof legend-entry)
+                                       Rect
+                                       Anchor
+                                       (U Nonnegative-Real
+                                          (List Nonnegative-Real Nonnegative-Real Nonnegative-Real Nonnegative-Real))
+
                                        (Values Rect (Listof Exact-Rational)
                                                Nonnegative-Exact-Rational (Listof Real) (Listof Real)
                                                Nonnegative-Exact-Rational (Listof Real)
@@ -706,10 +711,14 @@
                                                     (* 1/2 legend-y-size))]))
 
          (define legend-rect
-           (vector (ivl (- legend-x-min padding)
-                        (+ legend-x-min legend-x-size padding))
-                   (ivl (- legend-y-min padding)
-                        (+ legend-y-min legend-y-size padding))))
+           (let-values ([(pad-left pad-right pad-top pad-bottom)
+                         (if (list? padding)
+                             (values (list-ref padding 0) (list-ref padding 1) (list-ref padding 2) (list-ref padding 3))
+                             (values padding padding padding padding))])
+             (vector (ivl (- legend-x-min pad-left)
+                          (+ legend-x-min legend-x-size pad-right))
+                     (ivl (- legend-y-min pad-top)
+                          (+ legend-y-min legend-y-size pad-bottom)))))
 
          ;; per entry x/y left/top corners
          (define label-x-mins (for/fold ([mins : (Listof Real) (list (+ legend-x-min horiz-gap))]

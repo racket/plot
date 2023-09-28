@@ -79,7 +79,13 @@
 (defparam plot-legend-anchor anchor Legend-Anchor 'top-left)
 (defparam plot-legend-layout layout Legend-Layout '(columns 1 equal-size))
 (defparam2 plot-legend-box-alpha alpha Real Nonnegative-Real 2/3 (unit-ivl 'plot-legend-box-alpha))
-(defparam plot-legend-padding Nonnegative-Real 0)
+(defparam plot-legend-padding
+  (U
+   ;; A single padding value for all sides
+   Nonnegative-Real
+   ;; Separate left, right, top, and bottom padding values
+   (List Nonnegative-Real Nonnegative-Real Nonnegative-Real Nonnegative-Real))
+  0.0)
 (defparam plot-animating? Boolean #f)
 
 (defparam plot-x-axis? Boolean #t)
