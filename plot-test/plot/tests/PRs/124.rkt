@@ -12,9 +12,9 @@
   (parameterize
       ([plot-line-width 15]
        [line-width 15]
-       [plot-inset (list 0 9 9 0)]
+       [plot-inset '(0 10 10 0)]
        [plot-pen-color-map 'set1]
-       [plot-legend-padding 9]
+       [plot-legend-padding '(0 15 0 0)]
        [plot-line-cap 'round]
        [line-cap 'round])
     (output-fn
