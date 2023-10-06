@@ -117,6 +117,27 @@ Amount of ambient light, and whether 3D plots are rendered with diffuse and spec
 
 }
 
+@defparam[plot-inset inset (or/c (>=/c 0) (list (>=/c 0) (>=/c 0) (>=/c 0) (>=/c 0))) #:value 0]{
+
+  The amount of space around the plot to leave unused, when calculating plot
+  layouts for ticks and axis labels.  The parameter can be specified as a
+  single value, which applies to all sides of the plot image, or as a list of
+  four separate values for the left, right, top, and bottom margins of the
+  plot image.
+
+  One example use for this parameter is to avoid clipping tick marks when
+  lines for plot elements are very thick, see @racket[plot-line-width] and
+  @racket[line-width]. In such a case, the end of axis ticks can be drawn
+  beyond the end point of the line, and might be clipped at the edge of the
+  drawing region.  A non-zero @racket[plot-inset] value can be used to avoid
+  this clipping.
+
+  See also @racket[plot-legend-padding] for an equivalent setting for the plot
+  legend.
+
+  @history[#:added "8.11"]
+}
+
 @deftogether[((defparam plot-foreground color plot-color/c #:value 0)
               (defparam plot-background color plot-color/c #:value 0))]{
 The plot foreground and background color.
@@ -160,6 +181,26 @@ For example, the value @racket['(columns 1 equal-size)] will place the legend en
 
 @history[#:added "7.9"]
 }
+
+@defparam[plot-legend-padding padding (or/c (>=/c 0) (list (>=/c 0) (>=/c 0) (>=/c 0) (>=/c 0))) #:value 0]{
+
+  The amount of space to add between the legend entries and the border drawn
+  around the legend.  The parameter can be specified as a single value, which
+  applies to all sides, or as a list of four separate values for the left,
+  right, top, and bottom sides of the legend.
+
+  One example use for this parameter is to avoid clipping thick lines used in
+  legend entries, see @racket[plot-line-width] and @racket[line-width]. In
+  such a case, the end of the lines can be drawn outside the border of the
+  legend, a non-zero @racket[plot-legend-padding] value can be used to avoid
+  this situation.
+
+  See also @racket[plot-inset] for a similar setting for the entire plot
+  image.
+
+  @history[#:added "8.11"]
+}
+
 
 @defparam[plot-tick-size size (>=/c 0) #:value 10]{
 The length of tick lines, in drawing units.

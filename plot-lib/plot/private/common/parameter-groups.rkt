@@ -42,7 +42,9 @@
      arrow-head-size-or-scale
      arrow-head-angle
      plot-line-cap
-     line-cap))
+     line-cap
+     plot-inset
+     plot-legend-padding))
 
   (define-parameter-group plot3d-appearance
     (plot3d-samples
@@ -114,7 +116,9 @@
       (U (List '= Nonnegative-Real) Nonnegative-Real)
       Nonnegative-Real
       Plot-Pen-Cap
-      Plot-Pen-Cap)
+      Plot-Pen-Cap
+      (U Nonnegative-Real (List Nonnegative-Real Nonnegative-Real Nonnegative-Real Nonnegative-Real))
+      (U Nonnegative-Real (List Nonnegative-Real Nonnegative-Real Nonnegative-Real Nonnegative-Real)))
      ;;plot3d-appearance
      (List Positive-Integer Real Real Nonnegative-Real Boolean Boolean)
      ;;plot-labels
