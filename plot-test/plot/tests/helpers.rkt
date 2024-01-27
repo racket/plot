@@ -106,16 +106,19 @@
         (#t
          (equal? set1 set2))))
 
-;; Write a new set of draw steps to file.  NEW-DRAW-STEPS are the new draw
+;; Write a new set of draw steps to output file.  NEW-DRAW-STEPS are the new draw
 ;; steps, as produced by `generate-draw-steps` or `generate-draw-steps-3d` and
 ;; ORIGINAL-FILE is the original draw step file.  The data is compressed and
-;; saved in a file name prefixed with "new-".
-(define (write-new-draw-steps new-draw-steps original-file)
+;; saved in an output file. REGEN? indicates the regeneration mode;
+;; when it is false, the output file name is prefixed with "new-".
+;; Otherwise, the output file name is not prefixed, which will overwrite
+;; the existing original file. The function return a path to the file.
+(define (write-new-draw-steps new-draw-steps original-file #:regen? [regen? #f])
   (define-values (base name must-be-dir?) (split-path original-file))
   (make-directory* base)                ; ensure the base path exists
   (define data-file (build-path
                      base
-                     (string-append "new-" (path->string name))))
+                     (string-append (if regen? "" "new-") (path->string name))))
   (define data (call-with-output-string (lambda (out) (write new-draw-steps out))))
   (call-with-input-string
    data
@@ -124,7 +127,8 @@
        data-file
        (lambda (out)
          (gzip-through-ports in out #f (current-seconds)))
-       #:exists 'replace))))
+       #:exists 'replace)))
+  data-file)
 
 ;; Decompress and read draw steps from STEPS-FILE.  If the file does not
 ;; exist, just return an empty list.
@@ -148,7 +152,8 @@
 ;; When the function fails, the current set of draw steps as well as an image
 ;; of the current plot is saved in the same directory as SAVED-STEPS-FILE,
 ;; with the prefix "new-" they can be compared against the saved data to
-;; determine what went wrong.
+;; determine what went wrong, unless the environment variable PLOT_TEST_REGEN
+;; is set, which will regenerate the existing saved files.
 ;;
 ;; The PLOT-FUNCTION is a function that must be supplied by the user to
 ;; generate the plot.  Instead of calling `plot` directly, PLOT-FUNCTION will
@@ -180,11 +185,9 @@
   (define saved (read-draw-steps saved-steps-file))
   (define current (plot-function generate-draw-steps))
   (unless (same-draw-steps? saved current)
-    (write-new-draw-steps current saved-steps-file)
-    (define-values (base name must-be-dir?) (split-path saved-steps-file))
-    (define data-file (build-path
-                       base
-                       (string-append "new-" (path->string name))))
+    (define regen? (getenv "PLOT_TEST_REGEN"))
+    (define data-file (write-new-draw-steps current saved-steps-file
+                                            #:regen? regen?))
     ;; Also generate an image of the current plot
     (define image-file (path-replace-extension data-file ".png"))
     (plot-function
@@ -207,18 +210,18 @@
                   #:x-label x-label #:y-label y-label
                   #:legend-anchor legend-anchor
                   #:aspect-ratio aspect-ratio)))
-    (fail (format "draw steps not the same, new set written to ~a" data-file))))
+    (cond
+      [regen? (printf "regenerated ~a" data-file)]
+      [else (fail (format "draw steps not the same, new set written to ~a" data-file))])))
 
 ;; Same as `check-draw-steps` but for 3D plots.
 (define (check-draw-steps-3d plot-function saved-steps-file)
   (define saved (read-draw-steps saved-steps-file))
   (define current (plot-function generate-draw-steps-3d))
   (unless (same-draw-steps? saved current)
-    (write-new-draw-steps current saved-steps-file)
-    (define-values (base name must-be-dir?) (split-path saved-steps-file))
-    (define data-file (build-path
-                       base
-                       (string-append "new-" (path->string name))))
+    (define regen? (getenv "PLOT_TEST_REGEN"))
+    (define data-file (write-new-draw-steps current saved-steps-file
+                                            #:regen? regen?))
     ;; Also generate an image of the current plot
     (define image-file (path-replace-extension data-file ".png"))
     (plot-function (lambda (rt
@@ -251,4 +254,6 @@
                                   #:altitude altitude
                                   #:legend-anchor legend-anchor
                                   #:aspect-ratio aspect-ratio)))
-    (fail (format "draw steps not the same, new set written to ~a" data-file))))
+    (cond
+      [regen? (printf "regenerated ~a" data-file)]
+      [else (fail (format "draw steps not the same, new set written to ~a" data-file))])))
