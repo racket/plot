@@ -546,9 +546,6 @@
              (define r (* 1/2 size))
              (define line-sym
                (cond [(hash-has-key? full-glyph-hash real-sym)
-                      (when (eq? pen-color brush-color)
-                        (set-pen pen-color 1 'transparent)
-                        (set-brush brush-color 'solid))
                       (hash-ref full-glyph-hash real-sym)]
                      [else  (set-brush brush-color 'transparent)
                             real-sym]))
