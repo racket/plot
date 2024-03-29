@@ -74,7 +74,7 @@
        (cond [(empty? vs)  empty-renderer3d]
              [else
               (unless (= 0 x-jitter y-jitter z-jitter)
-                (points-apply-jitters vs (vector x-jitter y-jitter z-jitter)
+                (points-apply-jitters vs ((inst vector Nonnegative-Real) x-jitter y-jitter z-jitter)
                                       #:ivls (vector (ivl x-min x-max)
                                                      (ivl y-min y-max)
                                                      (ivl z-min z-max))))

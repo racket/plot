@@ -651,11 +651,11 @@
                            (hash-update height i (λ ([v : Exact-Rational]) (max h v)) (λ () 0))))])
              (define widths
                ((inst map Exact-Rational (Pairof Integer Exact-Rational))
-                cdr ((inst sort (Pairof Integer Exact-Rational))
+                cdr ((inst sort (Pairof Integer Exact-Rational) Integer)
                      (hash->list width) < #:key car)))
              (define heights
                ((inst map Exact-Rational (Pairof Integer Exact-Rational))
-                cdr ((inst sort (Pairof Integer Exact-Rational))
+                cdr ((inst sort (Pairof Integer Exact-Rational) Integer)
                      (hash->list height) < #:key car)))
              (cond
                [compact? (values widths heights)]
